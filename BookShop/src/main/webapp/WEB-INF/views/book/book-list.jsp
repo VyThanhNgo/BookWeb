@@ -1,4 +1,7 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <%@ include file="/WEB-INF/views/base/header.jsp" %>
+
 	<div class="page-content bg-grey">
 		<div class="content-inner-1 border-bottom">
 			<div class="container">
@@ -630,10 +633,11 @@
 							</div>
 						</div>		
 						<div class="row book-grid-row">
+						  <c:forEach var="b" items="${books}">
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
-										<img src="images/books/grid/book14.jpg" alt="book">									
+										<img src="https://cdn.tienphong.vn/images/a6bf4f60924201126af6849ca45a39808b6283cfdd1f6fb07a1a8b963257011e96442026333c44f987a53a4e0b9403d617fa1b88f89ce513c61754db6c019d42/215t7029-361.jpg" alt="book">									
 									</div>
 									<div class="bookmark-btn style-2">
 										<input class="form-check-input" type="checkbox" id="flexCheckDefault1">
@@ -642,10 +646,10 @@
 										</label>
 									</div>
 									<div class="dz-content">
-										<h5 class="title"><a href="books-grid-view.html">Thunder Stunt</a></h5>
+										<h5 class="title"><a href="books-grid-view.html">${b.title}</a></h5>
 										<ul class="dz-tags">
-											<li><a href="books-grid-view.html">ADVANTURE,</a></li>
-											<li><a href="books-grid-view.html">SCIENCE,</a></li>
+											<li><a href="books-grid-view.html">${b.category.name}</a></li>
+										
 										</ul>
 										<ul class="dz-rating">
 											<li><i class="flaticon-star text-yellow"></i></li>	
@@ -656,7 +660,7 @@
 										</ul>
 										<div class="book-footer">
 											<div class="price">
-												<span class="price-num">$57.5</span>
+												<span class="price-num">${b.price}</span>
 												<del>$12.0</del>
 											</div>
 											<a href="shop-cart.html" class="btn btn-secondary box-btn btnhover btnhover2"><i class="flaticon-shopping-cart-1 m-r10"></i> Add to cart</a>
@@ -664,6 +668,7 @@
 									</div>
 								</div>
 							</div>
+						  </c:forEach>
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">

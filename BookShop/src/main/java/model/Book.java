@@ -4,20 +4,21 @@ public class Book {
 	 private int id;
 	    private String title;
 	    private int authorId;
-	    private int categoryId;
+	    private Category category;
 	    private double price;
 	    private int stock;
 	    private String description;
 	    private String image;
 	    private int publishYear;
 	    
-		public Book(int id, String title, int authorId, int categoryId, double price, int stock, String description,
+		
+		public Book(int id, String title, int authorId, Category category, double price, int stock, String description,
 				String image, int publishYear) {
 			super();
 			this.id = id;
 			this.title = title;
 			this.authorId = authorId;
-			this.categoryId = categoryId;
+			this.category = category;
 			this.price = price;
 			this.stock = stock;
 			this.description = description;
@@ -53,13 +54,8 @@ public class Book {
 			this.authorId = authorId;
 		}
 
-		public int getCategoryId() {
-			return categoryId;
-		}
-
-		public void setCategoryId(int categoryId) {
-			this.categoryId = categoryId;
-		}
+		public Category getCategory() { return category; }
+		public void setCategory(Category category) { this.category = category; }
 
 		public double getPrice() {
 			return price;
