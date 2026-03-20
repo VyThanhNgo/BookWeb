@@ -3,7 +3,7 @@ package model;
 public class Book {
 	 private int id;
 	    private String title;
-	    private int authorId;
+	    private Author author;
 	    private Category category;
 	    private double price;
 	    private int stock;
@@ -12,12 +12,14 @@ public class Book {
 	    private int publishYear;
 	    
 		
-		public Book(int id, String title, int authorId, Category category, double price, int stock, String description,
+		
+
+		public Book(int id, String title, Author author, Category category, double price, int stock, String description,
 				String image, int publishYear) {
 			super();
 			this.id = id;
 			this.title = title;
-			this.authorId = authorId;
+			this.author = author;
 			this.category = category;
 			this.price = price;
 			this.stock = stock;
@@ -46,13 +48,8 @@ public class Book {
 			this.title = title;
 		}
 
-		public int getAuthorId() {
-			return authorId;
-		}
-
-		public void setAuthorId(int authorId) {
-			this.authorId = authorId;
-		}
+		public Author getAuthor() { return author; }
+		public void setAuthor(Author author) { this.author = author; }
 
 		public Category getCategory() { return category; }
 		public void setCategory(Category category) { this.category = category; }
