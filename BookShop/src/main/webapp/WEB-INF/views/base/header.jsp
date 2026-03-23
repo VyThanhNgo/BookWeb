@@ -34,6 +34,9 @@
 	href="${pageContext.request.contextPath}/assets/css/style.css">
 <link rel="stylesheet" type="text/css"
 	href="${pageContext.request.contextPath}/assets/icons/fontawesome/css/all.min.css">
+<!-- FLATICON -->
+<link rel="stylesheet" type="text/css"
+	href="${pageContext.request.contextPath}/assets/icons/flaticon/font/flaticon.css">
 <link rel="stylesheet" type="text/css"
 	href="${pageContext.request.contextPath}/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css">
 <link rel="stylesheet" type="text/css"
@@ -60,7 +63,7 @@
 				<div class="container clearfix">
 					<!-- Website Logo -->
 					<div class="logo-header logo-dark">
-						<a href="index.html"><img src="images/logo.png" alt="logo"></a>
+						<a href="index.html"><img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="logo"></a>
 					</div>
 
 					<!-- EXTRA NAV -->
@@ -205,7 +208,8 @@
 
 					<!-- header search nav -->
 					<div class="header-search-nav">
-						<form class="header-item-search"  action="${pageContext.request.contextPath}/books" method="get">
+						<form class="header-item-search"
+							action="${pageContext.request.contextPath}/books" method="get">
 							<div class="input-group search-input">
 								<div class="dropdown bootstrap-select default-select">
 									<select class="default-select" name="categoryId">
@@ -234,7 +238,8 @@
 								</div>
 								<input type="text" name="keyword" class="form-control"
 									aria-label="Text input with dropdown button"
-									placeholder="Search Books Here" value="${keyword}" fdprocessedid="4p8wu9">
+									placeholder="Search Books Here" value="${keyword}"
+									fdprocessedid="4p8wu9">
 								<button class="btn" type="submit" fdprocessedid="1sapa">
 									<i class="flaticon-loupe"></i>
 								</button>
@@ -290,13 +295,9 @@
 								</div>
 							</form>
 							<ul class="nav navbar-nav">
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Home</span></a>
-									<ul class="sub-menu">
-										<li><a href="index.html">Home 1</a></li>
-										<li><a href="index-2.html">Home 2</a></li>
-										<li><a href="index-3.html">Home 3</a></li>
-									</ul></li>
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Pages</span></a>
+								<li ><a href="javascript:void(0);"><span>Trang chủ</span></a>
+									</li>
+								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Các trang khác</span></a>
 									<ul class="sub-menu">
 										<li><a href="about-us.html"><span>About Us</span></a></li>
 										<li><a href="my-profile.html">My Profile</a></li>
@@ -310,22 +311,9 @@
 												Construction</a></li>
 										<li><a href="error-404.html">Error 404</a></li>
 									</ul></li>
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Shop</span></a>
-									<ul class="sub-menu">
-										<li><a href="books-grid-view.html">Shop Grid</a></li>
-										<li><a href="books-grid-view-sidebar.html">Shop Grid
-												Sidebar</a></li>
-										<li><a href="books-list.html">Shop List</a></li>
-										<li><a href="books-list-view-sidebar.html">Shop List
-												Sidebar</a></li>
-										<li><a href="books-detail.html">Shop Detail</a></li>
-										<li><a href="shop-cart.html">Cart</a></li>
-										<li><a href="shop-checkout.html">Checkout</a></li>
-										<li><a href="wishlist.html">Wishlist</a></li>
-										<li><a href="shop-login.html">Login</a></li>
-										<li><a href="shop-registration.html">Registration</a></li>
-									</ul></li>
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Blog</span></a>
+								<li ><a href="${pageContext.request.contextPath}/books"><span>Sản phẩm</span></a>
+									</li>
+								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Bài viết</span></a>
 									<ul class="sub-menu">
 										<li><a href="javascript:void(0);">Page Layout <i
 												class="fa fa-angle-right"></i></a>
@@ -389,62 +377,8 @@
 													</ul></li>
 											</ul></li>
 									</ul></li>
-								<li class="has-mega-menu sub-menu-down"><a
-									href="javascript:void(0);">Post Layout</a>
-									<ul class="mega-menu">
-										<li><a href="javascript:void(0);">Side Bar</a>
-											<ul>
-												<li><a href="post-left-sidebar.html">Post Left
-														Sidebar</a></li>
-												<li><a href="post-right-sidebar.html">Post Right
-														Sidebar</a></li>
-												<li><a href="post-both-sidebar.html" class="new-badge">Post
-														Both Sidebar <span>New</span>
-												</a></li>
-												<li><a href="post-no-sidebar.html">Post No Sidebar</a></li>
-											</ul></li>
-										<li><a href="javascript:void(0);">Post Types</a>
-											<ul>
-												<li><a href="post-text.html" class="new-badge">Text
-														Post <span>New</span>
-												</a></li>
-												<li><a href="post-image.html" class="new-badge">Image
-														Post <span>New</span>
-												</a></li>
-												<li><a href="post-video.html">Post Video</a></li>
-												<li><a href="post-link.html">Post Link</a></li>
-												<li><a href="post-audio.html">Post Audio</a></li>
-												<li><a href="post-quote.html">Post Quote</a></li>
-												<li><a href="post-tutorial.html" class="new-badge">Tutorial
-														Post <span>New</span>
-												</a></li>
-												<li><a href="post-cateloge.html" class="new-badge">Cateloge
-														Post <span>New</span>
-												</a></li>
-											</ul></li>
-										<li><a href="javascript:void(0);">Multiple Media</a>
-											<ul>
-												<li><a href="post-banner.html" class="new-badge">Banner
-														<span>New</span>
-												</a></li>
-												<li><a href="post-slide-show.html">Post Slide Show</a></li>
-												<li><a href="post-gallery.html">Gallery</a></li>
-												<li><a href="post-status-slider.html" class="new-badge">Status
-														Slider <span>New</span>
-												</a></li>
-											</ul></li>
-										<li><a href="javascript:void(0);">Post Layout Type</a>
-											<ul>
-												<li><a href="post-standard.html">Standard Post </a></li>
-												<li><a href="post-side.html" class="new-badge">Side
-														Post <span>New</span>
-												</a></li>
-												<li><a href="post-corner.html" class="new-badge">Corner
-														Post <span>New</span>
-												</a></li>
-											</ul></li>
-									</ul></li>
-								<li><a href="contact-us.html">Contact Us</a></li>
+								
+								<li><a href="contact-us.html">Liên hệ</a></li>
 							</ul>
 
 							<div class="dz-social-icon">

@@ -1,4 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="vi_VN"/>
 
 <%@ include file="/WEB-INF/views/base/header.jsp" %>
 <div class="page-content bg-grey">
@@ -53,7 +55,7 @@
 									<p class="text-2">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem</p>
 									<div class="book-footer">
 										<div class="price">
-											<h5>${book.price}</h5>
+											<h5><fmt:formatNumber value="${book.price}" pattern="#,###"/>&#8363;</h5>
 											<p class="p-lr10">$70.00</p>
 										</div>
 										<div class="product-num">
@@ -242,66 +244,29 @@
 						<div class="widget">
 							<h4 class="widget-title">Related Books</h4>
 							<div class="row">
+							<c:forEach var="rb" items="${relatedBooks}">
 								<div class="col-xl-12 col-lg-6">
 									<div class="dz-shop-card style-5">
 										<div class="dz-media">
-											<img src="images/books/grid/book15.jpg" alt="">
+											<img src="https://tse1.mm.bing.net/th/id/OIP.8625mdkok4pn8q1GhFvTwgHaIj?pid=Api&P=0&h=180" alt="${rb.title}">
 										</div>
 										<div class="dz-content">
-											<h5 class="subtitle">Terrible Madness</h5>
+											<h5 class="subtitle"><a href="${pageContext.request.contextPath}/books/detail?id=${rb.id}">${rb.title}</a>
+											</h5>
 											<ul class="dz-tags">
-												<li>THRILLE,</li>
-												<li>DRAMA,</li>
-												<li>HORROR</li>
+												<li>${rb.category.name}</li>
+												
 											</ul>
 											<div class="price">
-												<span class="price-num">$45.4</span>
+												<span class="price-num"><fmt:formatNumber value="${rb.price}" pattern="#,###"/>&#8363;</span>
 												<del>$98.4</del>
 											</div>
 											<a href="shop-cart.html" class="btn btn-outline-primary btn-sm btnhover btnhover2"><i class="flaticon-shopping-cart-1 me-2"></i> Add to cart</a>
 										</div>
 									</div>
 								</div>
-								<div class="col-xl-12 col-lg-6">
-									<div class="dz-shop-card style-5">
-										<div class="dz-media">
-											<img src="images/books/grid/book3.jpg" alt="">
-										</div>
-										<div class="dz-content">
-											<h5 class="subtitle">Battle Drive</h5>
-											<ul class="dz-tags">
-												<li>THRILLE,</li>
-												<li>DRAMA,</li>
-												<li>HORROR</li>
-											</ul>
-											<div class="price">
-												<span class="price-num">$45.4</span>
-												<del>$98.4</del>
-											</div>
-											<a href="shop-cart.html" class="btn btn-outline-primary btn-sm btnhover btnhover2"><i class="flaticon-shopping-cart-1 me-2"></i> Add to cart</a>
-										</div>
-									</div>
-								</div>
-								<div class="col-xl-12 col-lg-6">
-									<div class="dz-shop-card style-5 mb-0">
-										<div class="dz-media">
-											<img src="images/books/grid/book5.jpg" alt="">
-										</div>
-										<div class="dz-content">
-											<h5 class="subtitle">Terrible Madness</h5>
-											<ul class="dz-tags">
-												<li>THRILLE,</li>
-												<li>DRAMA,</li>
-												<li>HORROR</li>
-											</ul>
-											<div class="price">
-												<span class="price-num">$45.4</span>
-												<del>$98.4</del>
-											</div>
-											<a href="shop-cart.html" class="btn btn-outline-primary btn-sm btnhover btnhover2"><i class="flaticon-shopping-cart-1 me-2"></i> Add to cart</a>
-										</div>
-									</div>
-								</div>
+							</c:forEach>
+						
 							</div>
 						</div>
 					</div>

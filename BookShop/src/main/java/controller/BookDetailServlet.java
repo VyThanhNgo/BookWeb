@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,6 +19,9 @@ public class BookDetailServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         BookDAO dao = new BookDAO();
         Book book = dao.getBookById(id);
+        List<Book> relatedBooks = dao.getRelatedBooks(book.getCategory().getId(), book.getId());
+        request.setAttribute("relatedBooks", relatedBooks);
+        
         request.setAttribute("book", book);
         request.setAttribute("pageTitle", book.getTitle());
         request.getRequestDispatcher("/WEB-INF/views/book/book-detail.jsp").forward(request, response);
