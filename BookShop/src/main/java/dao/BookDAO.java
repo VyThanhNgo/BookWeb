@@ -89,7 +89,7 @@ public class BookDAO {
         return list;
     }
     
-    //seach book
+    //search book
     public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice) {
         List<Book> list = new ArrayList<>();
         try {
@@ -125,6 +125,33 @@ public class BookDAO {
             if(maxPrice != null)
                 ps.setDouble(i++, maxPrice);
 
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                Book b = new Book();
+                b.setId(rs.getInt("book_id"));
+                b.setTitle(rs.getString("title"));
+                b.setPrice(rs.getDouble("price"));
+                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
+                b.setCategory(cat);
+                list.add(b);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    // related book
+    public List<Book> getRelatedBooks(int categoryId, int excludeBookId) {
+        List<Book> list = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname " +
+                         "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id " +
+                         "WHERE b.category_id = ? AND b.book_id != ? LIMIT 3";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, categoryId);
+            ps.setInt(2, excludeBookId);
             ResultSet rs = ps.executeQuery();
             while(rs.next()) {
                 Book b = new Book();
