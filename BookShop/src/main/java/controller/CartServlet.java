@@ -1,7 +1,7 @@
-package main.java.controller;
+package controller;
 
 import dao.BookDAO;
-import main.java.model.*;
+import model.*;
 import model.Book;
 
 import javax.servlet.ServletException;
