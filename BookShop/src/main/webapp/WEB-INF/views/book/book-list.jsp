@@ -1,4 +1,8 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<fmt:setLocale value="vi_VN" />
 
 <%@ include file="/WEB-INF/views/base/header.jsp"%>
 
@@ -14,7 +18,7 @@
 							type="hidden" name="maxPrice" id="maxPriceInput">
 						<div class="shop-filter">
 							<div class="d-flex justify-content-between">
-								<h4 class="title">Filter Option</h4>
+								<h4 class="title">Lựa chọn lọc</h4>
 								<a href="javascript:void(0);" class="panel-close-btn"><i
 									class="flaticon-close"></i></a>
 							</div>
@@ -24,7 +28,7 @@
 									<button class="accordion-button" id="headingFive" type="button"
 										data-bs-toggle="collapse" data-bs-target="#collapseFive"
 										aria-expanded="false" aria-controls="collapseFive"
-										fdprocessedid="87d6rq">Price Range</button>
+										fdprocessedid="87d6rq">Mức giá</button>
 									<div id="collapseFive"
 										class="accordion-collapse collapse accordion-body show"
 										aria-labelledby="headingFive"
@@ -66,7 +70,7 @@
 									<button class="accordion-button" id="headingOne" type="button"
 										data-bs-toggle="collapse" data-bs-target="#collapseOne"
 										aria-expanded="true" aria-controls="collapseOne"
-										fdprocessedid="w8693ls">Shop by Category</button>
+										fdprocessedid="w8693ls">Chọn danh mục</button>
 									<div id="collapseOne"
 										class="accordion-collapse collapse show accordion-body"
 										aria-labelledby="headingOne"
@@ -461,7 +465,7 @@
 				</div>
 				<div class="col-xl-9">
 					<div class="d-flex justify-content-between align-items-center">
-						<h4 class="title">Books</h4>
+						<h4 class="title">Sách</h4>
 						<a href="javascript:void(0);" class="btn btn-primary panel-btn">Filter</a>
 					</div>
 					<div class="filter-area m-b30">
@@ -519,7 +523,7 @@
 								<a data-bs-toggle="collapse" href="#collapseExample"
 									role="button" aria-expanded="false"
 									aria-controls="collapseExample" class="collapsed"> <i
-									class="fas fa-list me-2"></i> Categories
+									class="fas fa-list me-2"></i> Danh Mục
 								</a>
 							</div>
 							<div class="form-group">
@@ -595,8 +599,10 @@
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
 										<img
-											src="https://cdn.tienphong.vn/images/a6bf4f60924201126af6849ca45a39808b6283cfdd1f6fb07a1a8b963257011e96442026333c44f987a53a4e0b9403d617fa1b88f89ce513c61754db6c019d42/215t7029-361.jpg"
-											alt="book">
+											src="${not empty b.image 
+    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(b.image)
+    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											alt="${b.title}">
 									</div>
 									<div class="bookmark-btn style-2">
 										<input class="form-check-input" type="checkbox"
@@ -623,7 +629,8 @@
 										</ul>
 										<div class="book-footer">
 											<div class="price">
-												<span class="price-num">${b.price}</span>
+												<span class="price-num"><fmt:formatNumber
+														value="${b.price}" pattern="#,###" />&#8363;</span>
 												<del>$12.0</del>
 											</div>
 											<a href="shop-cart.html"
