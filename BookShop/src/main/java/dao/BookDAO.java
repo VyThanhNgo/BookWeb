@@ -16,59 +16,51 @@ public class BookDAO {
 	//list books
     public List<Book> getAllBooks() {
         List<Book> list = new ArrayList<>();
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname " +
-                    "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        String sql = "SELECT b.*, " +
+                "c.category_id AS cid, c.category_name AS cname, " +
+                "a.author_id, a.author_name " +
+                "FROM books b " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "LEFT JOIN authors a ON b.author_id = a.author_id";
 
-            while(rs.next()) {
-                Book b = new Book();
-                b.setId(rs.getInt("book_id"));
-                b.setTitle(rs.getString("title"));
-                b.setPrice(rs.getDouble("price"));
-                
-                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
-                b.setCategory(cat);
-                
-                list.add(b);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapBook(rs));
             }
-        } catch(Exception e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
         return list;
     }
     
     // detail book
     public Book getBookById(int id) {
-        Book b = null;
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " +
-                    "FROM books b " +
-                    "LEFT JOIN categories c ON b.category_id = c.category_id " +
-                    "LEFT JOIN authors a ON b.author_id = a.author_id " +
-                    "WHERE b.book_id = ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
+        String sql = "SELECT b.*, c.category_id AS cid, c.category_name AS cname, " +
+                "a.author_id, a.author_name " +
+                "FROM books b " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "LEFT JOIN authors a ON b.author_id = a.author_id " +
+                "WHERE b.book_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            if(rs.next()) {
-                b = new Book();
-                b.setId(rs.getInt("book_id"));
-                b.setTitle(rs.getString("title"));
-                b.setPrice(rs.getDouble("price"));
-                b.setPublishYear(rs.getInt("publish_year"));
-                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
-                b.setCategory(cat);
-                Author author = new Author(rs.getInt("author_id"), rs.getString("author_name"));
-                b.setAuthor(author);
-                
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapBook(rs);
+                }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return b;
+        return null;
     }
     
     // list category
@@ -92,79 +84,122 @@ public class BookDAO {
     //search book
     public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice) {
         List<Book> list = new ArrayList<>();
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname " +
-                         "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id " +
-                         "WHERE 1=1";
-            if(keyword != null && !keyword.isEmpty())
-                sql += " AND b.title LIKE ?";
-            if(categoryIds != null && !categoryIds.isEmpty()) {
-                sql += " AND b.category_id IN (";
-                for(int j = 0; j < categoryIds.size(); j++) {
-                    sql += j == 0 ? "?" : ",?";
-                }
-                sql += ")";
-            }
-            if(minPrice != null)
-                sql += " AND b.price >= ?";
-            if(maxPrice != null)
-                sql += " AND b.price <= ?";
 
-            PreparedStatement ps = conn.prepareStatement(sql);
+        String sql = "SELECT b.*, " +
+                "c.category_id AS cid, c.category_name AS cname, " +
+                "a.author_id, a.author_name " +
+                "FROM books b " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "LEFT JOIN authors a ON b.author_id = a.author_id " +
+                "WHERE 1=1";
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " AND b.title LIKE ?";
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            sql += " AND b.category_id IN (";
+            for (int j = 0; j < categoryIds.size(); j++) {
+                sql += (j == 0 ? "?" : ",?");
+            }
+            sql += ")";
+        }
+
+        if (minPrice != null) {
+            sql += " AND b.price >= ?";
+        }
+
+        if (maxPrice != null) {
+            sql += " AND b.price <= ?";
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             int i = 1;
-            if(keyword != null && !keyword.isEmpty())
+
+            if (keyword != null && !keyword.isEmpty()) {
                 ps.setString(i++, "%" + keyword + "%");
-            if(categoryIds != null && !categoryIds.isEmpty()) {
-                for(Integer catId : categoryIds) {
+            }
+
+            if (categoryIds != null && !categoryIds.isEmpty()) {
+                for (Integer catId : categoryIds) {
                     ps.setInt(i++, catId);
                 }
             }
-            if(minPrice != null)
-                ps.setDouble(i++, minPrice);
-            if(maxPrice != null)
-                ps.setDouble(i++, maxPrice);
 
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()) {
-                Book b = new Book();
-                b.setId(rs.getInt("book_id"));
-                b.setTitle(rs.getString("title"));
-                b.setPrice(rs.getDouble("price"));
-                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
-                b.setCategory(cat);
-                list.add(b);
+            if (minPrice != null) {
+                ps.setDouble(i++, minPrice);
             }
-        } catch(Exception e) {
+
+            if (maxPrice != null) {
+                ps.setDouble(i++, maxPrice);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBook(rs));
+                }
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
         return list;
     }
-    
     // related book
     public List<Book> getRelatedBooks(int categoryId, int excludeBookId) {
         List<Book> list = new ArrayList<>();
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname " +
-                         "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id " +
-                         "WHERE b.category_id = ? AND b.book_id != ? LIMIT 3";
-            PreparedStatement ps = conn.prepareStatement(sql);
+
+        String sql = "SELECT b.*, " +
+                "c.category_id AS cid, c.category_name AS cname, " +
+                "a.author_id, a.author_name " +
+                "FROM books b " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "LEFT JOIN authors a ON b.author_id = a.author_id " +
+                "WHERE b.category_id = ? AND b.book_id != ? " +
+                "LIMIT 3";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, categoryId);
             ps.setInt(2, excludeBookId);
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()) {
-                Book b = new Book();
-                b.setId(rs.getInt("book_id"));
-                b.setTitle(rs.getString("title"));
-                b.setPrice(rs.getDouble("price"));
-                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
-                b.setCategory(cat);
-                list.add(b);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBook(rs));
+                }
             }
-        } catch(Exception e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
         return list;
+    }    private Book mapBook(ResultSet rs) throws Exception {
+        Book b = new Book();
+        b.setId(rs.getInt("book_id"));
+        b.setTitle(rs.getString("title"));
+        b.setPrice(rs.getDouble("price"));
+        b.setStock(rs.getInt("stock"));
+        b.setDescription(rs.getString("description"));
+        b.setImage(rs.getString("image"));
+        b.setPublishYear(rs.getInt("publish_year"));
+
+        int cid = rs.getInt("cid");
+        String cname = rs.getString("cname");
+        if (cname != null) {
+            b.setCategory(new Category(cid, cname));
+        }
+
+        int authorId = rs.getInt("author_id");
+        String authorName = rs.getString("author_name");
+        if (authorName != null) {
+            b.setAuthor(new Author(authorId, authorName));
+        }
+
+        return b;
     }
 }
