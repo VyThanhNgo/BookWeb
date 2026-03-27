@@ -633,9 +633,10 @@
 														value="${b.price}" pattern="#,###" />&#8363;</span>
 												<del>$12.0</del>
 											</div>
-											<a href="shop-cart.html"
-												class="btn btn-secondary box-btn btnhover btnhover2"><i
-												class="flaticon-shopping-cart-1 m-r10"></i> Add to cart</a>
+											<a href="${pageContext.request.contextPath}/cart?action=add&id=${b.id}"
+											   class="btn btn-secondary box-btn btnhover btnhover2">
+												<i class="flaticon-shopping-cart-1 m-r10"></i> Add To Cart
+											</a>
 										</div>
 									</div>
 								</div>

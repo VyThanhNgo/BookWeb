@@ -3,6 +3,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 <fmt:setLocale value="vi_VN"/>
 
 <%@ include file="/WEB-INF/views/base/header.jsp" %>
@@ -67,9 +68,20 @@
 											<h5><fmt:formatNumber value="${book.price}" pattern="#,###"/>&#8363;</h5>
 											<p class="p-lr10">$70.00</p>
 										</div>
-										<div class="product-num">
+										<form action="${ctx}/cart" method="post" class="product-num">
+											<input type="hidden" name="action" value="add">
+											<input type="hidden" name="id" value="${book.id}">
+
 											<div class="quantity btn-quantity style-1 me-3">
-												<div class="input-group bootstrap-touchspin"><span class="input-group-addon bootstrap-touchspin-prefix" style="display: none;"></span><input id="demo_vertical2" type="text" value="1" name="demo_vertical2" class="form-control" style="display: block;"><span class="input-group-addon bootstrap-touchspin-postfix" style="display: none;"></span><span class="input-group-btn-vertical"><button class="btn btn-default bootstrap-touchspin-up" type="button"><i class="ti-plus"></i></button><button class="btn btn-default bootstrap-touchspin-down" type="button"><i class="ti-minus"></i></button></span></div>
+												<div class="input-group bootstrap-touchspin">
+													<span class="input-group-addon bootstrap-touchspin-prefix" style="display: none;"></span>
+													<input id="demo_vertical2" type="text" value="1" name="quantity" class="form-control" style="display: block;">
+													<span class="input-group-addon bootstrap-touchspin-postfix" style="display: none;"></span>
+													<span class="input-group-btn-vertical">
+                <button class="btn btn-default bootstrap-touchspin-up" type="button"><i class="ti-plus"></i></button>
+                <button class="btn btn-default bootstrap-touchspin-down" type="button"><i class="ti-minus"></i></button>
+            </span>
+												</div>
 											</div>
 											<a href="shop-cart.html" class="btn btn-primary btnhover btnhover2"><i class="flaticon-shopping-cart-1"></i> <span>Thêm Vào Giỏ Hàng</span></a>
 											<div class="bookmark-btn style-1 d-none d-sm-block">
@@ -78,8 +90,7 @@
 													<i class="flaticon-heart"></i>
 												</label>
 											</div>
-										</div>
-									</div>
+										</form>									</div>
 								</div>
 							</div>
 						</div>
