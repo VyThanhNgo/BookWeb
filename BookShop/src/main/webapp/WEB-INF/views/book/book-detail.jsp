@@ -1,3 +1,6 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
@@ -11,7 +14,10 @@
 					<div class="col">
 						<div class="dz-box">
 							<div class="dz-media">
-								<img src="https://tse1.mm.bing.net/th/id/OIP.8625mdkok4pn8q1GhFvTwgHaIj?pid=Api&P=0&h=180" alt="book">
+								<img src="${not empty book.image 
+    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(book.image)
+    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											alt="${book.title}" style="aspect-ratio: 2 / 3; object-fit:cover; object-position: center;">
 							</div>
 							<div class="dz-content">
 								<div class="dz-header">
@@ -42,18 +48,21 @@
 										<ul class="book-info">
 											<li>
 												<div class="writer-info">
-													<img src="images/profile2.jpg" alt="book">
+													<img src="${not empty book.image 
+    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(book.image)
+    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											alt="${book.title}">
 													<div>
-														<span>Writen by</span>${book.author.name}
+														<span>Viết bới</span>${book.author.name}
 													</div>
 												</div>
 											</li>
-											<li><span>Publisher</span>Printarea Studios</li>
-											<li><span>Year</span>${book.publishYear}</li>
+											<li><span>Nhà xuất bản</span>Printarea Studios</li>
+											<li><span>Năm</span>${book.publishYear}</li>
 										</ul>
 									</div>
 									<p class="text-1">${book.description}</p>
-									<p class="text-2">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem</p>
+									
 									<div class="book-footer">
 										<div class="price">
 											<h5><fmt:formatNumber value="${book.price}" pattern="#,###"/>&#8363;</h5>
@@ -74,12 +83,7 @@
             </span>
 												</div>
 											</div>
-
-											<button type="submit" class="btn btn-primary btnhover btnhover2">
-												<i class="flaticon-shopping-cart-1"></i>
-												<span>Add to cart</span>
-											</button>
-
+											<a href="shop-cart.html" class="btn btn-primary btnhover btnhover2"><i class="flaticon-shopping-cart-1"></i> <span>Thêm Vào Giỏ Hàng</span></a>
 											<div class="bookmark-btn style-1 d-none d-sm-block">
 												<input class="form-check-input" type="checkbox" id="flexCheckDefault1">
 												<label class="form-check-label" for="flexCheckDefault1">
@@ -97,18 +101,18 @@
 					<div class="col-xl-8">
 						<div class="product-description tabs-site-button">
                             <ul class="nav nav-tabs">
-                                <li><a data-bs-toggle="tab" href="#graphic-design-1" class="">Details Product</a></li>
-                                <li><a data-bs-toggle="tab" href="#developement-1">Customer Reviews</a></li>
+                                <li><a data-bs-toggle="tab" href="#graphic-design-1" class="">Chi Tiết Sách</a></li>
+                                <li><a data-bs-toggle="tab" href="#developement-1">Đánh giá</a></li>
                             </ul>
 							<div class="tab-content">
 								<div id="graphic-design-1" class="tab-pane show active">
                                     <table class="table border book-overview">
                                         <tbody><tr>
-                                            <th>Book Title</th>
+                                            <th>Tiêu Đề</th>
                                             <td>${book.title}</td>
                                         </tr>
                                         <tr>
-                                            <th>Author</th>
+                                            <th>Tác Giả</th>
                                             <td>${book.author.name}</td>
                                         </tr>
                                         <tr>
@@ -116,23 +120,23 @@
                                             <td>121341381648 (ISBN13: 121341381648)</td>
                                         </tr>
 										<tr>
-                                            <th>Ediiton Language</th>
+                                            <th>Ngôn Ngữ</th>
                                             <td>English</td>
                                         </tr>
                                         <tr>
-                                            <th>Book Format</th>
+                                            <th>Hình Thức Sách</th>
                                             <td>Paperback, 450 Pages</td>
                                         </tr>
                                         <tr>
-                                            <th>Date Published</th>
+                                            <th>Ngày Xuất Bản</th>
                                             <td>August 10th 2019</td>
                                         </tr>
 										<tr>
-                                            <th>Publisher</th>
+                                            <th>Nhà Xuất Bản</th>
                                             <td>Wepress Inc.</td>
                                         </tr>
 										<tr>
-                                            <th>Pages</th>
+                                            <th>Số Trang</th>
                                             <td>520</td>
                                         </tr>
 										<tr>
@@ -258,13 +262,16 @@
 					</div>
 					<div class="col-xl-4 mt-5 mt-xl-0">
 						<div class="widget">
-							<h4 class="widget-title">Related Books</h4>
+							<h4 class="widget-title">CÓ THỂ BẠN CŨNG THÍCH</h4>
 							<div class="row">
 							<c:forEach var="rb" items="${relatedBooks}">
 								<div class="col-xl-12 col-lg-6">
 									<div class="dz-shop-card style-5">
 										<div class="dz-media">
-											<img src="https://tse1.mm.bing.net/th/id/OIP.8625mdkok4pn8q1GhFvTwgHaIj?pid=Api&P=0&h=180" alt="${rb.title}">
+											<img src="${not empty rb.image 
+    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(rb.image)
+    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											alt="${rb.title}">
 										</div>
 										<div class="dz-content">
 											<h5 class="subtitle"><a href="${pageContext.request.contextPath}/books/detail?id=${rb.id}">${rb.title}</a>
@@ -277,15 +284,8 @@
 												<span class="price-num"><fmt:formatNumber value="${rb.price}" pattern="#,###"/>&#8363;</span>
 												<del>$98.4</del>
 											</div>
-											<form action="${ctx}/cart" method="post" style="display:inline-block;">
-												<input type="hidden" name="action" value="add">
-												<input type="hidden" name="id" value="${rb.id}">
-												<input type="hidden" name="quantity" value="1">
-
-												<button type="submit" class="btn btn-outline-primary btn-sm btnhover btnhover2">
-													<i class="flaticon-shopping-cart-1 me-2"></i> Add to cart
-												</button>
-											</form>										</div>
+											<a href="shop-cart.html" class="btn btn-outline-primary btn-sm btnhover btnhover2"><i class="flaticon-shopping-cart-1 me-2"></i>Thêm Vào Giỏ Hàng</a>
+										</div>
 									</div>
 								</div>
 							</c:forEach>

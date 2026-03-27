@@ -25,7 +25,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
 
 <!-- PAGE TITLE HERE -->
-<title>${pageTitle != null ? pageTitle : 'BookShop'}</title>
+<title>${pageTitle != null ? pageTitle : 'Góc Sách'}</title>
 
 <!-- MOBILE SPECIFIC -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -219,7 +219,7 @@
 							<div class="input-group search-input">
 								<div class="dropdown bootstrap-select default-select">
 									<select class="default-select" name="categoryId">
-										<option value="">Category</option>
+										<option value="">Danh mục</option>
 										<c:forEach var="cat" items="${categories}">
 											<option value="${cat.id}">${cat.name}</option>
 										</c:forEach>
@@ -231,7 +231,7 @@
 										aria-expanded="false" title="Category">
 										<div class="filter-option">
 											<div class="filter-option-inner">
-												<div class="filter-option-inner-inner">Category</div>
+												<div class="filter-option-inner-inner">Danh mục</div>
 											</div>
 										</div>
 									</button>
@@ -244,7 +244,7 @@
 								</div>
 								<input type="text" name="keyword" class="form-control"
 									aria-label="Text input with dropdown button"
-									placeholder="Search Books Here" value="${keyword}"
+									placeholder="Nhập tên sách để tìm..." value="${keyword}"
 									fdprocessedid="4p8wu9">
 								<button class="btn" type="submit" fdprocessedid="1sapa">
 									<i class="flaticon-loupe"></i>
@@ -278,8 +278,7 @@
 						<!-- EXTRA NAV -->
 						<div class="extra-nav">
 							<div class="extra-cell">
-								<a href="contact-us.html" class="btn btn-primary btnhover">Get
-									In Touch</a>
+								<a href="contact-us.html" class="btn btn-primary btnhover">Liên Hệ Ngay</a>
 							</div>
 						</div>
 
