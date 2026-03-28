@@ -14,9 +14,7 @@
 					<div class="col">
 						<div class="dz-box">
 							<div class="dz-media">
-								<img src="${not empty book.image 
-    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(book.image)
-    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+								<img src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
 											alt="${book.title}" style="aspect-ratio: 2 / 3; object-fit:cover; object-position: center;">
 							</div>
 							<div class="dz-content">
@@ -268,9 +266,7 @@
 								<div class="col-xl-12 col-lg-6">
 									<div class="dz-shop-card style-5">
 										<div class="dz-media">
-											<img src="${not empty rb.image 
-    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(rb.image)
-    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											<img src="${not empty rb.image ? rb.image : ctx.concat('/assets/images/books/default-book.png')}"
 											alt="${rb.title}">
 										</div>
 										<div class="dz-content">
