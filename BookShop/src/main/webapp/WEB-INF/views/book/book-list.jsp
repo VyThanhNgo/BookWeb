@@ -599,9 +599,7 @@
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
 										<img
-											src="${not empty b.image 
-    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(b.image)
-    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											src="${not empty b.image ? b.image : ctx.concat('/assets/images/books/default-book.png')}"
 											alt="${b.title}">
 									</div>
 									<div class="bookmark-btn style-2">

@@ -9,25 +9,46 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
 import java.nio.file.*;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import java.util.Map;
 
 @WebServlet("/admin/books")
 @MultipartConfig(
-    fileSizeThreshold = 1024 * 1024,      // 1MB
-    maxFileSize       = 1024 * 1024 * 5,  // 5MB
-    maxRequestSize    = 1024 * 1024 * 10  // 10MB
+    fileSizeThreshold = 1024 * 1024,      //  file nhỏ hơn 1MB thì lưu tạm vào RAM, lớn hơn thì ghi ra ổ đĩa tạm. Tránh tốn RAM khi upload file lớn.
+    maxFileSize       = 1024 * 1024 * 5,  // giới hạn 1 file tối đa 5MB. Upload file lớn hơn sẽ báo lỗi.
+    maxRequestSize    = 1024 * 1024 * 10  //  giới hạn toàn bộ request tối đa 10MB. Nếu form có nhiều file thì tổng dung lượng không vượt quá 10MB.
 )
 public class BookAdminServlet extends HttpServlet {
 
+	private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+	        "cloud_name", "dqiefayjh", 
+	        "api_key", "496728741237697", 
+	        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", // Thay bằng API Secret thực tế
+	        "secure", true
+	    ));
+	
     private String saveImage(Part filePart) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" +     //thêm  tên unique tránh không trùng 
-            Paths.get(filePart.getSubmittedFileName()).getFileName().toString();   // tên gốc of image
-        String uploadDir = getServletContext().getRealPath("") +   //đường dẫn lưu image
-            File.separator + "assets" +
-            File.separator + "images" +
-            File.separator + "books";
-        
-        filePart.write(uploadDir + File.separator + fileName);  //luu ảnh
-        return fileName;
+    	try (InputStream is = filePart.getInputStream();
+    	         ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+    	        
+    	        // Chuyển file thành mảng Byte
+    	        byte[] buffer = new byte[1024];
+    	        int len;
+    	        while ((len = is.read(buffer)) != -1) {
+    	            os.write(buffer, 0, len);
+    	        }
+    	        
+    	        // Upload lên Cloudinary vào thư mục tên là 'books'
+    	        Map uploadResult = cloudinary.uploader().upload(os.toByteArray(), 
+    	            ObjectUtils.asMap("folder", "books"));
+    	            
+    	        // Trả về link URL (Ví dụ: https://res.cloudinary.com/...)
+    	        return (String) uploadResult.get("url"); 
+    	    } catch (Exception e) {
+    	        e.printStackTrace();
+    	        return null;
+    	    }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -50,20 +71,7 @@ public class BookAdminServlet extends HttpServlet {
         } else if ("delete".equals(action)) {
             int bookId = Integer.parseInt(request.getParameter("id"));
 
-            // Xóa ảnh vật lý trên server luôn (nếu có)
-            Book book = dao.getBookById(bookId);
-            if (book != null && book.getImage() != null && !book.getImage().isEmpty()) {
-                String imagePath = getServletContext().getRealPath("") +
-                    File.separator + "assets" +
-                    File.separator + "images" +
-                    File.separator + "books" +
-                    File.separator + book.getImage();
-                File imageFile = new File(imagePath);
-                if (imageFile.exists()) {
-                    imageFile.delete();
-                }
-            }
-
+          
             dao.deleteBook(bookId);
             response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
 
@@ -92,14 +100,14 @@ public class BookAdminServlet extends HttpServlet {
             String description = request.getParameter("description");
             int stock          = Integer.parseInt(request.getParameter("stock"));
 
-            String fileName = null;
+            String imageUrl = null;
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                fileName = saveImage(filePart);
+                imageUrl = saveImage(filePart);
             }
 
             dao.addBook(title, price, categoryId, authorId,
-                        publishYear, description, stock, fileName);
+                        publishYear, description, stock, imageUrl);
 
             response.sendRedirect(request.getContextPath() + "/admin/books?success=added");
 
@@ -115,14 +123,14 @@ public class BookAdminServlet extends HttpServlet {
             int stock          = Integer.parseInt(request.getParameter("stock"));
 
             // Giữ ảnh cũ nếu không upload ảnh mới
-            String fileName = request.getParameter("oldImage");
+            String imageUrl = request.getParameter("oldImage");
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                fileName = saveImage(filePart); // ghi đè ảnh mới
+                imageUrl = saveImage(filePart); // ghi đè ảnh mới
             }
 
             dao.updateBook(bookId, title, price, categoryId, authorId,
-                           publishYear, description, stock, fileName);
+                           publishYear, description, stock, imageUrl);
 
             response.sendRedirect(request.getContextPath() + "/admin/books?success=updated");
         }

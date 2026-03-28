@@ -94,9 +94,7 @@
 					<tr>
 						<td>${b.id}</td>
 						<td><img
-							src="${not empty b.image 
-                ? pageContext.request.contextPath.concat('/assets/images/books/').concat(b.image)
-                : pageContext.request.contextPath.concat('/assets/images/default-book.jpg')}"
+							src="${not empty b.image ? b.image : ctx.concat('/assets/images/books/default-book.png')}"
 							style="width: 50px; height: 65px; object-fit: cover;"></td>
 						<td>${b.title}</td>
 						<td>${b.price}</td>
