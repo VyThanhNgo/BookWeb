@@ -94,7 +94,7 @@ public class BookDAO {
 	}
 
 	// search book
-	public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice) {
+	public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice, String sort) {
 		List<Book> list = new ArrayList<>();
 		try {
 			Connection conn = DBConnection.getConnection();
@@ -113,6 +113,17 @@ public class BookDAO {
 				sql += " AND b.price >= ?";
 			if (maxPrice != null)
 				sql += " AND b.price <= ?";
+			
+			if ("name_asc".equals(sort))
+	            sql += " ORDER BY b.title ASC";
+	        else if ("name_desc".equals(sort))
+	            sql += " ORDER BY b.title DESC";
+	        else if ("price_asc".equals(sort))
+	            sql += " ORDER BY b.price ASC";
+	        else if ("price_desc".equals(sort))
+	            sql += " ORDER BY b.price DESC";
+	        else
+	            sql += " ORDER BY b.book_id DESC"; // mặc định: mới nhất
 
 			PreparedStatement ps = conn.prepareStatement(sql);
 			int i = 1;
