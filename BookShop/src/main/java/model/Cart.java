@@ -1,15 +1,22 @@
-package main.java.model;
+package model;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Cart {
-    private Map<Integer, CartItem> items = new HashMap<>();
+    private final Map<Integer, CartItem> items = new LinkedHashMap<>();
 
     public void addItem(CartItem item) {
+        if (item == null) return;
+
+        int quantity = item.getQuantity() <= 0 ? 1 : item.getQuantity();
+
         if (items.containsKey(item.getBookId())) {
             CartItem existing = items.get(item.getBookId());
-            existing.setQuantity(existing.getQuantity() + item.getQuantity());
+            existing.setQuantity(existing.getQuantity() + quantity);
         } else {
+            item.setQuantity(quantity);
             items.put(item.getBookId(), item);
         }
     }
@@ -19,7 +26,11 @@ public class Cart {
     }
 
     public void updateItem(int bookId, int quantity) {
-        if (items.containsKey(bookId)) {
+        if (!items.containsKey(bookId)) return;
+
+        if (quantity <= 0) {
+            items.remove(bookId);
+        } else {
             items.get(bookId).setQuantity(quantity);
         }
     }
@@ -34,5 +45,21 @@ public class Cart {
             total += item.getTotal();
         }
         return total;
+    }
+
+    public int getTotalItems() {
+        int total = 0;
+        for (CartItem item : items.values()) {
+            total += item.getQuantity();
+        }
+        return total;
+    }
+
+    public boolean isEmpty() {
+        return items.isEmpty();
+    }
+
+    public void clear() {
+        items.clear();
     }
 }

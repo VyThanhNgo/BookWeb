@@ -1,4 +1,8 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<fmt:setLocale value="vi_VN" />
 
 <%@ include file="/WEB-INF/views/base/header.jsp"%>
 
@@ -12,9 +16,10 @@
 						<input type="hidden" name="keyword" value="${keyword}"> <input
 							type="hidden" name="minPrice" id="minPriceInput"> <input
 							type="hidden" name="maxPrice" id="maxPriceInput">
+						<input type="hidden" name="sort" id="sortInput" value="${param.sort}">
 						<div class="shop-filter">
 							<div class="d-flex justify-content-between">
-								<h4 class="title">Filter Option</h4>
+								<h4 class="title">Lựa chọn lọc</h4>
 								<a href="javascript:void(0);" class="panel-close-btn"><i
 									class="flaticon-close"></i></a>
 							</div>
@@ -24,7 +29,7 @@
 									<button class="accordion-button" id="headingFive" type="button"
 										data-bs-toggle="collapse" data-bs-target="#collapseFive"
 										aria-expanded="false" aria-controls="collapseFive"
-										fdprocessedid="87d6rq">Price Range</button>
+										fdprocessedid="87d6rq">Mức giá</button>
 									<div id="collapseFive"
 										class="accordion-collapse collapse accordion-body show"
 										aria-labelledby="headingFive"
@@ -66,7 +71,7 @@
 									<button class="accordion-button" id="headingOne" type="button"
 										data-bs-toggle="collapse" data-bs-target="#collapseOne"
 										aria-expanded="true" aria-controls="collapseOne"
-										fdprocessedid="w8693ls">Shop by Category</button>
+										fdprocessedid="w8693ls">Chọn danh mục</button>
 									<div id="collapseOne"
 										class="accordion-collapse collapse show accordion-body"
 										aria-labelledby="headingOne"
@@ -461,7 +466,7 @@
 				</div>
 				<div class="col-xl-9">
 					<div class="d-flex justify-content-between align-items-center">
-						<h4 class="title">Books</h4>
+						<h4 class="title">Sách</h4>
 						<a href="javascript:void(0);" class="btn btn-primary panel-btn">Filter</a>
 					</div>
 					<div class="filter-area m-b30">
@@ -515,24 +520,11 @@
 							</div>
 						</div>
 						<div class="category">
-							<div class="filter-category">
-								<a data-bs-toggle="collapse" href="#collapseExample"
-									role="button" aria-expanded="false"
-									aria-controls="collapseExample" class="collapsed"> <i
-									class="fas fa-list me-2"></i> Categories
-								</a>
-							</div>
+
 							<div class="form-group">
 								<i class="fas fa-sort-amount-down me-2 text-secondary"></i>
 								<div class="dropdown bootstrap-select default-select dropup">
-									<select class="default-select" tabindex="null">
-										<option>Newest</option>
-										<option>1 Day</option>
-										<option>1 Week</option>
-										<option>3 Weeks</option>
-										<option>1 Month</option>
-										<option>3 Months</option>
-									</select>
+									
 									<button type="button" tabindex="-1"
 										class="btn dropdown-toggle btn-light"
 										data-bs-toggle="dropdown" role="combobox"
@@ -540,7 +532,7 @@
 										aria-expanded="false" title="Newest">
 										<div class="filter-option">
 											<div class="filter-option-inner">
-												<div class="filter-option-inner-inner">Newest</div>
+												<div class="filter-option-inner-inner">Sắp xếp</div>
 											</div>
 										</div>
 									</button>
@@ -554,22 +546,17 @@
 												<li class="selected active"><a role="option"
 													class="dropdown-item active selected" id="bs-select-2-0"
 													tabindex="0" aria-setsize="6" aria-posinset="1"
-													aria-selected="true"><span class="text">Newest</span></a></li>
+													aria-selected="true"><span class="text">Nổi bật</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-1" tabindex="0"><span class="text">1
-															Day</span></a></li>
+													id="bs-select-2-1" tabindex="0"><span class="text">Nổi bật</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-2" tabindex="0"><span class="text">1
-															Week</span></a></li>
+													id="bs-select-2-2" tabindex="0"><span class="text">Tên: A → Z</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-3" tabindex="0"><span class="text">3
-															Weeks</span></a></li>
+													id="bs-select-2-3" tabindex="0"><span class="text">Tên: Z → A</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-4" tabindex="0"><span class="text">1
-															Month</span></a></li>
+													id="bs-select-2-4" tabindex="0"><span class="text">Giá: Thấp → Cao</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-5" tabindex="0"><span class="text">3
-															Months</span></a></li>
+													id="bs-select-2-5" tabindex="0"><span class="text">Giá: Cao → Thấp</span></a></li>
 											</ul>
 										</div>
 									</div>
@@ -577,26 +564,15 @@
 							</div>
 						</div>
 					</div>
-					<div class="acod-content collapse" id="collapseExample" style="">
-						<div class="widget widget_services style-2">
-							<c:forEach var="cat" items="${categories}">
-								<div class="form-check search-content">
-									<input class="form-check-input" type="checkbox"
-										value="${cat.id}" id="cat${cat.id}"> <label
-										class="form-check-label" for="cat${cat.id}">
-										${cat.name} </label>
-								</div>
-							</c:forEach>
-						</div>
-					</div>
+
 					<div class="row book-grid-row">
 						<c:forEach var="b" items="${books}">
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
 										<img
-											src="https://cdn.tienphong.vn/images/a6bf4f60924201126af6849ca45a39808b6283cfdd1f6fb07a1a8b963257011e96442026333c44f987a53a4e0b9403d617fa1b88f89ce513c61754db6c019d42/215t7029-361.jpg"
-											alt="book">
+											src="${not empty b.image ? b.image : ctx.concat('/assets/images/books/default-book.png')}"
+											alt="${b.title}">
 									</div>
 									<div class="bookmark-btn style-2">
 										<input class="form-check-input" type="checkbox"
@@ -623,12 +599,15 @@
 										</ul>
 										<div class="book-footer">
 											<div class="price">
-												<span class="price-num">${b.price}</span>
+												<span class="price-num"><fmt:formatNumber
+														value="${b.price}" pattern="#,###" />&#8363;</span>
 												<del>$12.0</del>
 											</div>
-											<a href="shop-cart.html"
-												class="btn btn-secondary box-btn btnhover btnhover2"><i
-												class="flaticon-shopping-cart-1 m-r10"></i> Add to cart</a>
+											<a
+												href="${pageContext.request.contextPath}/cart?action=add&id=${b.id}"
+												class="btn btn-secondary box-btn btnhover btnhover2"> <i
+												class="flaticon-shopping-cart-1 m-r10"></i> Add To Cart
+											</a>
 										</div>
 									</div>
 								</div>
@@ -792,4 +771,141 @@
 
 </div>
 
+<!-- css hiện đều sách -->
+<style>
+/* Cố định chiều cao card */
+.dz-shop-card.style-1 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cố định chiều cao và tỷ lệ ảnh bìa */
+.dz-shop-card.style-1 .dz-media {
+    height: 280px;
+    overflow: hidden;
+}
+
+.dz-shop-card.style-1 .dz-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Phần nội dung chiếm hết phần còn lại */
+.dz-shop-card.style-1 .dz-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Đẩy footer (giá + nút) xuống dưới cùng */
+.dz-shop-card.style-1 .book-footer {
+    margin-top: auto;
+}
+
+/* Đảm bảo các col-book cùng chiều cao */
+.book-grid-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.book-grid-row .col-book {
+    display: flex;
+    flex-direction: column;
+}
+</style>
+
+<!-- css hiện giá -->
+<style>
+/* Reset position absolute của book-footer */
+.dz-shop-card.style-1 .dz-content .book-footer {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    padding-bottom: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    margin-top: auto;
+}
+
+/* Ẩn nút bằng display:none */
+.dz-shop-card.style-1 .dz-content .book-footer .btn {
+    display: none !important;
+}
+
+/* Hover mới hiện nút */
+.dz-shop-card.style-1:hover .dz-content .book-footer .btn {
+    display: inline-flex !important;
+}
+
+/* Card layout */
+.dz-shop-card.style-1 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.dz-shop-card.style-1 .dz-media {
+    height: 280px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.dz-shop-card.style-1 .dz-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dz-shop-card.style-1 .dz-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 15px;
+}
+
+.book-grid-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.book-grid-row .col-book {
+    display: flex;
+    flex-direction: column;
+}
+</style>
+
+<!-- sort sách -->
+<script>
+document.querySelectorAll('.dropdown-item[id^="bs-select-2-"]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        // Map text -> value
+        var map = {
+            'Nổi bật': 'featured',
+            'Tên: A → Z': 'name_asc',
+            'Tên: Z → A': 'name_desc',
+            'Giá: Thấp → Cao': 'price_asc',
+            'Giá: Cao → Thấp': 'price_desc'
+        };
+
+        var text = this.querySelector('.text').textContent.trim();
+        var value = map[text] || 'featured';
+
+        // Cập nhật label hiển thị
+        document.querySelector('.filter-option-inner-inner').textContent = text;
+
+        // Set giá trị vào hidden input trong filterForm
+        document.getElementById('sortInput').value = value;
+
+        // Submit form
+        document.getElementById('filterForm').submit();
+    });
+});
+</script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

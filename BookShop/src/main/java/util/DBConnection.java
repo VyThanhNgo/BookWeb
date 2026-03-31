@@ -5,9 +5,13 @@ import java.sql.DriverManager;
 
 public class DBConnection {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/bookstore";
+	private static final String URL = "jdbc:mysql://localhost:3306/bookstore";
     private static final String USER = "root";
     private static final String PASSWORD = "1234";
+//    private static final String URL =
+//            "jdbc:mysql://localhost:3306/bookstore?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8";
+//    private static final String USER = "bookuser";
+//    private static final String PASSWORD = "123456";
 
     public static Connection getConnection() {
         Connection conn = null;
