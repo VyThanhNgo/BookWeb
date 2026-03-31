@@ -22,6 +22,7 @@ public class BookServlet extends HttpServlet {
         BookDAO dao = new BookDAO();
 
         String keyword = request.getParameter("keyword");
+        String sort = request.getParameter("sort");
         
         String[] catIds = request.getParameterValues("categoryId");
         List<Integer> categoryIds = null;
@@ -41,9 +42,11 @@ public class BookServlet extends HttpServlet {
         if((keyword != null && !keyword.isEmpty()) || 
            (categoryIds != null && !categoryIds.isEmpty()) ||
            (minPrice != null) || (maxPrice != null))
-            list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice);
+            list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice, sort);
+
         else
-            list = dao.getAllBooks();
+            list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice, sort);
+
 
         List<Category> categories = dao.getAllCategories();
 
