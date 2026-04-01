@@ -494,7 +494,8 @@
 
 					<div class="row page mt-0">
 						<div class="col-md-6">
-							<p class="page-text">Showing 12 from 50 data</p>
+							<p class="page-text">Hiển thị ${books.size()} / ${totalBooks}
+								sách</p>
 						</div>
 						<div class="col-md-6">
 							<nav aria-label="Blog Pagination">

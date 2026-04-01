@@ -31,6 +31,13 @@
 											</ul>
 											<h6 class="m-b0">4.0</h6>
 										</div>
+										<!-- Tim -->
+        <div class="bookmark-btn style-1">
+            <input class="form-check-input" type="checkbox" id="flexCheckDefault1">
+            <label class="form-check-label" for="flexCheckDefault1">
+                <i class="flaticon-heart"></i>
+            </label>
+        </div>
 										<div class="social-area">
 											<ul class="dz-social-icon style-3">
 												<li><a href="https://www.facebook.com/dexignzone" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
@@ -46,10 +53,8 @@
 										<ul class="book-info">
 											<li>
 												<div class="writer-info">
-													<img src="${not empty book.image 
-    ? pageContext.request.contextPath.concat('/assets/images/books/').concat(book.image)
-    : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
-											alt="${book.title}">
+													<img src="${not empty book.author.image ? book.author.image : ctx.concat('/assets/images/authors/default-author.png')}"
+     alt="${book.author.name}">
 													<div>
 														<span>Viết bới</span>${book.author.name}
 													</div>
@@ -61,34 +66,50 @@
 									</div>
 									<p class="text-1">${book.description}</p>
 									
-									<div class="book-footer">
-										<div class="price">
-											<h5><fmt:formatNumber value="${book.price}" pattern="#,###"/>&#8363;</h5>
-											<p class="p-lr10">$70.00</p>
-										</div>
-										<form action="${ctx}/cart" method="post" class="product-num">
-											<input type="hidden" name="action" value="add">
-											<input type="hidden" name="id" value="${book.id}">
+									<div class="book-footer" style="flex-direction: column; align-items: flex-start;">
 
-											<div class="quantity btn-quantity style-1 me-3">
-												<div class="input-group bootstrap-touchspin">
-													<span class="input-group-addon bootstrap-touchspin-prefix" style="display: none;"></span>
-													<input id="demo_vertical2" type="text" value="1" name="quantity" class="form-control" style="display: block;">
-													<span class="input-group-addon bootstrap-touchspin-postfix" style="display: none;"></span>
-													<span class="input-group-btn-vertical">
-                <button class="btn btn-default bootstrap-touchspin-up" type="button"><i class="ti-plus"></i></button>
-                <button class="btn btn-default bootstrap-touchspin-down" type="button"><i class="ti-minus"></i></button>
-            </span>
-												</div>
-											</div>
-											<a href="shop-cart.html" class="btn btn-primary btnhover btnhover2"><i class="flaticon-shopping-cart-1"></i> <span>Thêm Vào Giỏ Hàng</span></a>
-											<div class="bookmark-btn style-1 d-none d-sm-block">
-												<input class="form-check-input" type="checkbox" id="flexCheckDefault1">
-												<label class="form-check-label" for="flexCheckDefault1">
-													<i class="flaticon-heart"></i>
-												</label>
-											</div>
-										</form>									</div>
+    <!-- Dòng 1: Giá -->
+									<div class="price"
+										style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+										<h5 style="margin: 0;">
+											<fmt:formatNumber value="${book.price}" pattern="#,###" />
+											&#8363;
+										</h5>
+										<p class="p-lr10" style="margin: 0;">$70.00</p>
+									</div>
+
+									<form action="${ctx}/cart" method="post">
+        <input type="hidden" name="id" value="${book.id}">
+
+        <!-- Dòng 2: Label + Số lượng -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <span style="font-weight:500; color:#555;">Số Lượng</span>
+            <div style="display:flex; align-items:center; border:1px solid #ddd; border-radius:4px; overflow:hidden;">
+                <button type="button" onclick="changeQty(${book.id}, -1)"
+                        style="width:36px; height:40px; border:none; background:#fff; font-size:18px; cursor:pointer; color:#555;">−</button>
+                <input id="qty${book.id}" type="text" value="1" name="quantity"
+                       style="width:50px; height:40px; border:none; border-left:1px solid #ddd; border-right:1px solid #ddd; text-align:center; font-size:15px;">
+                <button type="button" onclick="changeQty(${book.id}, 1)"
+                        style="width:36px; height:40px; border:none; background:#fff; font-size:18px; cursor:pointer; color:#555;">+</button>
+            </div>
+        </div>
+
+        <!-- Dòng 3: 2 nút -->
+        <div style="display:flex; gap:12px; align-items:center;">
+            <button type="submit" name="action" value="add"
+                    class="btn btn-outline-primary btnhover btnhover2"
+                    style="padding: 10px 24px;">
+                <i class="flaticon-shopping-cart-1 me-2"></i>Thêm Vào Giỏ Hàng
+            </button>
+            <button type="submit" name="action" value="buy"
+                    class="btn btn-primary btnhover btnhover2"
+                    style="padding: 10px 24px;">
+                Mua Ngay
+            </button>
+        </div>
+
+    </form>
+</div>
 								</div>
 							</div>
 						</div>
@@ -395,4 +416,14 @@
 		</section>
 		<!-- Newsletter End -->
 	</div>
+	
+	<!-- js số lượng -->
+<script>
+function changeQty(bookId, delta) {
+    const input = document.getElementById('qty' + bookId);
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    input.value = val;
+}
+</script>
 		<%@ include file="/WEB-INF/views/base/footer.jsp" %>
