@@ -27,6 +27,29 @@ public class CartServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
+        HttpSession session = request.getSession();
+        Cart cart = getOrCreateCart(session);
+
+        String action = request.getParameter("action");
+        String ctx = request.getContextPath();
+
+        if ("remove".equals(action)) {
+            try {
+                int bookId = Integer.parseInt(request.getParameter("id"));
+                cart.removeItem(bookId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            String referer = request.getHeader("referer");
+            if (referer != null && !referer.isEmpty()) {
+                response.sendRedirect(referer);
+            } else {
+                response.sendRedirect(ctx + "/cart");
+            }
+            return;
+        }
+
         BookDAO dao = new BookDAO();
         request.setAttribute("categories", dao.getAllCategories());
         request.setAttribute("pageTitle", "Giỏ hàng");
@@ -62,12 +85,25 @@ public class CartServlet extends HttpServlet {
                             book.getId(),
                             book.getTitle(),
                             book.getPrice(),
-                            quantity
+                            quantity,
+                            book.getImage()
                     );
                     cart.addItem(item);
                 }
 
-                response.sendRedirect(ctx + "/cart");
+                String requestedWith = request.getHeader("X-Requested-With");
+                if ("XMLHttpRequest".equals(requestedWith)) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":true,\"totalItems\":" + cart.getTotalItems() + "}");
+                    return;
+                }
+
+                String referer = request.getHeader("referer");
+                if (referer != null && !referer.isEmpty()) {
+                    response.sendRedirect(referer);
+                } else {
+                    response.sendRedirect(ctx + "/books");
+                }
                 return;
             }
 
@@ -101,6 +137,5 @@ public class CartServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        response.sendRedirect(ctx + "/cart");
-    }
+        response.sendRedirect(request.getHeader("referer"));    }
 }
