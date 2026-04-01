@@ -5,14 +5,16 @@ public class CartItem {
     private String title;
     private double price;
     private int quantity;
+    private String image;
 
     public CartItem() {}
 
-    public CartItem(int bookId, String title, double price, int quantity) {
+    public CartItem(int bookId, String title, double price, int quantity, String image) {
         this.bookId = bookId;
         this.title = title;
         this.price = price;
         this.quantity = quantity;
+        this.image = image;
     }
 
     public double getTotal() {
@@ -30,4 +32,7 @@ public class CartItem {
 
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
 }

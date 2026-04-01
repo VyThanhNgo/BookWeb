@@ -93,27 +93,26 @@
 													d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path>
 										</svg>
 
-										<span class="badge">
-            <c:choose>
-				<c:when test="${sessionScope.cart != null}">
-					${sessionScope.cart.totalItems}
-				</c:when>
-				<c:otherwise>0</c:otherwise>
-			</c:choose>
-        </span>
-									</button>
+										<span class="badge" id="cart-badge">
+    <c:choose>
+		<c:when test="${sessionScope.cart != null}">
+			${sessionScope.cart.totalItems}
+		</c:when>
+		<c:otherwise>0</c:otherwise>
+	</c:choose>
+</span>									</button>
 
-									<ul class="dropdown-menu cart-list dropdown-menu-end">
-										<c:choose>
+									<ul class="dropdown-menu cart-list dropdown-menu-end" id="mini-cart-list">										<c:choose>
 											<c:when test="${sessionScope.cart != null && not empty sessionScope.cart.items}">
 												<c:forEach var="ci" items="${sessionScope.cart.items}">
 													<li class="cart-item">
 														<div class="media">
 															<div class="media-left">
 																<div class="mini-cart-thumb">
-																	<i class="fas fa-book"></i>
-																</div>
-															</div>
+																	<img src="${not empty ci.image ? ci.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+																		 alt="${ci.title}"
+																		 style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
+																</div>															</div>
 															<div class="media-body">
 																<h6 class="dz-title">
 																	<a href="${pageContext.request.contextPath}/books/detail?id=${ci.bookId}"
@@ -382,7 +381,7 @@
 													</ul></li>
 											</ul></li>
 									</ul></li>
-								
+
 								<li><a href="contact-us.html">Liên hệ</a></li>
 							</ul>
 
@@ -403,6 +402,35 @@
 				</div>
 			</div>
 			<!-- Main Header End -->
+			<script>
+				function updateMiniCartUI(item) {
+					const list = document.getElementById('mini-cart-list');
 
+					if (!list) return;
+
+					// ❌ Xóa "Giỏ hàng đang trống"
+					const empty = list.querySelector('.cart-item p');
+					if (empty) list.innerHTML = '';
+
+					// ✅ Tạo item mới
+					const html = `
+        <li class="cart-item">
+            <div class="media">
+                <div class="media-left">
+                    <div class="mini-cart-thumb">
+                        <img src="${item.image}" style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
+                    </div>
+                </div>
+                <div class="media-body">
+                    <h6 class="dz-title">${item.title}</h6>
+                    <span class="dz-price">${item.price} đ x 1</span>
+                </div>
+            </div>
+        </li>
+    `;
+
+					list.insertAdjacentHTML('afterbegin', html);
+				}
+			</script>
 		</header>
 		<!-- Header End -->
