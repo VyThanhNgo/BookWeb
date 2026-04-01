@@ -15,8 +15,8 @@
 						action="${pageContext.request.contextPath}/books" method="get">
 						<input type="hidden" name="keyword" value="${keyword}"> <input
 							type="hidden" name="minPrice" id="minPriceInput"> <input
-							type="hidden" name="maxPrice" id="maxPriceInput">
-						<input type="hidden" name="sort" id="sortInput" value="${param.sort}">
+							type="hidden" name="maxPrice" id="maxPriceInput"> <input
+							type="hidden" name="sort" id="sortInput" value="${param.sort}">
 						<div class="shop-filter">
 							<div class="d-flex justify-content-between">
 								<h4 class="title">Lựa chọn lọc</h4>
@@ -524,7 +524,7 @@
 							<div class="form-group">
 								<i class="fas fa-sort-amount-down me-2 text-secondary"></i>
 								<div class="dropdown bootstrap-select default-select dropup">
-									
+
 									<button type="button" tabindex="-1"
 										class="btn dropdown-toggle btn-light"
 										data-bs-toggle="dropdown" role="combobox"
@@ -548,15 +548,20 @@
 													tabindex="0" aria-setsize="6" aria-posinset="1"
 													aria-selected="true"><span class="text">Nổi bật</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-1" tabindex="0"><span class="text">Nổi bật</span></a></li>
+													id="bs-select-2-1" tabindex="0"><span class="text">Nổi
+															bật</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-2" tabindex="0"><span class="text">Tên: A → Z</span></a></li>
+													id="bs-select-2-2" tabindex="0"><span class="text">Tên:
+															A → Z</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-3" tabindex="0"><span class="text">Tên: Z → A</span></a></li>
+													id="bs-select-2-3" tabindex="0"><span class="text">Tên:
+															Z → A</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-4" tabindex="0"><span class="text">Giá: Thấp → Cao</span></a></li>
+													id="bs-select-2-4" tabindex="0"><span class="text">Giá:
+															Thấp → Cao</span></a></li>
 												<li><a role="option" class="dropdown-item"
-													id="bs-select-2-5" tabindex="0"><span class="text">Giá: Cao → Thấp</span></a></li>
+													id="bs-select-2-5" tabindex="0"><span class="text">Giá:
+															Cao → Thấp</span></a></li>
 											</ul>
 										</div>
 									</div>
@@ -617,21 +622,57 @@
 					</div>
 					<div class="row page mt-0">
 						<div class="col-md-6">
-							<p class="page-text">Showing 12 from 50 data</p>
+							<p class="page-text">Hiển thị ${books.size()} / ${totalBooks}
+								sách</p>
 						</div>
 						<div class="col-md-6">
 							<nav aria-label="Blog Pagination">
 								<ul class="pagination style-1 p-t20">
-									<li class="page-item"><a class="page-link prev"
-										href="javascript:void(0);">Prev</a></li>
-									<li class="page-item"><a class="page-link active"
-										href="javascript:void(0);">1</a></li>
-									<li class="page-item"><a class="page-link"
-										href="javascript:void(0);">2</a></li>
-									<li class="page-item"><a class="page-link"
-										href="javascript:void(0);">3</a></li>
-									<li class="page-item"><a class="page-link next"
-										href="javascript:void(0);">Next</a></li>
+								<%-- Prev --%>
+									<li class="page-item ${currentPage == 1 ? 'disabled' : ''}"><a
+										class="page-link prev"
+										href="${pageContext.request.contextPath}/books?page=${currentPage - 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">&#10094;</a></li>
+									 <%-- Trang 1 luôn hiện --%>
+                <li class="page-item">
+                    <a class="page-link ${currentPage == 1 ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/books?page=1&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">1</a>
+                </li>
+
+                <%-- Dấu ... đầu nếu currentPage > 3 --%>
+                <c:if test="${currentPage > 3}">
+                    <li class="page-item disabled"><a class="page-link">...</a></li>
+                </c:if>
+
+                <%-- Các trang xung quanh currentPage --%>
+                <c:forEach begin="2" end="${totalPages - 1}" var="i">
+                    <c:if test="${i >= currentPage - 1 && i <= currentPage + 1}">
+                        <li class="page-item">
+                            <a class="page-link ${i == currentPage ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/books?page=${i}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${i}</a>
+                        </li>
+                    </c:if>
+                </c:forEach>
+
+                <%-- Dấu ... cuối nếu currentPage < totalPages - 2 --%>
+                <c:if test="${currentPage < totalPages - 2}">
+                    <li class="page-item disabled"><a class="page-link">...</a></li>
+                </c:if>
+
+                <%-- Trang cuối luôn hiện --%>
+                <c:if test="${totalPages > 1}">
+                    <li class="page-item">
+                        <a class="page-link ${currentPage == totalPages ? 'active' : ''}"
+                           href="${pageContext.request.contextPath}/books?page=${totalPages}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${totalPages}</a>
+                    </li>
+                </c:if>
+
+                <%-- Next --%>
+                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                    <a class="page-link next"
+                       href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">
+                        &#10095;
+                    </a>
+                </li>
 								</ul>
 							</nav>
 						</div>
@@ -775,44 +816,44 @@
 <style>
 /* Cố định chiều cao card */
 .dz-shop-card.style-1 {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 /* Cố định chiều cao và tỷ lệ ảnh bìa */
 .dz-shop-card.style-1 .dz-media {
-    height: 280px;
-    overflow: hidden;
+	height: 280px;
+	overflow: hidden;
 }
 
 .dz-shop-card.style-1 .dz-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 /* Phần nội dung chiếm hết phần còn lại */
 .dz-shop-card.style-1 .dz-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 }
 
 /* Đẩy footer (giá + nút) xuống dưới cùng */
 .dz-shop-card.style-1 .book-footer {
-    margin-top: auto;
+	margin-top: auto;
 }
 
 /* Đảm bảo các col-book cùng chiều cao */
 .book-grid-row {
-    display: flex;
-    flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 .book-grid-row .col-book {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 </style>
 
@@ -820,92 +861,103 @@
 <style>
 /* Reset position absolute của book-footer */
 .dz-shop-card.style-1 .dz-content .book-footer {
-    position: relative !important;
-    bottom: auto !important;
-    left: auto !important;
-    width: 100% !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    padding-bottom: 0 !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    margin-top: auto;
+	position: relative !important;
+	bottom: auto !important;
+	left: auto !important;
+	width: 100% !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	padding-bottom: 0 !important;
+	background: transparent !important;
+	border-radius: 0 !important;
+	margin-top: auto;
 }
 
 /* Ẩn nút bằng display:none */
 .dz-shop-card.style-1 .dz-content .book-footer .btn {
-    display: none !important;
+	display: none !important;
 }
 
 /* Hover mới hiện nút */
 .dz-shop-card.style-1:hover .dz-content .book-footer .btn {
-    display: inline-flex !important;
+	display: inline-flex !important;
 }
 
 /* Card layout */
 .dz-shop-card.style-1 {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 .dz-shop-card.style-1 .dz-media {
-    height: 280px;
-    overflow: hidden;
-    flex-shrink: 0;
+	height: 280px;
+	overflow: hidden;
+	flex-shrink: 0;
 }
 
 .dz-shop-card.style-1 .dz-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .dz-shop-card.style-1 .dz-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-top: 15px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding-top: 15px;
 }
 
 .book-grid-row {
-    display: flex;
-    flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 .book-grid-row .col-book {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 </style>
 
 <!-- sort sách -->
 <script>
-document.querySelectorAll('.dropdown-item[id^="bs-select-2-"]').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-        e.preventDefault();
+	document
+			.querySelectorAll('.dropdown-item[id^="bs-select-2-"]')
+			.forEach(
+					function(item) {
+						item
+								.addEventListener(
+										'click',
+										function(e) {
+											e.preventDefault();
 
-        // Map text -> value
-        var map = {
-            'Nổi bật': 'featured',
-            'Tên: A → Z': 'name_asc',
-            'Tên: Z → A': 'name_desc',
-            'Giá: Thấp → Cao': 'price_asc',
-            'Giá: Cao → Thấp': 'price_desc'
-        };
+											// Map text -> value
+											var map = {
+												'Nổi bật' : 'featured',
+												'Tên: A → Z' : 'name_asc',
+												'Tên: Z → A' : 'name_desc',
+												'Giá: Thấp → Cao' : 'price_asc',
+												'Giá: Cao → Thấp' : 'price_desc'
+											};
 
-        var text = this.querySelector('.text').textContent.trim();
-        var value = map[text] || 'featured';
+											var text = this
+													.querySelector('.text').textContent
+													.trim();
+											var value = map[text] || 'featured';
 
-        // Cập nhật label hiển thị
-        document.querySelector('.filter-option-inner-inner').textContent = text;
+											// Cập nhật label hiển thị
+											document
+													.querySelector('.filter-option-inner-inner').textContent = text;
 
-        // Set giá trị vào hidden input trong filterForm
-        document.getElementById('sortInput').value = value;
+											// Set giá trị vào hidden input trong filterForm
+											document
+													.getElementById('sortInput').value = value;
 
-        // Submit form
-        document.getElementById('filterForm').submit();
-    });
-});
+											// Submit form
+											document.getElementById(
+													'filterForm').submit();
+										});
+					});
 </script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>
