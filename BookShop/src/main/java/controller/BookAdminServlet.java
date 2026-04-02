@@ -24,11 +24,11 @@ public class BookAdminServlet extends HttpServlet {
 	private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
 	        "cloud_name", "dqiefayjh", 
 	        "api_key", "496728741237697", 
-	        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", // Thay bằng API Secret thực tế
+	        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", 
 	        "secure", true
 	    ));
 	
-    private String saveImage(Part filePart) throws IOException {
+    private String saveImage(Part filePart, String folder) throws IOException {
     	try (InputStream is = filePart.getInputStream();
     	         ByteArrayOutputStream os = new ByteArrayOutputStream()) {
     	        
@@ -101,7 +101,7 @@ public class BookAdminServlet extends HttpServlet {
             String imageUrl = null;
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                imageUrl = saveImage(filePart);
+                imageUrl = saveImage(filePart, "books");
             }
 
             dao.addBook(title, price, categoryId, authorId,
@@ -124,7 +124,7 @@ public class BookAdminServlet extends HttpServlet {
             String imageUrl = request.getParameter("oldImage");
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                imageUrl = saveImage(filePart); // ghi đè ảnh mới
+                imageUrl = saveImage(filePart, "books"); // ghi đè ảnh mới
             }
 
             dao.updateBook(bookId, title, price, categoryId, authorId,
