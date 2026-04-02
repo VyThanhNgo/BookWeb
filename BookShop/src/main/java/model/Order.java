@@ -9,8 +9,9 @@ public class Order {
     private String email;
     private String phone;
     private String addressLine;
-    private String province;
+    private String ward;
     private String district;
+    private String province;
     private String note;
     private String paymentMethod;
     private String status;
@@ -18,6 +19,10 @@ public class Order {
     private double shippingFee;
     private double discountAmount;
     private double totalAmount;
+
+    /* THÊM FIELD NÀY */
+    private String couponCode;
+
     private Timestamp createdAt;
 
     public Order() {
@@ -71,12 +76,12 @@ public class Order {
         this.addressLine = addressLine;
     }
 
-    public String getProvince() {
-        return province;
+    public String getWard() {
+        return ward;
     }
 
-    public void setProvince(String province) {
-        this.province = province;
+    public void setWard(String ward) {
+        this.ward = ward;
     }
 
     public String getDistrict() {
@@ -85,6 +90,14 @@ public class Order {
 
     public void setDistrict(String district) {
         this.district = district;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
     }
 
     public String getNote() {
@@ -141,6 +154,30 @@ public class Order {
 
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    /* THÊM GET/SET NÀY */
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
+    }
+
+    public String getFullAddress() {
+        StringBuilder sb = new StringBuilder();
+        appendAddressPart(sb, addressLine);
+        appendAddressPart(sb, ward);
+        appendAddressPart(sb, district);
+        appendAddressPart(sb, province);
+        return sb.toString();
+    }
+
+    private void appendAddressPart(StringBuilder sb, String value) {
+        if (value == null || value.trim().isEmpty()) return;
+        if (sb.length() > 0) sb.append(", ");
+        sb.append(value.trim());
     }
 
     public Timestamp getCreatedAt() {
