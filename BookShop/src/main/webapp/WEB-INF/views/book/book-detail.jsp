@@ -280,7 +280,9 @@
 												<span class="price-num"><fmt:formatNumber value="${rb.price}" pattern="#,###"/>&#8363;</span>
 												<del>$98.4</del>
 											</div>
-											<a href="shop-cart.html" class="btn btn-outline-primary btn-sm btnhover btnhover2"><i class="flaticon-shopping-cart-1 me-2"></i>Thêm Vào Giỏ Hàng</a>
+											<button type="submit" class="btn btn-primary btnhover btnhover2">
+												<i class="flaticon-shopping-cart-1"></i> <span>Thêm Vào Giỏ Hàng</span>
+											</button>
 										</div>
 									</div>
 								</div>

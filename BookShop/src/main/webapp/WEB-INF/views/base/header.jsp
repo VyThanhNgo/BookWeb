@@ -102,17 +102,19 @@
 	</c:choose>
 </span>									</button>
 
-									<ul class="dropdown-menu cart-list dropdown-menu-end" id="mini-cart-list">										<c:choose>
+									<ul class="dropdown-menu cart-list dropdown-menu-end" id="mini-cart-list">
+										<c:choose>
 											<c:when test="${sessionScope.cart != null && not empty sessionScope.cart.items}">
 												<c:forEach var="ci" items="${sessionScope.cart.items}">
-													<li class="cart-item">
+													<li class="cart-item" data-id="${ci.bookId}">
 														<div class="media">
 															<div class="media-left">
 																<div class="mini-cart-thumb">
 																	<img src="${not empty ci.image ? ci.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
 																		 alt="${ci.title}"
 																		 style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
-																</div>															</div>
+																</div>
+															</div>
 															<div class="media-body">
 																<h6 class="dz-title">
 																	<a href="${pageContext.request.contextPath}/books/detail?id=${ci.bookId}"
@@ -121,16 +123,16 @@
 																	</a>
 																</h6>
 																<span class="dz-price">
-                                    <fmt:formatNumber value="${ci.price}" pattern="#,###"/> đ x ${ci.quantity}
-                                </span>
-																<a href="${pageContext.request.contextPath}/cart?action=remove&id=${ci.bookId}"
-																   class="item-close">×</a>
-															</div>
+                                <fmt:formatNumber value="${ci.price}" pattern="#,###"/> đ x ${ci.quantity}
+                            </span>
+																<a href="javascript:void(0);"
+																   class="item-close js-mini-cart-remove"
+																   data-id="${ci.bookId}">×</a>															</div>
 														</div>
 													</li>
 												</c:forEach>
 
-												<li class="cart-item text-center">
+												<li class="cart-item text-center mini-cart-total">
 													<h6 class="text-secondary mb-0">
 														Total = <fmt:formatNumber value="${sessionScope.cart.totalPrice}" pattern="#,###"/> đ
 													</h6>
@@ -152,10 +154,21 @@
 												<li class="cart-item text-center">
 													<p class="mb-0">Giỏ hàng đang trống.</p>
 												</li>
+												<li class="text-center d-flex cart-actions-mini">
+													<a href="${pageContext.request.contextPath}/cart"
+													   class="btn btn-sm btn-primary me-2 btnhover w-100">
+														View Cart
+													</a>
+													<a href="${pageContext.request.contextPath}/order"
+													   class="btn btn-sm btn-outline-primary btnhover w-100">
+														Checkout
+													</a>
+												</li>
 											</c:otherwise>
 										</c:choose>
 									</ul>
-								</li>								<li class="nav-item dropdown profile-dropdown  ms-4"><a
+								</li>
+								<li class="nav-item dropdown profile-dropdown  ms-4"><a
 									class="nav-link" href="javascript:void(0);" role="button"
 									data-bs-toggle="dropdown" aria-expanded="false"> <img
 										src="images/profile1.jpg" alt="/">
@@ -403,34 +416,121 @@
 			</div>
 			<!-- Main Header End -->
 			<script>
-				function updateMiniCartUI(item) {
+				function formatMoney(value) {
+					return Number(value || 0).toLocaleString('vi-VN');
+				}
+
+				function updateMiniCartUI(data) {
+					const list = document.getElementById('mini-cart-list');
+					const ctx = '${pageContext.request.contextPath}';
+
+					if (!list || !data || !data.item) return;
+
+					const item = data.item;
+
+					const emptyText = list.querySelector('.cart-item p');
+					if (emptyText) {
+						list.innerHTML = '';
+					}
+
+					const existingItem = list.querySelector('.cart-item[data-id="' + item.id + '"]');
+					if (existingItem) {
+						const priceEl = existingItem.querySelector('.dz-price');
+						if (priceEl) {
+							priceEl.textContent = formatMoney(item.price) + ' đ x ' + item.quantity;
+						}
+					} else {
+						const itemHtml =
+								'<li class="cart-item" data-id="' + item.id + '">' +
+								'<div class="media">' +
+								'<div class="media-left">' +
+								'<div class="mini-cart-thumb">' +
+								'<img src="' + (item.image && item.image.trim() !== '' ? item.image : ctx + '/assets/images/books/default-book.png') + '"' +
+								' style="width:60px;height:80px;object-fit:cover;border-radius:4px;">' +
+								'</div>' +
+								'</div>' +
+								'<div class="media-body">' +
+								'<h6 class="dz-title">' +
+								'<a href="' + ctx + '/books/detail?id=' + item.id + '" class="media-heading">' +
+								item.title +
+								'</a>' +
+								'</h6>' +
+								'<span class="dz-price">' + formatMoney(item.price) + ' đ x ' + item.quantity + '</span>' +
+								'<a href="javascript:void(0);" class="item-close js-mini-cart-remove" data-id="' + item.id + '">×</a>' +
+								'</div>' +
+								'</div>' +
+								'</li>';
+						list.insertAdjacentHTML('afterbegin', itemHtml);
+					}
+
+					let totalRow = list.querySelector('.mini-cart-total');
+					if (!totalRow) {
+						totalRow = document.createElement('li');
+						totalRow.className = 'cart-item text-center mini-cart-total';
+						list.insertAdjacentElement('beforeend', totalRow);
+					}
+					totalRow.innerHTML =
+							'<h6 class="text-secondary mb-0">Total = ' + formatMoney(data.totalPrice) + ' đ</h6>';
+					let actionsRow = list.querySelector('.cart-actions-mini');
+					if (!actionsRow) {
+						const li = document.createElement('li');
+						li.className = 'text-center d-flex cart-actions-mini';
+						li.innerHTML =
+								'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 btnhover w-100">View Cart</a>' +
+								'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary btnhover w-100">Checkout</a>';						list.appendChild(li);
+					}
+				}
+			</script>
+			<script>
+				document.addEventListener('click', function(e) {
+					const btn = e.target.closest('.js-mini-cart-remove');
+					if (!btn) return;
+
+					e.preventDefault();
+					e.stopPropagation();
+
+					const bookId = btn.getAttribute('data-id');
+					const ctx = '${pageContext.request.contextPath}';
 					const list = document.getElementById('mini-cart-list');
 
-					if (!list) return;
+					fetch(ctx + '/cart?action=remove&id=' + encodeURIComponent(bookId), {
+						method: 'GET',
+						headers: {
+							'X-Requested-With': 'XMLHttpRequest'
+						}
+					})
+							.then(res => res.json())
+							.then(data => {
+								if (data.success) {
+									const item = list.querySelector('.cart-item[data-id="' + bookId + '"]');
+									if (item) item.remove();
 
-					// ❌ Xóa "Giỏ hàng đang trống"
-					const empty = list.querySelector('.cart-item p');
-					if (empty) list.innerHTML = '';
+									const badge = document.getElementById('cart-badge');
+									if (badge) badge.textContent = data.totalItems;
 
-					// ✅ Tạo item mới
-					const html = `
-        <li class="cart-item">
-            <div class="media">
-                <div class="media-left">
-                    <div class="mini-cart-thumb">
-                        <img src="${item.image}" style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
-                    </div>
-                </div>
-                <div class="media-body">
-                    <h6 class="dz-title">${item.title}</h6>
-                    <span class="dz-price">${item.price} đ x 1</span>
-                </div>
-            </div>
-        </li>
-    `;
+									const totalRow = list.querySelector('.mini-cart-total');
+									if (totalRow) {
+										totalRow.innerHTML =
+												'<h6 class="text-secondary mb-0">Total = ' +
+												Number(data.totalPrice).toLocaleString('vi-VN') +
+												' đ</h6>';
+									}
 
-					list.insertAdjacentHTML('afterbegin', html);
-				}
+									const remain = list.querySelectorAll('.cart-item[data-id]');
+									if (remain.length === 0) {
+										list.innerHTML =
+												'<li class="cart-item text-center">' +
+												'<p class="mb-0">Giỏ hàng đang trống.</p>' +
+												'</li>' +
+												'<li class="text-center d-flex cart-actions-mini">' +
+												'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 w-100">View Cart</a>' +
+												'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary w-100">Checkout</a>' +
+												'</li>';
+									}
+								}
+							})
+							.catch(err => console.error('Mini cart remove error:', err));
+				});
 			</script>
 		</header>
 		<!-- Header End -->
