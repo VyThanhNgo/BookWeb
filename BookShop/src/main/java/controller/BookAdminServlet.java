@@ -39,12 +39,10 @@ public class BookAdminServlet extends HttpServlet {
     	            os.write(buffer, 0, len);
     	        }
     	        
-    	        // Upload lên Cloudinary vào thư mục tên là folder truyền vào
-    	        Map uploadResult = cloudinary.uploader().upload(os.toByteArray(), 
-    	            ObjectUtils.asMap("folder", folder));
+    	        Map uploadResult = cloudinary.uploader().upload(os.toByteArray(),
+    	            ObjectUtils.asMap("folder", "books"));
     	            
-    	        // Trả về link URL (Ví dụ: https://res.cloudinary.com/...)
-    	        return (String) uploadResult.get("url"); 
+    	        return (String) uploadResult.get("url");
     	    } catch (Exception e) {
     	        e.printStackTrace();
     	        return null;

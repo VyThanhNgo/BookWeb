@@ -731,6 +731,10 @@
 								badge.textContent = data.totalItems;
 							}
 
+							if (typeof updateMiniCartUI === 'function') {
+								updateMiniCartUI(data);
+							}
+
 							showToast('Đã thêm vào giỏ hàng');
 						})
 						.catch(function (err) {
