@@ -209,7 +209,75 @@ public class BookDAO {
 			e.printStackTrace();
 		}
 	}
+    public List<Book> getNewBooks(int limit) {
+        List<Book> list = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " +
+                    "FROM books b " +
+                    "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                    "LEFT JOIN authors a ON b.author_id = a.author_id " +
+                    "ORDER BY b.book_id DESC LIMIT ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                Book b = new Book();
+                b.setId(rs.getInt("book_id"));
+                b.setTitle(rs.getString("title"));
+                b.setPrice(rs.getDouble("price"));
+                b.setStock(rs.getInt("stock"));
+                b.setImage(rs.getString("image"));
+                b.setDescription(rs.getString("description"));
 
+                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
+                b.setCategory(cat);
+
+                Author author = new Author(rs.getInt("author_id"), rs.getString("author_name"));
+                b.setAuthor(author);
+
+                list.add(b);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Book> getBestSellers(int limit) {
+        List<Book> list = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " +
+                    "FROM books b " +
+                    "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                    "LEFT JOIN authors a ON b.author_id = a.author_id " +
+                    "ORDER BY RAND() LIMIT ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                Book b = new Book();
+                b.setId(rs.getInt("book_id"));
+                b.setTitle(rs.getString("title"));
+                b.setPrice(rs.getDouble("price"));
+                b.setStock(rs.getInt("stock"));
+                b.setImage(rs.getString("image"));
+                b.setDescription(rs.getString("description"));
+
+                Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
+                b.setCategory(cat);
+
+                Author author = new Author(rs.getInt("author_id"), rs.getString("author_name"));
+                b.setAuthor(author);
+
+                list.add(b);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 	// get author list
 	public List<Author> getAllAuthors() {
 		List<Author> list = new ArrayList<>();
