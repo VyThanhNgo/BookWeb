@@ -62,6 +62,11 @@ public class BookDAO {
 				b.setStock(rs.getInt("stock"));
 				b.setPublishYear(rs.getInt("publish_year"));
 				b.setImage(rs.getString("image"));
+				b.setIsbn(rs.getString("isbn"));
+	            b.setPublisher(rs.getString("publisher"));
+	            b.setLanguage(rs.getString("language"));
+	            b.setCoverType(rs.getString("cover_type"));
+	            b.setSoldQuantity(rs.getInt("sold_quantity"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -94,6 +99,22 @@ public class BookDAO {
 		return list;
 	}
 
+	//lấy ds ảnh phụ 
+	public List<String> getSubImagesByBookId(int bookId) {
+	    List<String> images = new ArrayList<>();
+	    try {
+	        Connection conn = DBConnection.getConnection();
+	        String sql = "SELECT image_url FROM book_images WHERE book_id = ?";
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setInt(1, bookId);
+	        ResultSet rs = ps.executeQuery();
+	        while (rs.next()) {
+	            images.add(rs.getString("image_url"));
+	        }
+	    } catch (Exception e) { e.printStackTrace(); }
+	    return images;
+	}
+	
 	// search book
 	public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice,
 			String sort) {
@@ -189,26 +210,57 @@ public class BookDAO {
 	}
 
 	// add book
-	public void addBook(String title, double price, int categoryId, int authorId, int publishYear, String description,
-			int stock, String image) {
-		try {
-			Connection conn = DBConnection.getConnection();
-			String sql = "INSERT INTO books (title, price, category_id, author_id, "
-					+ "publish_year, description, stock, image) VALUES (?,?,?,?,?,?,?,?)";
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, title);
-			ps.setDouble(2, price);
-			ps.setInt(3, categoryId);
-			ps.setInt(4, authorId);
-			ps.setInt(5, publishYear);
-			ps.setString(6, description);
-			ps.setInt(7, stock);
-			ps.setString(8, image);
-			ps.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public int addBook(String title, double price, int categoryId, int authorId, int publishYear, String description,
+	        int stock, String image, String isbn, String publisher, String language, String coverType) {
+	    int generatedId = -1;
+	    try {
+	        Connection conn = DBConnection.getConnection();
+	        String sql = "INSERT INTO books (title, price, category_id, author_id, publish_year, "
+	                + "description, stock, image, isbn, publisher, language, cover_type) "
+	                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+	        
+	        // Thêm RETURN_GENERATED_KEYS
+	        PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+	        ps.setString(1, title);
+	        ps.setDouble(2, price);
+	        ps.setInt(3, categoryId);
+	        ps.setInt(4, authorId);
+	        ps.setInt(5, publishYear);
+	        ps.setString(6, description);
+	        ps.setInt(7, stock);
+	        ps.setString(8, image);
+	        ps.setString(9, isbn);
+	        ps.setString(10, publisher);
+	        ps.setString(11, language);
+	        ps.setString(12, coverType);
+	        
+	        ps.executeUpdate();
+	        
+	        // Lấy ID vừa tạo
+	        ResultSet rs = ps.getGeneratedKeys();
+	        if (rs.next()) {
+	            generatedId = rs.getInt(1);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return generatedId;
 	}
+	
+	//thêm ảnh phụ
+	public void addBookImage(int bookId, String imageUrl) {
+	    try {
+	        Connection conn = DBConnection.getConnection();
+	        String sql = "INSERT INTO book_images (book_id, image_url) VALUES (?, ?)";
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setInt(1, bookId);
+	        ps.setString(2, imageUrl);
+	        ps.executeUpdate();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
+	
     public List<Book> getNewBooks(int limit) {
         List<Book> list = new ArrayList<>();
         try {
@@ -298,25 +350,30 @@ public class BookDAO {
 
 	// update book
 	public void updateBook(int bookId, String title, double price, int categoryId, int authorId, int publishYear,
-			String description, int stock, String image) {
-		try {
-			Connection conn = DBConnection.getConnection();
-			String sql = "UPDATE books SET title=?, price=?, category_id=?, author_id=?, "
-					+ "publish_year=?, description=?, stock=?, image=? WHERE book_id=?";
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, title);
-			ps.setDouble(2, price);
-			ps.setInt(3, categoryId);
-			ps.setInt(4, authorId);
-			ps.setInt(5, publishYear);
-			ps.setString(6, description);
-			ps.setInt(7, stock);
-			ps.setString(8, image);
-			ps.setInt(9, bookId);
-			ps.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	        String description, int stock, String image, String isbn, String publisher, String language, String coverType) {
+	    try {
+	        Connection conn = DBConnection.getConnection();
+	        String sql = "UPDATE books SET title=?, price=?, category_id=?, author_id=?, "
+	                + "publish_year=?, description=?, stock=?, image=?, isbn=?, publisher=?, "
+	                + "language=?, cover_type=? WHERE book_id=?";
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setString(1, title);
+	        ps.setDouble(2, price);
+	        ps.setInt(3, categoryId);
+	        ps.setInt(4, authorId);
+	        ps.setInt(5, publishYear);
+	        ps.setString(6, description);
+	        ps.setInt(7, stock);
+	        ps.setString(8, image);
+	        ps.setString(9, isbn);
+	        ps.setString(10, publisher);
+	        ps.setString(11, language);
+	        ps.setString(12, coverType);
+	        ps.setInt(13, bookId);
+	        ps.executeUpdate();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
 
 // xóa sách

@@ -45,6 +45,30 @@
 			<label>Năm xuất bản</label> <input type="number" name="publishYear"
 				class="form-control">
 		</div>
+		<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">ISBN</label>
+        <input type="text" name="isbn" class="form-control" placeholder="Ví dụ: 978-604-...">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Nhà xuất bản</label>
+        <input type="text" name="publisher" class="form-control">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Ngôn ngữ</label>
+        <input type="text" name="language" class="form-control" value="Tiếng Việt">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Loại bìa</label>
+        <select name="coverType" class="form-control">
+            <option value="Bìa mềm">Bìa mềm</option>
+            <option value="Bìa cứng">Bìa cứng</option>
+        </select>
+    </div>
+</div>
 		<div class="mb-3">
 			<label>Tồn kho</label> <input type="number" name="stock"
 				class="form-control">
@@ -62,6 +86,14 @@
 			<img id="imgPreview" src="#" alt="Preview"
 				style="max-width: 150px; margin-top: 10px; display: none;">
 		</div>
+		<%-- PHẦN UPLOAD NHIỀU ẢNH PHỤ --%>
+<div class="mb-3">
+    <label class="form-label">Ảnh chi tiết (Có thể chọn nhiều ảnh)</label>
+    <input type="file" name="subImages" class="form-control" accept="image/*" multiple onchange="previewMultipleImages(this)">
+    <div id="multiplePreview" class="mt-2 d-flex flex-wrap gap-2">
+        <%-- Nơi hiển thị các ảnh phụ đã chọn --%>
+    </div>
+</div>
 
 		<button type="submit" class="btn btn-primary">Thêm sách</button>
 
@@ -130,6 +162,30 @@
 		function confirmDelete(title) {
 		    return confirm('Bạn có chắc muốn xóa sách "' + title + '" không?\nHành động này không thể hoàn tác!');
 		}
+		// xem nhiều ảnh phụ
+		function previewMultipleImages(input) {
+		    var previewContainer = document.getElementById('multiplePreview');
+		    previewContainer.innerHTML = ''; // Xóa preview cũ
+		    
+		    if (input.files) {
+		        [...input.files].forEach(file => {
+		            var reader = new FileReader();
+		            reader.onload = function(e) {
+		                var img = document.createElement('img');
+		                img.src = e.target.result;
+		                img.style.width = '80px';
+		                img.style.height = '80px';
+		                img.style.objectFit = 'cover';
+		                img.style.border = '1px solid #ddd';
+		                img.style.borderRadius = '4px';
+		                previewContainer.appendChild(img);
+		            };
+		            reader.readAsDataURL(file);
+		        });
+		    }
+		}
 	</script>
+	
+	
 </body>
 </html>

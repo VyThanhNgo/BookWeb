@@ -500,11 +500,51 @@
 						<div class="col-md-6">
 							<nav aria-label="Blog Pagination">
 								<ul class="pagination style-1 p-t20">
-									<li class="page-item"><a class="page-link prev" href="javascript:void(0);">Prev</a></li>
-									<li class="page-item"><a class="page-link active" href="javascript:void(0);">1</a></li>
-									<li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
-									<li class="page-item"><a class="page-link" href="javascript:void(0);">3</a></li>
-									<li class="page-item"><a class="page-link next" href="javascript:void(0);">Next</a></li>
+										<%-- Prev --%>
+									<li class="page-item ${currentPage == 1 ? 'disabled' : ''}"><a
+										class="page-link prev"
+										href="${pageContext.request.contextPath}/books?page=${currentPage - 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">&#10094;</a></li>
+									 <%-- Trang 1 luôn hiện --%>
+                <li class="page-item">
+                    <a class="page-link ${currentPage == 1 ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/books?page=1&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">1</a>
+                </li>
+
+                <%-- Dấu ... đầu nếu currentPage > 3 --%>
+                <c:if test="${currentPage > 3}">
+                    <li class="page-item disabled"><a class="page-link">...</a></li>
+                </c:if>
+
+                <%-- Các trang xung quanh currentPage --%>
+                <c:forEach begin="2" end="${totalPages - 1}" var="i">
+                    <c:if test="${i >= currentPage - 1 && i <= currentPage + 1}">
+                        <li class="page-item">
+                            <a class="page-link ${i == currentPage ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/books?page=${i}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${i}</a>
+                        </li>
+                    </c:if>
+                </c:forEach>
+
+                <%-- Dấu ... cuối nếu currentPage < totalPages - 2 --%>
+                <c:if test="${currentPage < totalPages - 2}">
+                    <li class="page-item disabled"><a class="page-link">...</a></li>
+                </c:if>
+
+                <%-- Trang cuối luôn hiện --%>
+                <c:if test="${totalPages > 1}">
+                    <li class="page-item">
+                        <a class="page-link ${currentPage == totalPages ? 'active' : ''}"
+                           href="${pageContext.request.contextPath}/books?page=${totalPages}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${totalPages}</a>
+                    </li>
+                </c:if>
+
+                <%-- Next --%>
+                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                    <a class="page-link next"
+                       href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">
+                        &#10095;
+                    </a>
+                </li>
 								</ul>
 							</nav>
 						</div>
