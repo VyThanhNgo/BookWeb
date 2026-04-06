@@ -75,7 +75,32 @@
 									type="number" name="publishYear" class="form-control"
 									value="${book.publishYear}">
 							</div>
+							
+							<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">ISBN</label>
+        <input type="text" name="isbn" class="form-control" value="${book.isbn}">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Nhà xuất bản</label>
+        <input type="text" name="publisher" class="form-control" value="${book.publisher}">
+    </div>
+</div>
 
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Ngôn ngữ</label>
+        <input type="text" name="language" class="form-control" value="${book.language}">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Loại bìa</label>
+        <select name="coverType" class="form-control">
+            <option value="Bìa mềm" ${book.coverType == 'Bìa mềm' ? 'selected' : ''}>Bìa mềm</option>
+            <option value="Bìa cứng" ${book.coverType == 'Bìa cứng' ? 'selected' : ''}>Bìa cứng</option>
+        </select>
+    </div>
+</div>
+							
 							<div class="mb-3">
 								<label class="form-label">Mô tả</label>
 								<textarea name="description" class="form-control" rows="4">${book.description}</textarea>
@@ -102,7 +127,24 @@
 									accept="image/*" onchange="previewImage(this)"> <small
 									class="text-muted">Để trống nếu không muốn đổi ảnh</small>
 							</div>
-
+							
+							<%-- nhiều ẢNH phụ--%>
+							<div class="mb-4">
+    <label class="form-label">Ảnh chi tiết hiện tại</label>
+    <div class="d-flex flex-wrap gap-2 mb-2">
+        <c:forEach var="imgUrl" items="${book.subImages}">
+            <div class="position-relative">
+                <img src="${imgUrl}" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;">
+                <%-- Sau này có thể thêm nút Xóa ảnh phụ ở đây nếu muốn --%>
+            </div>
+        </c:forEach>
+    </div>
+    
+    <label class="form-label">Thêm ảnh chi tiết mới</label>
+    <input type="file" name="subImages" class="form-control" accept="image/*" multiple onchange="previewMultipleImages(this)">
+    <div id="multiplePreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+</div>
+							
 							<div class="d-flex gap-2">
 								<button type="submit" class="btn btn-primary">Lưu thay
 									đổi</button>
