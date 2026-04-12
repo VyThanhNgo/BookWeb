@@ -10,7 +10,7 @@ import java.util.List;
 import model.User;
 import util.DBConnection;
 
-public class UserDAO {
+public class 	UserDAO {
 
 	private User mapResultSetToUser(ResultSet rs) throws SQLException {
 		User user = new User();
