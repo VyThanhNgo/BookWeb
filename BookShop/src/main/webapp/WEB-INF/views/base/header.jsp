@@ -168,16 +168,93 @@
 										</c:choose>
 									</ul>
 								</li>
-								<li class="nav-item dropdown profile-dropdown  ms-4"><a
-									class="nav-link" href="javascript:void(0);" role="button"
-									data-bs-toggle="dropdown" aria-expanded="false"> <img
-										src="images/profile1.jpg" alt="/">
+								<li class="nav-item dropdown profile-dropdown ms-4">
+									<a class="nav-link account-toggle" href="javascript:void(0);" role="button"
+									   data-bs-toggle="dropdown" aria-expanded="false">
+										<img class="account-avatar"
+											 src="${pageContext.request.contextPath}/assets/images/profile1.jpg"
+											 alt=""
+											 onerror="this.src='${pageContext.request.contextPath}/assets/images/default-avatar.png'; this.onerror=null;">
+
 										<div class="profile-info">
-											<h6 class="title">Brian</h6>
-											<span>info@gmail.com</span>
+											<c:choose>
+												<c:when test="${sessionScope.loggedInUser != null}">
+													<h6 class="title">${sessionScope.loggedInUser.fullName}</h6>
+													<span>${sessionScope.loggedInUser.email}</span>
+												</c:when>
+												<c:otherwise>
+													<h6 class="title">Tài khoản</h6>
+													<span>Vui lòng đăng nhập</span>
+												</c:otherwise>
+											</c:choose>
 										</div>
-								</a>
-									<div class="dropdown-menu py-0 dropdown-menu-end">
+									</a>
+
+									<div class="dropdown-menu py-0 dropdown-menu-end account-dropdown">
+										<c:choose>
+											<c:when test="${sessionScope.loggedInUser != null}">
+												<div class="dropdown-header">
+													<h6 class="m-0">${sessionScope.loggedInUser.fullName}</h6>
+													<span>${sessionScope.loggedInUser.email}</span>
+												</div>
+
+												<div class="dropdown-body">
+													<a href="${pageContext.request.contextPath}/profile"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-user me-2"></i>
+														<span>Thông tin cá nhân</span>
+													</a>
+
+													<a href="${pageContext.request.contextPath}/change-password"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-key me-2"></i>
+														<span>Đổi mật khẩu</span>
+													</a>
+
+													<a href="${pageContext.request.contextPath}/order"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-shopping-bag me-2"></i>
+														<span>Đơn hàng của tôi</span>
+													</a>
+
+													<a href="javascript:void(0)"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-heart me-2"></i>
+														<span>Danh sách yêu thích</span>
+													</a>
+												</div>
+
+												<div class="dropdown-footer">
+													<a class="btn btn-primary w-100 btnhover btn-sm"
+													   href="${pageContext.request.contextPath}/logout">
+														Đăng xuất
+													</a>
+												</div>
+											</c:when>
+
+											<c:otherwise>
+												<div class="dropdown-header">
+													<h6 class="m-0">Khách</h6>
+													<span>Chào mừng bạn đến với Góc Sách</span>
+												</div>
+
+												<div class="dropdown-body">
+													<a href="${pageContext.request.contextPath}/login"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-sign-in me-2"></i>
+														<span>Đăng nhập</span>
+													</a>
+
+													<a href="${pageContext.request.contextPath}/register"
+													   class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-user-plus me-2"></i>
+														<span>Đăng ký</span>
+													</a>
+												</div>
+											</c:otherwise>
+										</c:choose>
+									</div>
+								</li>									<div class="dropdown-menu py-0 dropdown-menu-end">
 										<div class="dropdown-header">
 											<h6 class="m-0">Brian</h6>
 											<span>info@gmail.com</span>
@@ -193,7 +270,8 @@
 															d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
 													<span class="ms-2">Profile</span>
 												</div>
-											</a> <a href="shop-cart.html"
+											</a>
+											<a href="shop-cart.html"
 												class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
 												<div>
 													<svg xmlns="http://www.w3.org/2000/svg" height="20px"
@@ -219,7 +297,8 @@
 											<a class="btn btn-primary w-100 btnhover btn-sm"
 												href="shop-login.html">Log Out</a>
 										</div>
-									</div></li>
+									</div>
+								</li>
 							</ul>
 						</div>
 					</div>

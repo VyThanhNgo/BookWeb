@@ -1,8 +1,0 @@
-<svg width="215" height="47" viewBox="0 0 215 47" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="1" width="45" height="45" rx="7" fill="#1a3a5c"/>
-<rect x="8" y="8" width="13" height="31" rx="2" fill="#fff"/>
-<rect x="24" y="8" width="13" height="31" rx="2" fill="#fff"/>
-<path d="M14.5 8 Q21.5 17 28.5 8" fill="none" stroke="#1a3a5c" stroke-width="2.5"/>
-<text x="53" y="29" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#1a3a5c">Góc Sách</text>
-<text x="54" y="43" font-family="Arial, sans-serif" font-size="10" font-weight="400" fill="#555">Khơi Nguồn Hiểu Biết</text>
-</svg>
