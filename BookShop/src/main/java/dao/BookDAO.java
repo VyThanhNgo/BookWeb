@@ -67,7 +67,8 @@ public class BookDAO {
 	            b.setLanguage(rs.getString("language"));
 	            b.setCoverType(rs.getString("cover_type"));
 	            b.setSoldQuantity(rs.getInt("sold_quantity"));
-
+	            b.setSubImages(this.getSubImagesByBookId(id));
+	            
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 				Author author = new Author(rs.getInt("author_id"), rs.getString("author_name"));
@@ -546,5 +547,34 @@ public class BookDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	//  gợi ý nhanh khi nhập từ khóa tìm kiếm
+	public List<Book> getSearchSuggestions(String keyword, int limit) {
+	    List<Book> list = new ArrayList<>();
+	    try {
+	      
+	        Connection conn = util.DBConnection.getConnection(); 
+	        
+	        // Chỉ lấy những cột cần thiết để hiển thị ở thanh tìm kiếm (nhẹ và nhanh)
+	        String sql = "SELECT book_id, title, price, image FROM books WHERE title LIKE ? LIMIT ?";
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        
+	        ps.setString(1, "%" + keyword + "%"); // Tìm từ khóa ở bất kỳ vị trí nào trong tên
+	        ps.setInt(2, limit); // Giới hạn số lượng trả về ( 6 cuốn)
+	        
+	        ResultSet rs = ps.executeQuery();
+	        while (rs.next()) {
+	            Book b = new Book();
+	            b.setId(rs.getInt("book_id"));
+	            b.setTitle(rs.getString("title"));
+	            b.setPrice(rs.getDouble("price"));
+	            b.setImage(rs.getString("image"));
+	            list.add(b);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return list;
 	}
 }

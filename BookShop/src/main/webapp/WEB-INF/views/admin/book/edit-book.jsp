@@ -169,6 +169,27 @@
 				reader.readAsDataURL(input.files[0]);
 			}
 		}
+		
+		function previewMultipleImages(input) {
+		    var previewContainer = document.getElementById('multiplePreview');
+		    previewContainer.innerHTML = ''; // Xóa preview cũ
+		    if (input.files) {
+		        Array.from(input.files).forEach(file => {
+		            var reader = new FileReader();
+		            reader.onload = function(e) {
+		                var img = document.createElement('img');
+		                img.src = e.target.result;
+		                img.style.width = '80px';
+		                img.style.height = '80px';
+		                img.style.objectFit = 'cover';
+		                img.style.border = '1px solid #ddd';
+		                img.classList.add('rounded');
+		                previewContainer.appendChild(img);
+		            }
+		            reader.readAsDataURL(file);
+		        });
+		    }
+		}
 	</script>
 
 	<%@ include file="/WEB-INF/views/base/footer.jsp"%>

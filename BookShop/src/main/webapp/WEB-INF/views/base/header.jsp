@@ -54,8 +54,70 @@
 	href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&amp;family=Poppins:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
 	rel="stylesheet">
 
+<style>
+/* Container cho kết quả tìm kiếm */
+.search-results-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 9999;
+    display: none; /* Mặc định ẩn */
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+    text-decoration: none !important;
+}
+
+.search-result-item:hover {
+    background: #fff8f3;
+}
+
+.search-result-item img {
+    width: 45px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 15px;
+}
+
+.result-info .title {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    display: block;
+}
+
+.result-info .price {
+    color: #ff7200;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.view-all-btn {
+    display: block;
+    padding: 12px;
+    text-align: center;
+    background: #fdfdfd;
+    color: #ff7200;
+    font-weight: 700;
+    font-size: 13px;
+    border-top: 1px solid #eee;
+}
+
+
+</style>
 </head>
-<body>
+<body data-context-path="${pageContext.request.contextPath}">
 	<div class="page-wraper">
 
 		<!-- Header -->
@@ -65,7 +127,9 @@
 				<div class="container clearfix">
 					<!-- Website Logo -->
 					<div class="logo-header logo-dark">
-						<a href="index.html"><img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="logo"></a>
+						<a href="index.html"><img
+							src="${pageContext.request.contextPath}/assets/images/logo.svg"
+							alt="logo"></a>
 					</div>
 
 					<!-- EXTRA NAV -->
@@ -82,99 +146,97 @@
 										<span class="badge">21</span>
 								</a></li>
 								<li class="nav-item dropdown">
-									<button type="button"
-											class="nav-link box cart-btn"
-											data-bs-toggle="dropdown"
-											aria-expanded="false">
+									<button type="button" class="nav-link box cart-btn"
+										data-bs-toggle="dropdown" aria-expanded="false">
 										<svg xmlns="http://www.w3.org/2000/svg" height="24px"
-											 viewBox="0 0 24 24" width="24px" fill="#000000">
+											viewBox="0 0 24 24" width="24px" fill="#000000">
 											<path d="M0 0h24v24H0V0z" fill="none"></path>
 											<path
-													d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path>
+												d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path>
 										</svg>
 
-										<span class="badge" id="cart-badge">
-    <c:choose>
-		<c:when test="${sessionScope.cart != null}">
+										<span class="badge" id="cart-badge"> <c:choose>
+												<c:when test="${sessionScope.cart != null}">
 			${sessionScope.cart.totalItems}
 		</c:when>
-		<c:otherwise>0</c:otherwise>
-	</c:choose>
-</span>									</button>
+												<c:otherwise>0</c:otherwise>
+											</c:choose>
+										</span>
+									</button>
 
-									<ul class="dropdown-menu cart-list dropdown-menu-end" id="mini-cart-list">
+									<ul class="dropdown-menu cart-list dropdown-menu-end"
+										id="mini-cart-list">
 										<c:choose>
-											<c:when test="${sessionScope.cart != null && not empty sessionScope.cart.items}">
+											<c:when
+												test="${sessionScope.cart != null && not empty sessionScope.cart.items}">
 												<c:forEach var="ci" items="${sessionScope.cart.items}">
 													<li class="cart-item" data-id="${ci.bookId}">
 														<div class="media">
 															<div class="media-left">
 																<div class="mini-cart-thumb">
-																	<img src="${not empty ci.image ? ci.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
-																		 alt="${ci.title}"
-																		 style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
+																	<img
+																		src="${not empty ci.image ? ci.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+																		alt="${ci.title}"
+																		style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;">
 																</div>
 															</div>
 															<div class="media-body">
 																<h6 class="dz-title">
-																	<a href="${pageContext.request.contextPath}/books/detail?id=${ci.bookId}"
-																	   class="media-heading">
-																			${ci.title}
-																	</a>
+																	<a
+																		href="${pageContext.request.contextPath}/books/detail?id=${ci.bookId}"
+																		class="media-heading"> ${ci.title} </a>
 																</h6>
-																<span class="dz-price">
-                                <fmt:formatNumber value="${ci.price}" pattern="#,###"/> đ x ${ci.quantity}
-                            </span>
-																<a href="javascript:void(0);"
-																   class="item-close js-mini-cart-remove"
-																   data-id="${ci.bookId}">×</a>															</div>
+																<span class="dz-price"> <fmt:formatNumber
+																		value="${ci.price}" pattern="#,###" /> đ x
+																	${ci.quantity}
+																</span> <a href="javascript:void(0);"
+																	class="item-close js-mini-cart-remove"
+																	data-id="${ci.bookId}">×</a>
+															</div>
 														</div>
 													</li>
 												</c:forEach>
 
 												<li class="cart-item text-center mini-cart-total">
 													<h6 class="text-secondary mb-0">
-														Total = <fmt:formatNumber value="${sessionScope.cart.totalPrice}" pattern="#,###"/> đ
+														Total =
+														<fmt:formatNumber value="${sessionScope.cart.totalPrice}"
+															pattern="#,###" />
+														đ
 													</h6>
 												</li>
 
-												<li class="text-center d-flex cart-actions-mini">
-													<a href="${pageContext.request.contextPath}/cart"
-													   class="btn btn-sm btn-primary me-2 btnhover w-100">
-														View Cart
-													</a>
-													<a href="${pageContext.request.contextPath}/order"
-													   class="btn btn-sm btn-outline-primary btnhover w-100">
-														Checkout
-													</a>
-												</li>
+												<li class="text-center d-flex cart-actions-mini"><a
+													href="${pageContext.request.contextPath}/cart"
+													class="btn btn-sm btn-primary me-2 btnhover w-100">
+														View Cart </a> <a
+													href="${pageContext.request.contextPath}/order"
+													class="btn btn-sm btn-outline-primary btnhover w-100">
+														Checkout </a></li>
 											</c:when>
 
 											<c:otherwise>
 												<li class="cart-item text-center">
 													<p class="mb-0">Giỏ hàng đang trống.</p>
 												</li>
-												<li class="text-center d-flex cart-actions-mini">
-													<a href="${pageContext.request.contextPath}/cart"
-													   class="btn btn-sm btn-primary me-2 btnhover w-100">
-														View Cart
-													</a>
-													<a href="${pageContext.request.contextPath}/order"
-													   class="btn btn-sm btn-outline-primary btnhover w-100">
-														Checkout
-													</a>
-												</li>
+												<li class="text-center d-flex cart-actions-mini"><a
+													href="${pageContext.request.contextPath}/cart"
+													class="btn btn-sm btn-primary me-2 btnhover w-100">
+														View Cart </a> <a
+													href="${pageContext.request.contextPath}/order"
+													class="btn btn-sm btn-outline-primary btnhover w-100">
+														Checkout </a></li>
 											</c:otherwise>
 										</c:choose>
 									</ul>
 								</li>
-								<li class="nav-item dropdown profile-dropdown ms-4">
-									<a class="nav-link account-toggle" href="javascript:void(0);" role="button"
-									   data-bs-toggle="dropdown" aria-expanded="false">
+								<li class="nav-item dropdown profile-dropdown ms-4"><a
+									class="nav-link account-toggle" href="javascript:void(0);"
+									role="button" data-bs-toggle="dropdown" aria-expanded="false">
 										<img class="account-avatar"
-											 src="${pageContext.request.contextPath}/assets/images/profile1.jpg"
-											 alt=""
-											 onerror="this.src='${pageContext.request.contextPath}/assets/images/default-avatar.png'; this.onerror=null;">
+										src="${pageContext.request.contextPath}/assets/images/profile1.jpg"
+										alt=""
+										onerror="this.src='${pageContext.request.contextPath}/assets/images/default-avatar.png'; this.onerror=null;">
 
 										<div class="profile-info">
 											<c:choose>
@@ -188,9 +250,10 @@
 												</c:otherwise>
 											</c:choose>
 										</div>
-									</a>
+								</a>
 
-									<div class="dropdown-menu py-0 dropdown-menu-end account-dropdown">
+									<div
+										class="dropdown-menu py-0 dropdown-menu-end account-dropdown">
 										<c:choose>
 											<c:when test="${sessionScope.loggedInUser != null}">
 												<div class="dropdown-header">
@@ -200,35 +263,28 @@
 
 												<div class="dropdown-body">
 													<a href="${pageContext.request.contextPath}/profile"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-user me-2"></i>
-														<span>Thông tin cá nhân</span>
-													</a>
-
-													<a href="${pageContext.request.contextPath}/change-password"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-key me-2"></i>
-														<span>Đổi mật khẩu</span>
-													</a>
-
-													<a href="${pageContext.request.contextPath}/order"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-shopping-bag me-2"></i>
-														<span>Đơn hàng của tôi</span>
-													</a>
-
-													<a href="javascript:void(0)"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-heart me-2"></i>
-														<span>Danh sách yêu thích</span>
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-user me-2"></i> <span>Thông tin cá
+															nhân</span>
+													</a> <a
+														href="${pageContext.request.contextPath}/change-password"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-key me-2"></i> <span>Đổi mật khẩu</span>
+													</a> <a href="${pageContext.request.contextPath}/order"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-shopping-bag me-2"></i> <span>Đơn
+															hàng của tôi</span>
+													</a> <a href="javascript:void(0)"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-heart me-2"></i> <span>Danh sách
+															yêu thích</span>
 													</a>
 												</div>
 
 												<div class="dropdown-footer">
 													<a class="btn btn-primary w-100 btnhover btn-sm"
-													   href="${pageContext.request.contextPath}/logout">
-														Đăng xuất
-													</a>
+														href="${pageContext.request.contextPath}/logout"> Đăng
+														xuất </a>
 												</div>
 											</c:when>
 
@@ -240,64 +296,59 @@
 
 												<div class="dropdown-body">
 													<a href="${pageContext.request.contextPath}/login"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-sign-in me-2"></i>
-														<span>Đăng nhập</span>
-													</a>
-
-													<a href="${pageContext.request.contextPath}/register"
-													   class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-user-plus me-2"></i>
-														<span>Đăng ký</span>
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-sign-in me-2"></i> <span>Đăng nhập</span>
+													</a> <a href="${pageContext.request.contextPath}/register"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-user-plus me-2"></i> <span>Đăng ký</span>
 													</a>
 												</div>
 											</c:otherwise>
 										</c:choose>
+									</div></li>
+								<div class="dropdown-menu py-0 dropdown-menu-end">
+									<div class="dropdown-header">
+										<h6 class="m-0">Brian</h6>
+										<span>info@gmail.com</span>
 									</div>
-								</li>									<div class="dropdown-menu py-0 dropdown-menu-end">
-										<div class="dropdown-header">
-											<h6 class="m-0">Brian</h6>
-											<span>info@gmail.com</span>
-										</div>
-										<div class="dropdown-body">
-											<a href="my-profile.html"
-												class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
-												<div>
-													<svg xmlns="http://www.w3.org/2000/svg" height="20px"
-														viewBox="0 0 24 24" width="20px" fill="#000000">
+									<div class="dropdown-body">
+										<a href="my-profile.html"
+											class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+											<div>
+												<svg xmlns="http://www.w3.org/2000/svg" height="20px"
+													viewBox="0 0 24 24" width="20px" fill="#000000">
 														<path d="M0 0h24v24H0V0z" fill="none"></path>
 														<path
-															d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
-													<span class="ms-2">Profile</span>
-												</div>
-											</a>
-											<a href="shop-cart.html"
-												class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
-												<div>
-													<svg xmlns="http://www.w3.org/2000/svg" height="20px"
-														viewBox="0 0 24 24" width="20px" fill="#000000">
+														d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+												<span class="ms-2">Profile</span>
+											</div>
+										</a> <a href="shop-cart.html"
+											class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+											<div>
+												<svg xmlns="http://www.w3.org/2000/svg" height="20px"
+													viewBox="0 0 24 24" width="20px" fill="#000000">
 														<path d="M0 0h24v24H0V0z" fill="none"></path>
 														<path
-															d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path></svg>
-													<span class="ms-2">My Order</span>
-												</div>
-											</a> <a href="wishlist.html"
-												class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
-												<div>
-													<svg xmlns="http://www.w3.org/2000/svg" height="20px"
-														viewBox="0 0 24 24" width="20px" fill="#000000">
+														d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path></svg>
+												<span class="ms-2">My Order</span>
+											</div>
+										</a> <a href="wishlist.html"
+											class="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+											<div>
+												<svg xmlns="http://www.w3.org/2000/svg" height="20px"
+													viewBox="0 0 24 24" width="20px" fill="#000000">
 														<path d="M0 0h24v24H0V0z" fill="none"></path>
 														<path
-															d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"></path></svg>
-													<span class="ms-2">Wishlist</span>
-												</div>
-											</a>
-										</div>
-										<div class="dropdown-footer">
-											<a class="btn btn-primary w-100 btnhover btn-sm"
-												href="shop-login.html">Log Out</a>
-										</div>
+														d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"></path></svg>
+												<span class="ms-2">Wishlist</span>
+											</div>
+										</a>
 									</div>
+									<div class="dropdown-footer">
+										<a class="btn btn-primary w-100 btnhover btn-sm"
+											href="shop-login.html">Log Out</a>
+									</div>
+								</div>
 								</li>
 							</ul>
 						</div>
@@ -305,44 +356,32 @@
 
 					<!-- header search nav -->
 					<div class="header-search-nav">
-						<form class="header-item-search"
-							action="${pageContext.request.contextPath}/books" method="get">
-							<div class="input-group search-input">
-								<div class="dropdown bootstrap-select default-select">
-									<select class="default-select" name="categoryId">
-										<option value="">Danh mục</option>
-										<c:forEach var="cat" items="${categories}">
-											<option value="${cat.id}">${cat.name}</option>
-										</c:forEach>
-									</select>
-									<button type="button" tabindex="-1"
-										class="btn dropdown-toggle btn-light"
-										data-bs-toggle="dropdown" role="combobox"
-										aria-owns="bs-select-1" aria-haspopup="listbox"
-										aria-expanded="false" title="Category">
-										<div class="filter-option">
-											<div class="filter-option-inner">
-												<div class="filter-option-inner-inner">Danh mục</div>
-											</div>
-										</div>
-									</button>
-									<div class="dropdown-menu ">
-										<div class="inner show" role="listbox" id="bs-select-1"
-											tabindex="-1">
-											<ul class="dropdown-menu inner show" role="presentation"></ul>
-										</div>
-									</div>
-								</div>
-								<input type="text" name="keyword" class="form-control"
-									aria-label="Text input with dropdown button"
-									placeholder="Nhập tên sách để tìm..." value="${keyword}"
-									fdprocessedid="4p8wu9">
-								<button class="btn" type="submit" fdprocessedid="1sapa">
-									<i class="flaticon-loupe"></i>
-								</button>
-							</div>
-						</form>
-					</div>
+    <form class="header-item-search" action="${pageContext.request.contextPath}/books" method="get">
+        <div class="input-group search-input">
+            <select class="default-select" name="categoryId">
+                <option value="">Danh mục</option>
+                <c:forEach var="cat" items="${categories}">
+                    <option value="${cat.id}" ${param.categoryId == cat.id ? 'selected' : ''}>${cat.name}</option>
+                </c:forEach>
+            </select>
+            
+            <div class="form-control-wrapper" style="flex: 1; position: relative; display: flex;">
+                <input type="text" id="live-search-input" name="keyword"
+                    class="form-control" placeholder="Nhập tên sách để tìm..."
+                    value="${keyword}" autocomplete="off">
+                
+                <button class="btn" type="submit">
+                    <i class="flaticon-loupe"></i>
+                </button>
+
+                <div id="live-search-results" class="search-results-wrapper">
+                    <div id="search-items-list"></div>
+                    <a href="javascript:void(0);" id="search-view-all" class="view-all-btn">XEM THÊM KẾT QUẢ</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 				</div>
 			</div>
 			<!-- Main Header End -->
@@ -369,7 +408,8 @@
 						<!-- EXTRA NAV -->
 						<div class="extra-nav">
 							<div class="extra-cell">
-								<a href="contact-us.html" class="btn btn-primary btnhover">Liên Hệ Ngay</a>
+								<a href="contact-us.html" class="btn btn-primary btnhover">Liên
+									Hệ Ngay</a>
 							</div>
 						</div>
 
@@ -391,9 +431,10 @@
 								</div>
 							</form>
 							<ul class="nav navbar-nav">
-								<li ><a href="javascript:void(0);"><span>Trang chủ</span></a>
-									</li>
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Các trang khác</span></a>
+								<li><a href="javascript:void(0);"><span>Trang
+											chủ</span></a></li>
+								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Các
+											trang khác</span></a>
 									<ul class="sub-menu">
 										<li><a href="about-us.html"><span>About Us</span></a></li>
 										<li><a href="my-profile.html">My Profile</a></li>
@@ -407,9 +448,10 @@
 												Construction</a></li>
 										<li><a href="error-404.html">Error 404</a></li>
 									</ul></li>
-								<li ><a href="${pageContext.request.contextPath}/books"><span>Sản phẩm</span></a>
-									</li>
-								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Bài viết</span></a>
+								<li><a href="${pageContext.request.contextPath}/books"><span>Sản
+											phẩm</span></a></li>
+								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Bài
+											viết</span></a>
 									<ul class="sub-menu">
 										<li><a href="javascript:void(0);">Page Layout <i
 												class="fa fa-angle-right"></i></a>
@@ -611,5 +653,9 @@
 							.catch(err => console.error('Mini cart remove error:', err));
 				});
 			</script>
+			
+			<!-- tìm kiếm realtime:lắng nghe khi  gõ phím và gọi lên Server -->
+			<script src="${pageContext.request.contextPath}/assets/js/search.js"></script>
+
 		</header>
 		<!-- Header End -->

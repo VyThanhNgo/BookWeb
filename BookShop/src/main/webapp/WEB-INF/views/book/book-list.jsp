@@ -438,8 +438,10 @@
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
-										<img src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+										<a href="${pageContext.request.contextPath}/books/detail?id=${b.id}">
+													<img src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
 											 alt="${b.title}">
+											</a>
 									</div>
 
 									<div class="bookmark-btn style-2">
