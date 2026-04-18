@@ -24,9 +24,9 @@ public class CategoryFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
-        if(request.getAttribute("categories") == null) {
+        if (request.getServletContext().getAttribute("categories") == null) {
             BookDAO dao = new BookDAO();
-            request.setAttribute("categories", dao.getAllCategories());
+            request.getServletContext().setAttribute("categories", dao.getAllCategories());
         }
         chain.doFilter(req, res);
     }
