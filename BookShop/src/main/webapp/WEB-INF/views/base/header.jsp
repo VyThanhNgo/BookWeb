@@ -358,12 +358,17 @@
 					<div class="header-search-nav">
     <form class="header-item-search" action="${pageContext.request.contextPath}/books" method="get">
         <div class="input-group search-input">
-            <select class="default-select" name="categoryId">
-                <option value="">Danh mục</option>
-                <c:forEach var="cat" items="${categories}">
-                    <option value="${cat.id}" ${param.categoryId == cat.id ? 'selected' : ''}>${cat.name}</option>
-                </c:forEach>
-            </select>
+            <select class="default-select" name="categoryId" 
+        onchange="this.form.submit()">  <%-- Thêm auto-submit khi chọn --%>
+    <option value="">Danh mục</option>
+    <c:forEach var="cat" items="${categories}">
+        <option value="${cat.id}" 
+            <c:forEach var="selectedId" items="${paramValues.categoryId}">
+                <c:if test="${selectedId == cat.id}">selected</c:if>
+            </c:forEach>
+        >${cat.name}</option>
+    </c:forEach>
+</select>
             
             <div class="form-control-wrapper" style="flex: 1; position: relative; display: flex;">
                 <input type="text" id="live-search-input" name="keyword"

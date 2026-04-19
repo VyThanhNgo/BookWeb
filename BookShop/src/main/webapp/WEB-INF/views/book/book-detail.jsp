@@ -14,32 +14,38 @@
 				<div class="col">
 					<div class="dz-box">
 						<div class="dz-media">
-    <div class="main-img-container" style="position: relative;">
-        <img id="main-book-img" 
-             src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
-             alt="${book.title}"
-             style="aspect-ratio: 2/3; object-fit: cover; width: 100%; border: 1px solid #eee;">
-        
-        <button type="button" class="nav-btn prev" onclick="changeSlide(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">❮</button>
-        <button type="button" class="nav-btn next" onclick="changeSlide(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">❯</button>
-    </div>
+							<div class="main-img-container" style="position: relative;">
+								<img id="main-book-img"
+									src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
+									alt="${book.title}"
+									style="aspect-ratio: 2/3; object-fit: cover; width: 100%; border: 1px solid #eee;">
 
-    <div class="sub-images-slider" style="display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px;">
-        <img src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
-             class="thumb-item active"
-             style="width: 70px; height: 90px; object-fit: cover; cursor: pointer; border: 2px solid #ff7200;" 
-             onclick="setActiveImg(this, 0)">
+								<button type="button" class="nav-btn prev"
+									onclick="changeSlide(-1)"
+									style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.7); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">❮</button>
+								<button type="button" class="nav-btn next"
+									onclick="changeSlide(1)"
+									style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.7); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">❯</button>
+							</div>
 
-        <c:if test="${not empty book.subImages}">
-            <c:forEach var="sImg" items="${book.subImages}" varStatus="status">
-                <img src="${sImg}"
-                     class="thumb-item"
-                     style="width: 70px; height: 90px; object-fit: cover; cursor: pointer; border: 2px solid #eee;"
-                     onclick="setActiveImg(this, ${status.index + 1})">
-            </c:forEach>
-        </c:if>
-    </div>
-</div>
+							<div class="sub-images-slider"
+								style="display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px;">
+								<img
+									src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
+									class="thumb-item active"
+									style="width: 70px; height: 90px; object-fit: cover; cursor: pointer; border: 2px solid #ff7200;"
+									onclick="setActiveImg(this, 0)">
+
+								<c:if test="${not empty book.subImages}">
+									<c:forEach var="sImg" items="${book.subImages}"
+										varStatus="status">
+										<img src="${sImg}" class="thumb-item"
+											style="width: 70px; height: 90px; object-fit: cover; cursor: pointer; border: 2px solid #eee;"
+											onclick="setActiveImg(this, ${status.index + 1})">
+									</c:forEach>
+								</c:if>
+							</div>
+						</div>
 						<div class="dz-content">
 							<div class="dz-header">
 								<h3 class="title">${book.title}</h3>
@@ -218,142 +224,88 @@
 							<div id="developement-1" class="tab-pane">
 								<div class="clear" id="comment-list">
 									<div class="post-comments comments-area style-1 clearfix">
-										<h4 class="comments-title">4 COMMENTS</h4>
+										<h4 class="comments-title">ĐÁNH GIÁ</h4>
 										<div id="comment">
 											<ol class="comment-list">
-												<li class="comment even thread-even depth-1 comment"
-													id="comment-2">
-													<div class="comment-body">
-														<div class="comment-author vcard">
-															<img src="images/profile4.jpg" alt="" class="avatar">
-															<cite class="fn">Michel Poe</cite> <span class="says">says:</span>
-															<div class="comment-meta">
-																<a href="javascript:void(0);">December 22, 2024 at
-																	6:14 am</a>
-															</div>
-														</div>
-														<div class="comment-content dlab-page-text">
-															<p>Donec suscipit porta lorem eget condimentum. Morbi
-																vitae mauris in leo venenatis varius. Aliquam nunc enim,
-																egestas ac dui in, aliquam vulputate erat.</p>
-														</div>
-														<div class="reply">
-															<a rel="nofollow" class="comment-reply-link"
-																href="javascript:void(0);"><i class="fa fa-reply"></i>
-																Reply</a>
-														</div>
-													</div>
-													<ol class="children">
-														<li
-															class="comment byuser comment-author-w3itexpertsuser bypostauthor odd alt depth-2 comment"
-															id="comment-3">
-															<div class="comment-body" id="div-comment-3">
-																<div class="comment-author vcard">
-																	<img src="images/profile3.jpg" alt="" class="avatar">
-																	<cite class="fn">Celesto Anderson</cite> <span
-																		class="says">says:</span>
-																	<div class="comment-meta">
-																		<a href="javascript:void(0);">December 22, 2024 at
-																			6:14 am</a>
-																	</div>
-																</div>
-																<div class="comment-content dlab-page-text">
-																	<p>Donec suscipit porta lorem eget condimentum.
-																		Morbi vitae mauris in leo venenatis varius. Aliquam
-																		nunc enim, egestas ac dui in, aliquam vulputate erat.</p>
-																</div>
-																<div class="reply">
-																	<a class="comment-reply-link"
-																		href="javascript:void(0);"><i class="fa fa-reply"></i>
-																		Reply</a>
+												<c:forEach var="r" items="${reviews}">
+													<li class="comment even thread-even depth-1">
+														<div class="comment-body">
+															<div class="comment-author vcard">
+																<img
+																	src="${not empty r.userAvatar ? r.userAvatar : ctx.concat('/assets/images/users/default.png')}"
+																	alt="" class="avatar"> <cite class="fn">${r.userName}</cite>
+																<span class="says">đánh giá:</span>
+																<div class="dz-rating">
+																	<c:forEach var="i" begin="1" end="5">
+																		<i
+																			class="fa fa-star ${i <= r.rating ? 'text-yellow' : 'text-muted'}"></i>
+																	</c:forEach>
 																</div>
 															</div>
-														</li>
-													</ol>
-												</li>
-												<li
-													class="comment even thread-odd thread-alt depth-1 comment"
-													id="comment-4">
-													<div class="comment-body" id="div-comment-4">
-														<div class="comment-author vcard">
-															<img src="images/profile2.jpg" alt="" class="avatar">
-															<cite class="fn">Ryan</cite> <span class="says">says:</span>
 															<div class="comment-meta">
-																<a href="javascript:void(0);">December 22, 2024 at
-																	6:14 am</a>
+																<a href="javascript:void(0);"><fmt:formatDate
+																		value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm" /></a>
 															</div>
+
+															<p>${r.comment}</p>
+															<c:if test="${not empty r.images}">
+																<div class="review-images-list"
+																	style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+																	<c:forEach var="imgUrl" items="${r.images}">
+																		<a href="${imgUrl}" target="_blank"> <img
+																			src="${imgUrl}"
+																			style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+																		</a>
+																	</c:forEach>
+																</div>
+															</c:if>
 														</div>
-														<div class="comment-content dlab-page-text">
-															<p>Donec suscipit porta lorem eget condimentum. Morbi
-																vitae mauris in leo venenatis varius. Aliquam nunc enim,
-																egestas ac dui in, aliquam vulputate erat.</p>
-														</div>
-														<div class="reply">
-															<a class="comment-reply-link" href="javascript:void(0);"><i
-																class="fa fa-reply"></i> Reply</a>
-														</div>
-													</div>
-												</li>
-												<li class="comment odd alt thread-even depth-1 comment"
-													id="comment-5">
-													<div class="comment-body" id="div-comment-5">
-														<div class="comment-author vcard">
-															<img src="images/profile1.jpg" alt="" class="avatar">
-															<cite class="fn">Stuart</cite> <span class="says">says:</span>
-															<div class="comment-meta">
-																<a href="javascript:void(0);">December 22, 2024 at
-																	6:14 am</a>
-															</div>
-														</div>
-														<div class="comment-content dlab-page-text">
-															<p>Donec suscipit porta lorem eget condimentum. Morbi
-																vitae mauris in leo venenatis varius. Aliquam nunc enim,
-																egestas ac dui in, aliquam vulputate erat.</p>
-														</div>
-														<div class="reply">
-															<a rel="nofollow" class="comment-reply-link"
-																href="javascript:void(0);"><i class="fa fa-reply"></i>
-																Reply</a>
-														</div>
-													</div>
-												</li>
+													</li>
+												</c:forEach>
 											</ol>
 										</div>
-										<div class="default-form comment-respond style-1" id="respond">
-											<h4 class="comment-reply-title" id="reply-title">
-												LEAVE A REPLY <small> <a rel="nofollow"
-													id="cancel-comment-reply-link" href="javascript:void(0)"
-													style="display: none;">Cancel reply</a>
-												</small>
-											</h4>
-											<div class="clearfix">
-												<form method="post" id="comments_form" class="comment-form"
-													novalidate="">
-													<p class="comment-form-author">
-														<input id="name" placeholder="Author" name="author"
-															type="text" value="">
-													</p>
-													<p class="comment-form-email">
-														<input id="email" required="required" placeholder="Email"
-															name="email" type="email" value="">
-													</p>
-													<p class="comment-form-comment">
-														<textarea id="comments" placeholder="Type Comment Here"
-															class="form-control4" name="comment" cols="45" rows="3"
-															required="required"></textarea>
-													</p>
-													<p class="col-md-12 col-sm-12 col-xs-12 form-submit">
-														<button id="submit" type="submit"
-															class="submit btn btn-primary filled">
-															Submit Now <i class="fa fa-angle-right m-l10"></i>
-														</button>
-													</p>
+
+										<c:if test="${not empty sessionScope.loggedInUser}">
+											<div class="comment-respond" id="respond">
+												<h4 class="comment-reply-title" id="reply-title">Viết
+													đánh giá của bạn</h4>
+
+												<form action="${ctx}/add-review" method="post"
+													enctype="multipart/form-data" class="comment-form">
+													<input type="hidden" name="bookId" value="${book.id}">
+
+													<div class="comment-form-rating">
+														<label>Số sao: </label> <select name="rating"
+															class="form-control" style="width: 120px;">
+															<option value="5">⭐⭐⭐⭐⭐ (5 sao)</option>
+															<option value="4">⭐⭐⭐⭐ (4 sao)</option>
+															<option value="3">⭐⭐⭐ (3 sao)</option>
+															<option value="2">⭐⭐ (2 sao)</option>
+															<option value="1">⭐ (1 sao)</option>
+														</select>
+													</div>
+
+													<div class="form-group mb-3">
+														<label>Hình ảnh thực tế (Bạn có thể chọn nhiều
+															ảnh):</label> <input type="file" name="reviewPhotos"
+															class="form-control" multiple accept="image/*">
+													</div>
+
+													<div class="comment-form-comment">
+														<textarea name="comment"
+															placeholder="Bạn thấy cuốn sách này thế nào? Chia sẻ cảm nhận của bạn nhé..."
+															class="form-control" rows="4" required></textarea>
+													</div>
+
+													<div class="form-submit mt-2">
+														<button type="submit" class="btn btn-primary btnhover">Gửi
+															Đánh Giá</button>
+													</div>
 												</form>
 											</div>
-										</div>
+										</c:if>
 									</div>
 								</div>
-
 							</div>
 						</div>
 					</div>
