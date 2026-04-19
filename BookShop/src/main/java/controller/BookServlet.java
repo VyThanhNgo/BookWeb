@@ -35,8 +35,16 @@ public class BookServlet extends HttpServlet {
         if(catIds != null) {
             categoryIds = new ArrayList<>();
             for(String id : catIds) {
-                if(!id.isEmpty()) categoryIds.add(Integer.parseInt(id));
+            	//  kiểm tra không rỗng VÀ là số hợp lệ
+            	if (id != null && !id.trim().isEmpty()) {
+                    try {
+                        categoryIds.add(Integer.parseInt(id.trim()));
+                    } catch (NumberFormatException e) {
+                        // bỏ qua giá trị không hợp lệ
+                    }
+                }
             }
+            if (categoryIds.isEmpty()) categoryIds = null;
         }
 
         String minPriceStr = request.getParameter("minPrice");
