@@ -133,6 +133,100 @@ LOCK TABLES `categories` WRITE;
 INSERT INTO `categories` VALUES (1,'Tiểu thuyết'),(2,'Công nghệ'),(3,'Kinh tế'),(4,'Tâm lý - Kỹ năng sống'),(5,'Lịch sử'),(6,'Khoa học'),(7,'Văn học nước ngoài'),(8,'Văn học Việt Nam');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `review_images`
+--
+
+DROP TABLE IF EXISTS `review_images`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `review_images` (
+  `image_id` int NOT NULL AUTO_INCREMENT,
+  `review_id` int NOT NULL,
+  `image_url` varchar(500) NOT NULL,
+  PRIMARY KEY (`image_id`),
+  KEY `fk_image_review` (`review_id`),
+  CONSTRAINT `fk_image_review` FOREIGN KEY (`review_id`) REFERENCES `reviews` (`review_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `review_images`
+--
+
+LOCK TABLES `review_images` WRITE;
+/*!40000 ALTER TABLE `review_images` DISABLE KEYS */;
+INSERT INTO `review_images` VALUES (1,2,'http://res.cloudinary.com/dqiefayjh/image/upload/v1776606948/reviews/vwhpvvjhuwwva0f2sumy.jpg'),(2,2,'http://res.cloudinary.com/dqiefayjh/image/upload/v1776606950/reviews/x3899azbhzormkrsiutr.jpg');
+/*!40000 ALTER TABLE `review_images` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reviews`
+--
+
+DROP TABLE IF EXISTS `reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reviews` (
+  `review_id` int NOT NULL AUTO_INCREMENT,
+  `book_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `rating` int DEFAULT '5',
+  `comment` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`),
+  KEY `fk_review_book` (`book_id`),
+  KEY `fk_review_user` (`user_id`),
+  CONSTRAINT `fk_review_book` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reviews`
+--
+
+LOCK TABLES `reviews` WRITE;
+/*!40000 ALTER TABLE `reviews` DISABLE KEYS */;
+INSERT INTO `reviews` VALUES (2,19,1,4,'nhận dduocj hàng cũng nhanh, sách ok như hình','2026-04-19 13:55:50');
+/*!40000 ALTER TABLE `reviews` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `full_name` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `address` text,
+  `avatar` varchar(500) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `role` varchar(20) DEFAULT 'user',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'quynh','$2a$12$X9fvlDurTNIqwSHWnjtFe.XSaFrU6fhmohnEZv58QfcqDtjhJV.2m','shodakima@gmail.com','huong quynh','','',NULL,1,'user','2026-04-19 20:32:11');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -143,4 +237,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-18 19:50:30
+-- Dump completed on 2026-04-19 21:01:07
