@@ -1,2 +1,3 @@
 tối ưu hóa giao diện trang chủ
 sửa lỗi font hiển thị
+thêm kiểm tra dữ liệu đầu vào
