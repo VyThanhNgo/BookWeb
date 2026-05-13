@@ -559,7 +559,7 @@
 								<div class="dz-shop-card style-1">
 									<div class="dz-media">
 										<a
-											href="${pageContext.request.contextPath}/books/detail?id=${b.id}">
+											href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
 											<img
 											src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
 											alt="${b.title}">
@@ -576,7 +576,7 @@
 									<div class="dz-content">
 										<h5 class="title">
 											<a
-												href="${pageContext.request.contextPath}/books/detail?id=${b.id}">
+												href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
 												${b.title} </a>
 										</h5>
 
