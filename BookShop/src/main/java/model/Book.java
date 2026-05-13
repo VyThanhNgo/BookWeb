@@ -13,10 +13,12 @@ public class Book {
 	private String image; // ảnh chính
 	private int publishYear;
 	
+	
 	private String isbn;
     private String publisher;
     private String language;
     private String coverType;
+    private String slug;
     private int soldQuantity;
     private List<String> subImages; // Danh sách các ảnh phụ
 	
@@ -166,5 +168,16 @@ public class Book {
 	public void setPublishYear(int publishYear) {
 		this.publishYear = publishYear;
 	}
+
+	public String getSlug() {
+		return slug;
+	}
+
+	public void setSlug(String slug) {
+		this.slug = slug;
+	}
+
+	
+	
 
 }

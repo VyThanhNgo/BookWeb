@@ -325,7 +325,7 @@
 										<div class="dz-content">
 											<h5 class="subtitle">
 												<a
-													href="${pageContext.request.contextPath}/books/detail?id=${rb.id}">${rb.title}</a>
+													href="${pageContext.request.contextPath}/books/${rb.slug}-${rb.id}">${rb.title}</a>
 											</h5>
 											<ul class="dz-tags">
 												<li>${rb.category.name}</li>

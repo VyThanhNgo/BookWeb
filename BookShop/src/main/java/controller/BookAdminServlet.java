@@ -70,8 +70,13 @@ public class BookAdminServlet extends HttpServlet {
             int bookId = Integer.parseInt(request.getParameter("id"));
 
           
-            dao.deleteBook(bookId);
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
+            if (dao.canDeleteBook(bookId)) {
+                dao.deleteBook(bookId);
+                response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
+            } else {
+                // Gửi thông báo lỗi nếu sách đã có người mua
+                response.sendRedirect(request.getContextPath() + "/admin/books?error=book_has_orders");
+            }
 
         }else {
             // Trang danh sách sách admin
@@ -107,7 +112,11 @@ public class BookAdminServlet extends HttpServlet {
             if (filePart != null && filePart.getSize() > 0) {
                 imageUrl = saveImage(filePart, "books");
             }
-
+          //kiểm tra giá và tồn kho khi thêm sách
+            if (price < 0 || stock < 0) {
+            	response.sendRedirect(request.getContextPath() + "/admin/books?error=invalid_value");                
+                return;
+            }
             int bookId = dao.addBook(title, price, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
             for (Part part : request.getParts()) {
@@ -143,7 +152,11 @@ public class BookAdminServlet extends HttpServlet {
             if (filePart != null && filePart.getSize() > 0) {
                 imageUrl = saveImage(filePart, "books"); // ghi đè ảnh mới
             }
-
+            //kiểm tra giá và tồn kho khi update
+            if (price < 0 || stock < 0) {
+            	response.sendRedirect(request.getContextPath() + "/admin/books?error=invalid_value");                
+                return;
+            }
             dao.updateBook(bookId, title, price, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
             for (Part part : request.getParts()) {

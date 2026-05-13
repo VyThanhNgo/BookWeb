@@ -24,7 +24,7 @@
 		</div>
 		<div class="mb-3">
 			<label>Giá</label> <input type="number" name="price"
-				class="form-control" required>
+				min="0" class="form-control" required>
 		</div>
 		<div class="mb-3">
 			<label>Danh mục</label> <select name="categoryId"
@@ -71,7 +71,7 @@
 </div>
 		<div class="mb-3">
 			<label>Tồn kho</label> <input type="number" name="stock"
-				class="form-control">
+				class="form-control" min="0" required>
 		</div>
 		<div class="mb-3">
 			<label>Mô tả</label>
@@ -99,7 +99,12 @@
 
 		<hr class="mt-5">
 		<h4>Danh sách sách hiện có</h4>
-
+		<c:if test="${param.error eq 'invalid_value'}">
+    <div class="alert alert-danger">Giá và tồn kho không được để số âm!</div>
+</c:if>
+<c:if test="${param.error eq 'book_has_orders'}">
+    <div class="alert alert-warning">Không thể xóa sách này vì đã có trong đơn hàng của khách!</div>
+</c:if>
 		<c:if test="${param.success eq 'added'}">
 			<div class="alert alert-success">Thêm sách thành công!</div>
 		</c:if>
