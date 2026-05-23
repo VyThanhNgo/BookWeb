@@ -19,7 +19,8 @@
 							type="hidden" name="maxPrice" id="maxPriceInput"> <input
 							type="hidden" name="sort" id="sortInput" value="${param.sort}">
 
-						<div class="shop-filter">
+						<div class="shop-filter"
+							style="position: sticky; top: 100px; z-index: 10; max-height: calc(100vh - 110px);">
 							<div class="d-flex justify-content-between">
 								<h4 class="title">Lựa chọn lọc</h4>
 								<a href="javascript:void(0);" class="panel-close-btn"> <i
@@ -39,6 +40,23 @@
 										aria-labelledby="headingFive"
 										data-bs-parent="#accordionExample">
 										<div class="range-slider style-1">
+											<div class="d-flex align-items-center gap-2 mb-3 mt-2">
+												<div class="flex-fill">
+													<label class="form-label small text-muted mb-1">Từ
+														(₫)</label> <input type="number" id="manualMin"
+														class="form-control form-control-sm" placeholder="0"
+														value="${minPrice != null && minPrice > 0 ? minPrice : ''}">
+												</div>
+												<span class="mt-3">—</span>
+												<div class="flex-fill">
+													<label class="form-label small text-muted mb-1">Đến
+														(₫)</label> <input type="number" id="manualMax"
+														class="form-control form-control-sm"
+														placeholder="${dbMaxPrice}"
+														value="${maxPrice != null && maxPrice < dbMaxPrice ? maxPrice : ''}">
+												</div>
+											</div>
+
 											<div id="slider-tooltips"
 												class="noUi-target noUi-ltr noUi-horizontal noUi-txt-dir-ltr">
 												<div class="noUi-base">
@@ -49,9 +67,7 @@
 													<div class="noUi-origin"
 														style="transform: translate(-60%, 0px); z-index: 5;">
 														<div class="noUi-handle noUi-handle-lower" data-handle="0"
-															tabindex="0" role="slider" aria-orientation="horizontal"
-															aria-valuemin="0.0" aria-valuemax="80.0"
-															aria-valuenow="40.0" aria-valuetext="40.00">
+															tabindex="0" role="slider" aria-orientation="horizontal">
 															<div class="noUi-touch-area"></div>
 															<div class="noUi-tooltip">40.0</div>
 														</div>
@@ -59,9 +75,7 @@
 													<div class="noUi-origin"
 														style="transform: translate(-20%, 0px); z-index: 4;">
 														<div class="noUi-handle noUi-handle-upper" data-handle="1"
-															tabindex="0" role="slider" aria-orientation="horizontal"
-															aria-valuemin="40.0" aria-valuemax="100.0"
-															aria-valuenow="80.0" aria-valuetext="80.00">
+															tabindex="0" role="slider" aria-orientation="horizontal">
 															<div class="noUi-touch-area"></div>
 															<div class="noUi-tooltip">80.00</div>
 														</div>
@@ -125,183 +139,85 @@
 									</div>
 								</div>
 
-								<div class="accordion-item">
-									<button class="accordion-button collapsed" id="headingTwo"
-										type="button" data-bs-toggle="collapse"
-										data-bs-target="#collapseTwo" aria-expanded="false"
-										aria-controls="collapseTwo">Choose Publisher</button>
-									<div id="collapseTwo"
-										class="accordion-collapse collapse accordion-body"
-										aria-labelledby="headingTwo"
-										data-bs-parent="#accordionExample">
-										<div class="widget dz-widget_services">
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox15"> <label
-													class="form-check-label" for="productCheckBox15">Action</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox16"> <label
-													class="form-check-label" for="productCheckBox16">Advanture</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox17"> <label
-													class="form-check-label" for="productCheckBox17">Animation</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox18"> <label
-													class="form-check-label" for="productCheckBox18">Biography</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox19"> <label
-													class="form-check-label" for="productCheckBox19">Comedy</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox20"> <label
-													class="form-check-label" for="productCheckBox20">Crime</label>
-											</div>
-											<div class="form-check search-content">
-												<input class="form-check-input" type="checkbox" value=""
-													id="productCheckBox21"> <label
-													class="form-check-label" for="productCheckBox21">Documentary</label>
-											</div>
-										</div>
-									</div>
-								</div>
+								
 
-								<div class="accordion-item">
-									<button class="accordion-button collapsed" id="headingThree"
-										type="button" data-bs-toggle="collapse"
-										data-bs-target="#collapseThree" aria-expanded="false"
-										aria-controls="collapseThree">Select Year</button>
-									<div id="collapseThree"
-										class="accordion-collapse collapse accordion-body"
-										aria-labelledby="headingThree"
-										data-bs-parent="#accordionExample">
-										<div
-											class="widget dz-widget_services col d-flex justify-content-between">
-											<div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox22"><label
-														class="form-check-label" for="productCheckBox22">2020</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox23"><label
-														class="form-check-label" for="productCheckBox23">2021</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox24"><label
-														class="form-check-label" for="productCheckBox24">2024</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox25"><label
-														class="form-check-label" for="productCheckBox25">2019</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox26"><label
-														class="form-check-label" for="productCheckBox26">2018</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox27"><label
-														class="form-check-label" for="productCheckBox27">2017</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox28"><label
-														class="form-check-label" for="productCheckBox28">2016</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox29"><label
-														class="form-check-label" for="productCheckBox29">2015</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox30"><label
-														class="form-check-label" for="productCheckBox30">2014</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox31"><label
-														class="form-check-label" for="productCheckBox31">2013</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox32"><label
-														class="form-check-label" for="productCheckBox32">2012</label>
-												</div>
-											</div>
-											<div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox33"><label
-														class="form-check-label" for="productCheckBox33">2011</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox34"><label
-														class="form-check-label" for="productCheckBox34">2010</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox35"><label
-														class="form-check-label" for="productCheckBox35">2009</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox36"><label
-														class="form-check-label" for="productCheckBox36">2008</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox37"><label
-														class="form-check-label" for="productCheckBox37">2007</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox38"><label
-														class="form-check-label" for="productCheckBox38">2006</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox39"><label
-														class="form-check-label" for="productCheckBox39">2005</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox40"><label
-														class="form-check-label" for="productCheckBox40">2004</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox41"><label
-														class="form-check-label" for="productCheckBox41">2003</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox42"><label
-														class="form-check-label" for="productCheckBox42">2002</label>
-												</div>
-												<div class="form-check search-content">
-													<input class="form-check-input" type="checkbox" value=""
-														id="productCheckBox43"><label
-														class="form-check-label" for="productCheckBox43">2001</label>
-												</div>
+								<%-- Nhà xuất bản --%>
+								<c:if test="${not empty distinctPublishers}">
+									<div class="accordion-item">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapsePublisher"
+											aria-expanded="false">Nhà xuất bản</button>
+										<div id="collapsePublisher"
+											class="accordion-collapse collapse accordion-body">
+											<div class="widget dz-widget_services">
+												<c:forEach var="pub" items="${distinctPublishers}">
+													<div class="form-check search-content">
+														<input class="form-check-input filter-checkbox"
+															type="checkbox" name="publisher" value="${pub}"
+															id="pub-${pub}"
+															<c:forEach var="s" items="${selectedPublishers}">
+                            <c:if test="${s == pub}">checked</c:if>
+                        </c:forEach>>
+														<label class="form-check-label" for="pub-${pub}">${pub}</label>
+													</div>
+												</c:forEach>
 											</div>
 										</div>
 									</div>
-								</div>
+								</c:if>
+
+								<%-- Năm xuất bản --%>
+								<c:if test="${not empty distinctYears}">
+									<div class="accordion-item">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseYear"
+											aria-expanded="false">Năm xuất bản</button>
+										<div id="collapseYear"
+											class="accordion-collapse collapse accordion-body">
+											<div
+												class="widget dz-widget_services d-flex flex-wrap justify-content-between">
+												<c:forEach var="yr" items="${distinctYears}">
+													<div class="form-check search-content"
+														style="min-width: 80px;">
+														<input class="form-check-input filter-checkbox"
+															type="checkbox" name="publishYear" value="${yr}"
+															id="yr-${yr}"
+															<c:forEach var="s" items="${selectedYears}">
+                            <c:if test="${s == yr}">checked</c:if>
+                        </c:forEach>>
+														<label class="form-check-label" for="yr-${yr}">${yr}</label>
+													</div>
+												</c:forEach>
+											</div>
+										</div>
+									</div>
+								</c:if>
+
+								<%-- Tác giả --%>
+								<c:if test="${not empty authors}">
+									<div class="accordion-item">
+										<button class="accordion-button collapsed" type="button"
+											data-bs-toggle="collapse" data-bs-target="#collapseAuthor"
+											aria-expanded="false">Tác giả</button>
+										<div id="collapseAuthor"
+											class="accordion-collapse collapse accordion-body">
+											<div class="widget dz-widget_services"
+												style="max-height: 200px; overflow-y: auto;">
+												<c:forEach var="auth" items="${authors}">
+													<div class="form-check search-content">
+														<input class="form-check-input filter-checkbox"
+															type="checkbox" name="authorId" value="${auth.id}"
+															id="auth-${auth.id}"
+															<c:forEach var="s" items="${selectedAuthorIds}">
+                            <c:if test="${s == auth.id}">checked</c:if>
+                        </c:forEach>>
+														<label class="form-check-label" for="auth-${auth.id}">${auth.name}</label>
+													</div>
+												</c:forEach>
+											</div>
+										</div>
+									</div>
+								</c:if>
 
 								<div class="accordion accordion-inner" id="filter-inner">
 									<div class="accordion-item">
@@ -324,26 +240,7 @@
 										</div>
 									</div>
 
-									<div class="accordion-item">
-										<button class="accordion-button collapsed"
-											id="headingTwo_inner" type="button" data-bs-toggle="collapse"
-											data-bs-target="#collapseTwo_inner" aria-expanded="false"
-											aria-controls="collapseTwo_inner">Most Commented
-											(21)</button>
-										<div id="collapseTwo_inner"
-											class="accordion-collapse collapse accordion-body"
-											aria-labelledby="headingTwo_inner"
-											data-bs-parent="#filter-inner">
-											<ul>
-												<li><a href="javascript:void(0);">Alone Here</a></li>
-												<li><a href="javascript:void(0);">Alien Invassion</a></li>
-												<li><a href="javascript:void(0);">Bullo The Cat</a></li>
-												<li><a href="javascript:void(0);">Cut That Hair!</a></li>
-												<li><a href="javascript:void(0);">Dragon Of The
-														King</a></li>
-											</ul>
-										</div>
-									</div>
+									
 
 									<div class="accordion-item">
 										<button class="accordion-button collapsed"
@@ -367,26 +264,7 @@
 										</div>
 									</div>
 
-									<div class="accordion-item">
-										<button class="accordion-button collapsed"
-											id="headingFour_inner" type="button"
-											data-bs-toggle="collapse"
-											data-bs-target="#collapseFour_inner" aria-expanded="false"
-											aria-controls="collapseFour_inner">Featured (129)</button>
-										<div id="collapseFour_inner"
-											class="accordion-collapse collapse accordion-body"
-											aria-labelledby="headingFour_inner"
-											data-bs-parent="#filter-inner">
-											<ul>
-												<li><a href="javascript:void(0);">Alone Here</a></li>
-												<li><a href="javascript:void(0);">Alien Invassion</a></li>
-												<li><a href="javascript:void(0);">Bullo The Cat</a></li>
-												<li><a href="javascript:void(0);">Cut That Hair!</a></li>
-												<li><a href="javascript:void(0);">Dragon Of The
-														King</a></li>
-											</ul>
-										</div>
-									</div>
+									
 
 									<div class="accordion-item">
 										<button class="accordion-button collapsed"
@@ -551,9 +429,91 @@
 								</div>
 							</div>
 						</div>
+						<div class="filter-tags m-b20"
+							style="display: flex; flex-wrap: wrap; gap: 8px;">
+
+							<c:if test="${not empty param.keyword}">
+								<span
+									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+									Từ khóa: <strong>${param.keyword}</strong> <a
+									href="javascript:void(0);" onclick="removeFilter('keyword','')"
+									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+								</span>
+							</c:if>
+
+							<c:if
+								test="${(minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice < dbMaxPrice)}">
+								<span
+									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+									Giá: <strong><fmt:formatNumber value="${minPrice}"
+											pattern="#,###" />₫ — <fmt:formatNumber value="${maxPrice}"
+											pattern="#,###" />₫</strong> <a href="javascript:void(0);"
+									onclick="removeFilter('price','')"
+									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+								</span>
+							</c:if>
+
+							<c:forEach var="catId" items="${paramValues.categoryId}">
+								<c:forEach var="c" items="${categories}">
+									<c:if test="${c.id == catId}">
+										<span
+											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+											Danh mục: <strong>${c.name}</strong> <a
+											href="javascript:void(0);"
+											onclick="removeFilter('categoryId','${catId}')"
+											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+										</span>
+									</c:if>
+								</c:forEach>
+							</c:forEach>
+
+							<c:forEach var="yr" items="${selectedYears}">
+								<span
+									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+									Năm: <strong>${yr}</strong> <a href="javascript:void(0);"
+									onclick="removeFilter('publishYear','${yr}')"
+									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+								</span>
+							</c:forEach>
+
+							<c:forEach var="aId" items="${selectedAuthorIds}">
+								<c:forEach var="auth" items="${authors}">
+									<c:if test="${auth.id == aId}">
+										<span
+											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+											Tác giả: <strong>${auth.name}</strong> <a
+											href="javascript:void(0);"
+											onclick="removeFilter('authorId','${aId}')"
+											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+										</span>
+									</c:if>
+								</c:forEach>
+							</c:forEach>
+
+							<c:forEach var="pub" items="${selectedPublishers}">
+								<span
+									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+									NXB: <strong>${pub}</strong> <a href="javascript:void(0);"
+									onclick="removeFilter('publisher','${pub}')"
+									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+								</span>
+							</c:forEach>
+
+						</div>
 					</div>
 
+
 					<div class="row book-grid-row">
+						<c:if test="${empty books}">
+							<div class="col-12 text-center p-5">
+
+								<h3 class="mt-4">Rất tiếc, không tìm thấy sách phù hợp!</h3>
+								<p>Bạn hãy thử thay đổi từ khóa tìm kiếm hoặc dùng ít bộ lọc
+									hơn nhé.</p>
+								<a href="${pageContext.request.contextPath}/books"
+									class="btn btn-primary">Xóa tất cả bộ lọc</a>
+							</div>
+						</c:if>
 						<c:forEach var="b" items="${books}">
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
@@ -625,11 +585,11 @@
 									<%-- Prev --%>
 									<li class="page-item ${currentPage == 1 ? 'disabled' : ''}"><a
 										class="page-link prev"
-										href="${pageContext.request.contextPath}/books?page=${currentPage - 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">&#10094;</a></li>
+										href="${pageContext.request.contextPath}/books?page=${currentPage - 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">&#10094;</a></li>
 									<%-- Trang 1 luôn hiện --%>
 									<li class="page-item"><a
 										class="page-link ${currentPage == 1 ? 'active' : ''}"
-										href="${pageContext.request.contextPath}/books?page=1&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">1</a>
+										href="${pageContext.request.contextPath}/books?page=1&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">1</a>
 									</li>
 
 									<%-- Dấu ... đầu nếu currentPage > 3 --%>
@@ -642,7 +602,7 @@
 										<c:if test="${i >= currentPage - 1 && i <= currentPage + 1}">
 											<li class="page-item"><a
 												class="page-link ${i == currentPage ? 'active' : ''}"
-												href="${pageContext.request.contextPath}/books?page=${i}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${i}</a>
+												href="${pageContext.request.contextPath}/books?page=${i}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">${i}</a>
 											</li>
 										</c:if>
 									</c:forEach>
@@ -656,7 +616,7 @@
 									<c:if test="${totalPages > 1}">
 										<li class="page-item"><a
 											class="page-link ${currentPage == totalPages ? 'active' : ''}"
-											href="${pageContext.request.contextPath}/books?page=${totalPages}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">${totalPages}</a>
+											href="${pageContext.request.contextPath}/books?page=${totalPages}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">${totalPages}</a>
 										</li>
 									</c:if>
 
@@ -664,7 +624,7 @@
 									<li
 										class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
 										<a class="page-link next"
-										href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach>">
+										href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">
 											&#10095; </a>
 									</li>
 								</ul>
@@ -948,6 +908,82 @@
 			}, 1500);
 		}
 	});
+</script>
+
+<%--
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var sliderEl = document.getElementById('slider-tooltips');
+    if (sliderEl && typeof noUiSlider !== 'undefined') {
+        var dbMax  = parseFloat('${dbMaxPrice}') || 500000;
+        var curMin = parseFloat('${minPrice}') || 0;
+        var curMax = parseFloat('${maxPrice}') || dbMax;
+
+        if (sliderEl.noUiSlider) sliderEl.noUiSlider.destroy();
+
+        noUiSlider.create(sliderEl, {
+            start: [curMin, curMax],
+            connect: true,
+            range: { min: 0, max: dbMax },
+            step: 1000,
+            format: wNumb({ decimals: 0, thousand: '.', suffix: ' đ' })
+        });
+
+        sliderEl.noUiSlider.on('update', function (values, handle) {
+            var raw = sliderEl.noUiSlider.get(true);
+            if (handle === 0) {
+                document.getElementById('amount-min').value = values[0];
+                document.getElementById('minPriceInput').value = Math.round(raw[0]);
+                if (document.getElementById('manualMin'))
+                    document.getElementById('manualMin').value = Math.round(raw[0]) > 0 ? Math.round(raw[0]) : '';
+            } else {
+                document.getElementById('amount-max').value = values[1];
+                document.getElementById('maxPriceInput').value = Math.round(raw[1]);
+                if (document.getElementById('manualMax'))
+                    document.getElementById('manualMax').value = Math.round(raw[1]) < dbMax ? Math.round(raw[1]) : '';
+            }
+        });
+
+        sliderEl.noUiSlider.on('change', function () {
+            document.getElementById('filterForm').submit();
+        });
+
+        /* Nhập tay → submit */
+        ['manualMin','manualMax'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('keydown', function(e) {
+                if (e.key !== 'Enter') return;
+                var lo = parseInt(document.getElementById('manualMin').value) || 0;
+                var hi = parseInt(document.getElementById('manualMax').value) || dbMax;
+                if (lo > hi) { var t = lo; lo = hi; hi = t; }
+                sliderEl.noUiSlider.set([lo, hi]);
+                document.getElementById('filterForm').submit();
+            });
+        });
+    }
+});
+</script>  --%>
+
+<script>
+function removeFilter(name, value) {
+    var url = new URL(window.location.href);
+    var params = new URLSearchParams(url.search);
+    if (name === 'price') {
+        params.delete('minPrice');
+        params.delete('maxPrice');
+    } else if (name === 'keyword') {
+        params.delete('keyword');
+    } else {
+        var existing = params.getAll(name);
+        params.delete(name);
+        existing.forEach(function(v) {
+            if (v !== String(value)) params.append(name, v);
+        });
+    }
+    params.set('page', '1');
+    window.location.href = url.pathname + '?' + params.toString();
+}
 </script>
 
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>
