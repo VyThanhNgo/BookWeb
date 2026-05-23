@@ -517,14 +517,18 @@
 						<c:forEach var="b" items="${books}">
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
-									<div class="dz-media">
-										<a
-											href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
-											<img
-											src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
-											alt="${b.title}">
-										</a>
-									</div>
+									<div class="dz-media" style="position:relative;">
+    <a href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
+        <img
+        src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+        alt="${b.title}">
+    </a>
+    <c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
+        <span style="position:absolute; top:10px; left:10px; background:#e53935; color:#fff; font-size:12px; font-weight:700; padding:3px 8px; border-radius:4px; z-index:2;">
+            -<fmt:formatNumber value="${(1 - b.price/b.originPrice)*100}" maxFractionDigits="0"/>%
+        </span>
+    </c:if>
+</div>
 
 									<div class="bookmark-btn style-2">
 										<input class="form-check-input" type="checkbox"
@@ -555,12 +559,17 @@
 										</ul>
 
 										<div class="book-footer">
-											<div class="price">
-												<span class="price-num"> <fmt:formatNumber
-														value="${b.price}" pattern="#,###" /> &#8363;
-												</span>
-												<del>$12.0</del>
-											</div>
+    <div class="price" ">
+        
+        <span class="price-num">
+            <fmt:formatNumber value="${b.price}" pattern="#,###"/> &#8363;
+        </span>
+        <c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
+            <del>
+                <fmt:formatNumber value="${b.originPrice}" pattern="#,###"/> &#8363;
+            </del>
+        </c:if>
+    </div>
 
 											<button type="button"
 												class="btn btn-secondary box-btn btnhover btnhover2 add-to-cart-btn"

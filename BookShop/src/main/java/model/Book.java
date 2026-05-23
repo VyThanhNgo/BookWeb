@@ -12,21 +12,21 @@ public class Book {
 	private String description;
 	private String image; // ảnh chính
 	private int publishYear;
-	
-	
+	private double originPrice;
+
 	private String isbn;
-    private String publisher;
-    private String language;
-    private String coverType;
-    private String slug;
-    private int soldQuantity;
-    private List<String> subImages; // Danh sách các ảnh phụ
-	
+	private String publisher;
+	private String language;
+	private String coverType;
+	private String slug;
+	private int soldQuantity;
+	private List<String> subImages; // Danh sách các ảnh phụ
+
 	
 
 	public Book(int id, String title, Author author, Category category, double price, int stock, String description,
-			String image, int publishYear, String isbn, String publisher, String language, String coverType,
-			int soldQuantity, List<String> subImages) {
+			String image, int publishYear, double originPrice, String isbn, String publisher, String language,
+			String coverType, String slug, int soldQuantity, List<String> subImages) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -37,10 +37,12 @@ public class Book {
 		this.description = description;
 		this.image = image;
 		this.publishYear = publishYear;
+		this.originPrice = originPrice;
 		this.isbn = isbn;
 		this.publisher = publisher;
 		this.language = language;
 		this.coverType = coverType;
+		this.slug = slug;
 		this.soldQuantity = soldQuantity;
 		this.subImages = subImages;
 	}
@@ -177,7 +179,12 @@ public class Book {
 		this.slug = slug;
 	}
 
-	
-	
+	public double getOriginPrice() {
+		return originPrice;
+	}
+
+	public void setOriginPrice(double originPrice) {
+		this.originPrice = originPrice;
+	}
 
 }

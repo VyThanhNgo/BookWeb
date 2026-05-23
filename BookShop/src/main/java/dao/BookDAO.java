@@ -33,6 +33,7 @@ public class BookDAO {
 				b.setStock(rs.getInt("stock"));
 				b.setImage(rs.getString("image"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -62,6 +63,7 @@ public class BookDAO {
 				b.setTitle(rs.getString("title"));
 				b.setSlug(rs.getString("slug"));
 				b.setDescription(rs.getString("description"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 				b.setPrice(rs.getDouble("price"));
 				b.setStock(rs.getInt("stock"));
 				b.setPublishYear(rs.getInt("publish_year"));
@@ -177,6 +179,7 @@ public class BookDAO {
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -207,6 +210,7 @@ public class BookDAO {
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -291,6 +295,7 @@ public class BookDAO {
 				b.setImage(rs.getString("image"));
 				b.setDescription(rs.getString("description"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -325,6 +330,7 @@ public class BookDAO {
 				b.setImage(rs.getString("image"));
 				b.setDescription(rs.getString("description"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -563,6 +569,7 @@ public class BookDAO {
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 				b.setStock(rs.getInt("stock"));
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
@@ -653,6 +660,7 @@ public class BookDAO {
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
 				b.setSlug(rs.getString("slug"));
+				b.setOriginPrice(rs.getDouble("origin_price"));
 				b.setStock(rs.getInt("stock"));
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);

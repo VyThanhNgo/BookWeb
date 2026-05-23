@@ -14,8 +14,14 @@
 				<div class="col">
 					<div class="dz-box">
 						<div class="dz-media">
-							<div class="main-img-container" style="position: relative;">
-								<img id="main-book-img"
+    <div class="main-img-container" style="position: relative;">
+        <%-- Tag giảm giá góc trên trái --%>
+        <c:if test="${book.originPrice > 0 && book.originPrice > book.price}">
+            <span style="position:absolute; top:10px; left:10px; background:#e53935; color:#fff; font-size:13px; font-weight:700; padding:4px 10px; border-radius:4px; z-index:2;">
+                -<fmt:formatNumber value="${(1 - book.price/book.originPrice)*100}" maxFractionDigits="0"/>%
+            </span>
+        </c:if>
+        <img id="main-book-img"
 									src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
 									alt="${book.title}"
 									style="aspect-ratio: 2/3; object-fit: cover; width: 100%; border: 1px solid #eee;">
@@ -107,14 +113,17 @@
 									style="flex-direction: column; align-items: flex-start;">
 
 									<!-- Dòng 1: Giá -->
-									<div class="price"
-										style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-										<h5 style="margin: 0;">
-											<fmt:formatNumber value="${book.price}" pattern="#,###" />
-											&#8363;
-										</h5>
-										<p class="p-lr10" style="margin: 0;">$70.00</p>
-									</div>
+									<div class="price" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+    
+    <h5 style="margin:0;">
+        <fmt:formatNumber value="${book.price}" pattern="#,###"/> &#8363;
+    </h5>
+    <c:if test="${book.originPrice > 0 && book.originPrice > book.price}">
+        <p class="p-lr10" style="margin: 0;">
+            <fmt:formatNumber value="${book.originPrice}" pattern="#,###"/> &#8363;
+        </p>
+    </c:if>
+</div>
 
 									<form action="${ctx}/cart" method="post">
 										<input type="hidden" name="id" value="${book.id}">
@@ -317,11 +326,16 @@
 							<c:forEach var="rb" items="${relatedBooks}">
 								<div class="col-xl-12 col-lg-6">
 									<div class="dz-shop-card style-5">
-										<div class="dz-media">
-											<img
-												src="${not empty rb.image ? rb.image : ctx.concat('/assets/images/books/default-book.png')}"
-												alt="${rb.title}">
-										</div>
+										<div class="dz-media" style="position:relative;">
+    <c:if test="${rb.originPrice > 0 && rb.originPrice > rb.price}">
+        <span style="position:absolute; top:8px; left:8px; background:#e53935; color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; z-index:2;">
+            -<fmt:formatNumber value="${(1 - rb.price/rb.originPrice)*100}" maxFractionDigits="0"/>%
+        </span>
+    </c:if>
+    <img
+        src="${not empty rb.image ? rb.image : ctx.concat('/assets/images/books/default-book.png')}"
+        alt="${rb.title}">
+</div>
 										<div class="dz-content">
 											<h5 class="subtitle">
 												<a
@@ -334,7 +348,14 @@
 											<div class="price">
 												<span class="price-num"><fmt:formatNumber
 														value="${rb.price}" pattern="#,###" />&#8363;</span>
-												<del>$98.4</del>
+												<c:if
+													test="${rb.originPrice > 0 && rb.originPrice > rb.price}">
+													<del >
+														<fmt:formatNumber value="${rb.originPrice}"
+															pattern="#,###" />
+														&#8363;
+													</del>
+												</c:if>
 											</div>
 											<button type="submit"
 												class="btn btn-primary btnhover btnhover2">
