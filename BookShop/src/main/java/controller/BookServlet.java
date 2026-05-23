@@ -22,6 +22,8 @@ public class BookServlet extends HttpServlet {
 
         BookDAO dao = new BookDAO();
 
+        
+        
         String keyword = request.getParameter("keyword");
         String sort = request.getParameter("sort");
         int page = 1;
@@ -47,30 +49,72 @@ public class BookServlet extends HttpServlet {
             if (categoryIds.isEmpty()) categoryIds = null;
         }
 
+        double dbMaxPrice = dao.getMaxPrice();
+        
+        
         String minPriceStr = request.getParameter("minPrice");
         String maxPriceStr = request.getParameter("maxPrice");
-        Double minPrice = (minPriceStr != null && !minPriceStr.isEmpty()) ? Double.parseDouble(minPriceStr) : null;
-        Double maxPrice = (maxPriceStr != null && !maxPriceStr.isEmpty()) ? Double.parseDouble(maxPriceStr) : null;
-        int totalBooks = dao.countBooks(keyword, categoryIds, minPrice, maxPrice);
+        Double minPrice = (minPriceStr != null && !minPriceStr.isEmpty()) ? Double.parseDouble(minPriceStr) : 0.0;
+        Double maxPrice = (maxPriceStr != null && !maxPriceStr.isEmpty()) ? Double.parseDouble(maxPriceStr) : dbMaxPrice;
+        
+     // năm xuất bản 
+        String[] yearParams = request.getParameterValues("publishYear");
+        List<Integer> publishYears = null;
+        if (yearParams != null) {
+            publishYears = new ArrayList<>();
+            for (String y : yearParams) {
+                if (y != null && !y.trim().isEmpty()) {
+                    try { publishYears.add(Integer.parseInt(y.trim())); } catch (NumberFormatException e) {}
+                }
+            }
+            if (publishYears.isEmpty()) publishYears = null;
+        }
+
+        //tác giả 
+        String[] authorParams = request.getParameterValues("authorId");
+        List<Integer> authorIds = null;
+        if (authorParams != null) {
+            authorIds = new ArrayList<>();
+            for (String a : authorParams) {
+                if (a != null && !a.trim().isEmpty()) {
+                    try { authorIds.add(Integer.parseInt(a.trim())); } catch (NumberFormatException e) {}
+                }
+            }
+            if (authorIds.isEmpty()) authorIds = null;
+        }
+
+        //nhà xuất bản
+        String[] publisherParams = request.getParameterValues("publisher");
+        List<String> publishers = null;
+        if (publisherParams != null) {
+            publishers = new ArrayList<>();
+            for (String p : publisherParams) {
+                if (p != null && !p.trim().isEmpty()) publishers.add(p.trim());
+            }
+            if (publishers.isEmpty()) publishers = null;
+        }
+        
+        int totalBooks = dao.countBooks(keyword, categoryIds, minPrice, maxPrice, publishYears, authorIds, publishers);
         int totalPages = (int) Math.ceil((double) totalBooks / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         
-        List<Book> list;
-        if((keyword != null && !keyword.isEmpty()) || 
-           (categoryIds != null && !categoryIds.isEmpty()) ||
-           (minPrice != null) || (maxPrice != null))
-            list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice, sort, page, PAGE_SIZE);
-
-        else
-            list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice, sort, page, PAGE_SIZE);
-
+        List<Book> list = dao.searchBooks(keyword, categoryIds, minPrice, maxPrice, sort, page, PAGE_SIZE, publishYears, authorIds, publishers);
 
         List<Category> categories = dao.getAllCategories();
 
+        request.setAttribute("dbMaxPrice", dbMaxPrice);
+        request.setAttribute("minPrice", minPrice);
+        request.setAttribute("maxPrice", maxPrice);
         request.setAttribute("books", list);
         request.setAttribute("keyword", keyword);
         request.setAttribute("pageTitle", "Danh Sách Sách");
         request.setAttribute("categories", categories);
+        request.setAttribute("authors", dao.getAllAuthors());
+        request.setAttribute("distinctYears", dao.getDistinctPublishYears());
+        request.setAttribute("distinctPublishers", dao.getDistinctPublishers());
+        request.setAttribute("selectedYears", publishYears);
+        request.setAttribute("selectedAuthorIds", authorIds);
+        request.setAttribute("selectedPublishers", publishers);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalBooks", totalBooks);

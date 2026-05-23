@@ -244,7 +244,7 @@ public class BookDAO {
 			ps.setString(12, coverType);
 			String slug = StringUtils.toSlug(title);
 			ps.setString(13, slug);
-			
+
 			ps.executeUpdate();
 
 			// Lấy ID vừa tạo
@@ -325,7 +325,7 @@ public class BookDAO {
 				b.setImage(rs.getString("image"));
 				b.setDescription(rs.getString("description"));
 				b.setSlug(rs.getString("slug"));
-				
+
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 
@@ -381,7 +381,7 @@ public class BookDAO {
 			ps.setString(11, language);
 			ps.setString(12, coverType);
 			String slug = util.StringUtils.toSlug(title);
-	        ps.setString(13, slug);
+			ps.setString(13, slug);
 			ps.setInt(14, bookId);
 			ps.executeUpdate();
 		} catch (Exception e) {
@@ -442,6 +442,72 @@ public class BookDAO {
 		return total;
 	}
 
+	public int countBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice,
+			List<Integer> publishYears, List<Integer> authorIds, List<String> publishers) {
+		int total = 0;
+		try {
+			Connection conn = DBConnection.getConnection();
+			String sql = "SELECT COUNT(*) FROM books b WHERE 1=1";
+			if (keyword != null && !keyword.isEmpty())
+				sql += " AND b.title LIKE ?";
+			if (categoryIds != null && !categoryIds.isEmpty()) {
+				sql += " AND b.category_id IN (";
+				for (int j = 0; j < categoryIds.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (minPrice != null)
+				sql += " AND b.price >= ?";
+			if (maxPrice != null)
+				sql += " AND b.price <= ?";
+			if (publishYears != null && !publishYears.isEmpty()) {
+				sql += " AND b.publish_year IN (";
+				for (int j = 0; j < publishYears.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (authorIds != null && !authorIds.isEmpty()) {
+				sql += " AND b.author_id IN (";
+				for (int j = 0; j < authorIds.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (publishers != null && !publishers.isEmpty()) {
+				sql += " AND b.publisher IN (";
+				for (int j = 0; j < publishers.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			PreparedStatement ps = conn.prepareStatement(sql);
+			int i = 1;
+			if (keyword != null && !keyword.isEmpty())
+				ps.setString(i++, "%" + keyword + "%");
+			if (categoryIds != null && !categoryIds.isEmpty())
+				for (Integer c : categoryIds)
+					ps.setInt(i++, c);
+			if (minPrice != null)
+				ps.setDouble(i++, minPrice);
+			if (maxPrice != null)
+				ps.setDouble(i++, maxPrice);
+			if (publishYears != null && !publishYears.isEmpty())
+				for (Integer y : publishYears)
+					ps.setInt(i++, y);
+			if (authorIds != null && !authorIds.isEmpty())
+				for (Integer a : authorIds)
+					ps.setInt(i++, a);
+			if (publishers != null && !publishers.isEmpty())
+				for (String p : publishers)
+					ps.setString(i++, p);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next())
+				total = rs.getInt(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return total;
+	}
+
+	// tim sach
 	public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice,
 			String sort, int page, int pageSize) {
 		List<Book> list = new ArrayList<>();
@@ -496,6 +562,98 @@ public class BookDAO {
 				b.setTitle(rs.getString("title"));
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
+				b.setSlug(rs.getString("slug"));
+				b.setStock(rs.getInt("stock"));
+				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
+				b.setCategory(cat);
+				list.add(b);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public List<Book> searchBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice,
+			String sort, int page, int pageSize, List<Integer> publishYears, List<Integer> authorIds,
+			List<String> publishers) {
+		List<Book> list = new ArrayList<>();
+		try {
+			Connection conn = DBConnection.getConnection();
+			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
+					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id WHERE 1=1";
+			if (keyword != null && !keyword.isEmpty())
+				sql += " AND b.title LIKE ?";
+			if (categoryIds != null && !categoryIds.isEmpty()) {
+				sql += " AND b.category_id IN (";
+				for (int j = 0; j < categoryIds.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (minPrice != null)
+				sql += " AND b.price >= ?";
+			if (maxPrice != null)
+				sql += " AND b.price <= ?";
+			if (publishYears != null && !publishYears.isEmpty()) {
+				sql += " AND b.publish_year IN (";
+				for (int j = 0; j < publishYears.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (authorIds != null && !authorIds.isEmpty()) {
+				sql += " AND b.author_id IN (";
+				for (int j = 0; j < authorIds.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if (publishers != null && !publishers.isEmpty()) {
+				sql += " AND b.publisher IN (";
+				for (int j = 0; j < publishers.size(); j++)
+					sql += j == 0 ? "?" : ",?";
+				sql += ")";
+			}
+			if ("name_asc".equals(sort))
+				sql += " ORDER BY b.title ASC";
+			else if ("name_desc".equals(sort))
+				sql += " ORDER BY b.title DESC";
+			else if ("price_asc".equals(sort))
+				sql += " ORDER BY b.price ASC";
+			else if ("price_desc".equals(sort))
+				sql += " ORDER BY b.price DESC";
+			else
+				sql += " ORDER BY b.book_id DESC";
+			sql += " LIMIT ? OFFSET ?";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			int i = 1;
+			if (keyword != null && !keyword.isEmpty())
+				ps.setString(i++, "%" + keyword + "%");
+			if (categoryIds != null && !categoryIds.isEmpty())
+				for (Integer c : categoryIds)
+					ps.setInt(i++, c);
+			if (minPrice != null)
+				ps.setDouble(i++, minPrice);
+			if (maxPrice != null)
+				ps.setDouble(i++, maxPrice);
+			if (publishYears != null && !publishYears.isEmpty())
+				for (Integer y : publishYears)
+					ps.setInt(i++, y);
+			if (authorIds != null && !authorIds.isEmpty())
+				for (Integer a : authorIds)
+					ps.setInt(i++, a);
+			if (publishers != null && !publishers.isEmpty())
+				for (String p : publishers)
+					ps.setString(i++, p);
+			ps.setInt(i++, pageSize);
+			ps.setInt(i++, (page - 1) * pageSize);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				Book b = new Book();
+				b.setId(rs.getInt("book_id"));
+				b.setTitle(rs.getString("title"));
+				b.setPrice(rs.getDouble("price"));
+				b.setImage(rs.getString("image"));
+				b.setSlug(rs.getString("slug"));
+				b.setStock(rs.getInt("stock"));
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 				list.add(b);
@@ -593,8 +751,7 @@ public class BookDAO {
 	// Kiểm tra danh mục có sách không trước khi xóa
 	public boolean canDeleteCategory(int categoryId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE category_id = ?";
-		try (Connection conn = DBConnection.getConnection(); 
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, categoryId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next())
@@ -608,8 +765,7 @@ public class BookDAO {
 	// kiểm tra tác giả có sách không trước khi xóa
 	public boolean canDeleteAuthor(int authorId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE author_id = ?";
-		try (Connection conn = DBConnection.getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, authorId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next())
@@ -624,8 +780,7 @@ public class BookDAO {
 	public boolean canDeleteBook(int bookId) {
 
 		String sql = "SELECT COUNT(*) FROM order_items WHERE book_id = ?";
-		try (Connection conn = DBConnection.getConnection(); 
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, bookId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next())
@@ -634,5 +789,54 @@ public class BookDAO {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	// hàm láy giá cao nhất để set cho filter giá
+	public double getMaxPrice() {
+		double max = 0;
+		try {
+			Connection conn = DBConnection.getConnection();
+			String sql = "SELECT MAX(price) FROM books";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				max = rs.getDouble(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return max;
+	}
+
+	// Lấy danh sách năm xuất bản có sách
+	public List<Integer> getDistinctPublishYears() {
+		List<Integer> years = new ArrayList<>();
+		try {
+			Connection conn = DBConnection.getConnection();
+			String sql = "SELECT DISTINCT publish_year FROM books WHERE publish_year IS NOT NULL AND publish_year > 0 ORDER BY publish_year DESC";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next())
+				years.add(rs.getInt("publish_year"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return years;
+	}
+
+	// Lấy danh sách NXB có sách
+	public List<String> getDistinctPublishers() {
+		List<String> publishers = new ArrayList<>();
+		try {
+			Connection conn = DBConnection.getConnection();
+			String sql = "SELECT DISTINCT publisher FROM books WHERE publisher IS NOT NULL AND publisher != '' ORDER BY publisher ASC";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next())
+				publishers.add(rs.getString("publisher"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return publishers;
 	}
 }
