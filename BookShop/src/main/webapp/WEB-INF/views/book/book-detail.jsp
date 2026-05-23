@@ -234,46 +234,28 @@
 							<div id="developement-1" class="tab-pane">
 								<div class="clear" id="comment-list">
 									<div class="post-comments comments-area style-1 clearfix">
-										<h4 class="comments-title">ĐÁNH GIÁ</h4>
+										<h4 class="comments-title">${book.reviewCount} đánh giá</h4>
 										<div id="comment">
-											<ol class="comment-list">
-												<c:forEach var="r" items="${reviews}">
-													<li class="comment even thread-even depth-1">
-														<div class="comment-body">
-															<div class="comment-author vcard">
-																<img
-																	src="${not empty r.userAvatar ? r.userAvatar : ctx.concat('/assets/images/users/default.png')}"
-																	alt="" class="avatar"> <cite class="fn">${r.userName}</cite>
-																<span class="says">đánh giá:</span>
-																<div class="dz-rating">
-																	<c:forEach var="i" begin="1" end="5">
-																		<i
-																			class="fa fa-star ${i <= r.rating ? 'text-yellow' : 'text-muted'}"></i>
-																	</c:forEach>
-																</div>
-															</div>
-															<div class="comment-meta">
-																<a href="javascript:void(0);"><fmt:formatDate
-																		value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm" /></a>
-															</div>
+    <%-- Bộ lọc --%>
+    <div id="review-filter-bar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
+        <span style="font-weight:600; color:#555;">Lọc:</span>
+        <button class="btn btn-sm btn-outline-secondary filter-star-btn active-filter" data-star="0">Tất cả</button>
+        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="5">⭐ 5 sao</button>
+        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="4">⭐ 4 sao</button>
+        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="3">⭐ 3 sao</button>
+        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="2">⭐ 2 sao</button>
+        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="1">⭐ 1 sao</button>
+        <button class="btn btn-sm btn-outline-info" id="btn-has-image">📷 Có ảnh</button>
+    </div>
 
-															<p>${r.comment}</p>
-															<c:if test="${not empty r.images}">
-																<div class="review-images-list"
-																	style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-																	<c:forEach var="imgUrl" items="${r.images}">
-																		<a href="${imgUrl}" target="_blank"> <img
-																			src="${imgUrl}"
-																			style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
-																		</a>
-																	</c:forEach>
-																</div>
-															</c:if>
-														</div>
-													</li>
-												</c:forEach>
-											</ol>
-										</div>
+    <%-- Danh sách review render bằng JS --%>
+    <ol class="comment-list" id="review-ol" style="padding:0; list-style:none;"></ol>
+    <div id="review-loading" style="display:none; text-align:center; padding:20px;">Đang tải...</div>
+    <div id="review-empty" style="display:none; padding:16px; color:#888;">Chưa có đánh giá nào phù hợp.</div>
+
+    <%-- Phân trang --%>
+    <div id="review-pagination" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:16px;"></div>
+</div>
 
 										<c:if test="${not empty sessionScope.loggedInUser}">
 											<div class="comment-respond" id="respond">
@@ -562,5 +544,211 @@ function changeQty(bookId, delta) {
         if (val < 1) val = 1;
         input.value = val;
     }
+</script>
+
+<%-- style lọc review --%>
+<style>
+.active-filter {
+    background-color: #e9a44a !important;
+    color: #fff !important;
+    border-color: #e9a44a !important;
+}
+#review-pagination .page-btn {
+    padding: 5px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+}
+#review-pagination .page-btn.active {
+    background: #e9a44a;
+    color: #fff;
+    border-color: #e9a44a;
+}
+#review-pagination .page-btn:hover:not(.active) {
+    background: #f5f5f5;
+}
+</style>
+
+<script>
+(function() {
+    const CTX       = '${ctx}';
+    const BOOK_ID   = ${book.id};
+    const DEFAULT_AVATAR = CTX + '/assets/images/users/default.png';
+
+    let currentStar    = 0;
+    let currentHasImg  = false;
+    let currentPage    = 1;
+
+    // ===== GỌI API =====
+    function fetchReviews() {
+        document.getElementById('review-loading').style.display = 'block';
+        document.getElementById('review-ol').innerHTML = '';
+        document.getElementById('review-empty').style.display = 'none';
+        document.getElementById('review-pagination').innerHTML = '';
+
+        const url = CTX + '/reviews/filter?bookId=' + BOOK_ID
+            + '&star=' + currentStar
+            + '&hasImage=' + (currentHasImg ? '1' : '0')
+            + '&page=' + currentPage;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('review-loading').style.display = 'none';
+                renderReviews(data.reviews);
+                renderPagination(data.currentPage, data.totalPages);
+            })
+            .catch(() => {
+                document.getElementById('review-loading').style.display = 'none';
+            });
+    }
+
+    // ===== RENDER REVIEW =====
+    function renderReviews(reviews) {
+        const ol = document.getElementById('review-ol');
+        const empty = document.getElementById('review-empty');
+
+        if (!reviews || reviews.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+
+        reviews.forEach(r => {
+            const avatar = r.userAvatar && r.userAvatar.trim() !== ''
+                ? r.userAvatar : DEFAULT_AVATAR;
+
+            // Render sao
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += '<i class="fa fa-star ' + (i <= r.rating ? 'text-yellow' : 'text-muted') + '"></i>';
+            }
+
+            // Render ảnh
+            let imgsHtml = '';
+            if (r.images && r.images.length > 0) {
+                imgsHtml = '<div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">';
+                r.images.forEach(img => {
+                    imgsHtml += '<a href="' + img + '" target="_blank">'
+                        + '<img src="' + img + '" style="width:100px;height:100px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">'
+                        + '</a>';
+                });
+                imgsHtml += '</div>';
+            }
+
+            const li = document.createElement('li');
+            li.className = 'comment even thread-even depth-1';
+
+            const body = document.createElement('div');
+            body.className = 'comment-body';
+
+            body.innerHTML = 
+                '<div class="comment-author vcard">'
+                + '<img src="' + avatar + '" alt="" class="avatar">'
+                + '<cite class="fn">' + escapeHtml(r.userName) + '</cite>'
+                + '<span class="says">đánh giá:</span>'
+                + '<div class="dz-rating">' + stars + '</div>'
+                + '</div>'
+                + '<div class="comment-meta"><a href="javascript:void(0);">' + r.createdAt + '</a></div>'
+                + '<p>' + escapeHtml(r.comment) + '</p>'
+                + imgsHtml;
+
+            li.appendChild(body);
+            ol.appendChild(li);
+        });
+    }
+
+    // ===== RENDER PHÂN TRANG =====
+    function renderPagination(current, total) {
+        const container = document.getElementById('review-pagination');
+        if (total <= 1) return;
+
+        // Nút Trước
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.textContent = '«';
+        prevBtn.disabled = current <= 1;
+        prevBtn.onclick = () => { if (current > 1) goToPage(current - 1); };
+        container.appendChild(prevBtn);
+
+        // Các nút số trang
+        for (let i = 1; i <= total; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn' + (i === current ? ' active' : '');
+            btn.textContent = i;
+            btn.onclick = (function(p) {
+                return function() { goToPage(p); };
+            })(i);
+            container.appendChild(btn);
+        }
+
+        // Nút Sau
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.textContent = '»';
+        nextBtn.disabled = current >= total;
+        nextBtn.onclick = () => { if (current < total) goToPage(current + 1); };
+        container.appendChild(nextBtn);
+
+        // Ô "Đi đến trang..."
+        const gotoWrap = document.createElement('span');
+        gotoWrap.style = 'display:flex; align-items:center; gap:4px; margin-left:8px;';
+        gotoWrap.innerHTML =
+            '<span style="font-size:13px; color:#555;">Đi đến trang</span>'
+            + '<input id="goto-page-input" type="number" min="1" max="' + total + '" '
+            + 'style="width:55px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; font-size:13px;" '
+            + 'placeholder="...">'
+            + '<button class="page-btn" id="goto-page-btn" style="padding:4px 10px;">→</button>';
+        container.appendChild(gotoWrap);
+
+        document.getElementById('goto-page-btn').onclick = function() {
+            const val = parseInt(document.getElementById('goto-page-input').value);
+            if (!isNaN(val) && val >= 1 && val <= total) goToPage(val);
+        };
+        document.getElementById('goto-page-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('goto-page-btn').click();
+        });
+    }
+
+    function goToPage(p) {
+        currentPage = p;
+        fetchReviews();
+        // Scroll lên đầu phần review
+        document.getElementById('developement-1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ===== SỰ KIỆN LỌC SAO =====
+    document.querySelectorAll('.filter-star-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-star-btn').forEach(b => b.classList.remove('active-filter'));
+            this.classList.add('active-filter');
+            currentStar = parseInt(this.dataset.star);
+            currentPage = 1;
+            fetchReviews();
+        });
+    });
+
+    // ===== SỰ KIỆN LỌC CÓ ẢNH =====
+    document.getElementById('btn-has-image').addEventListener('click', function() {
+        currentHasImg = !currentHasImg;
+        this.classList.toggle('active-filter', currentHasImg);
+        currentPage = 1;
+        fetchReviews();
+    });
+
+    // ===== ESCAPE HTML =====
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;');
+    }
+
+    // ===== LOAD LẦN ĐẦU =====
+    fetchReviews();
+
+})();
 </script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>
