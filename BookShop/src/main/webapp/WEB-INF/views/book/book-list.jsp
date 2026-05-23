@@ -618,6 +618,16 @@
 										href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">
 											&#10095; </a>
 									</li>
+									
+									<%-- Đi đến trang --%>
+<li class="page-item" style="display:flex; align-items:center; gap:6px; margin-left:8px;">
+    <span style="font-size:13px; color:#555; white-space:nowrap;">Đi đến trang</span>
+    <input id="goto-page-input" type="number" min="1" max="${totalPages}"
+        style="width:55px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; font-size:13px;"
+        placeholder="...">
+    <button onclick="goToPageBookList()" 
+        style="padding:4px 10px; border:1px solid #ddd; border-radius:4px; background:#fff; cursor:pointer; font-size:13px;">→</button>
+</li>
 								</ul>
 							</nav>
 						</div>
@@ -960,6 +970,29 @@ function removeFilter(name, value) {
     params.set('page', '1');
     window.location.href = url.pathname + '?' + params.toString();
 }
+</script>
+
+<%--đi đến trang --%>
+<script>
+function goToPageBookList() {
+    var input = document.getElementById('goto-page-input');
+    var val = parseInt(input.value);
+    var total = ${totalPages};
+    if (isNaN(val) || val < 1 || val > total) return;
+
+    var url = new URL(window.location.href);
+    url.searchParams.set('page', val);
+    window.location.href = url.toString();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('goto-page-input');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') goToPageBookList();
+        });
+    }
+});
 </script>
 
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

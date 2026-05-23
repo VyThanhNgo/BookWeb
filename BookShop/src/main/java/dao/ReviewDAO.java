@@ -92,4 +92,71 @@ public class ReviewDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return images;
     }
+    
+ //đếm tổng review theo filter(dùng cho phân trang)
+    public int countReviews(int bookId, int starFilter, boolean hasImageFilter) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM reviews r WHERE r.book_id = ?");
+            
+            if (starFilter > 0) {
+                sql.append(" AND r.rating = ").append(starFilter);
+            }
+            if (hasImageFilter) {
+                sql.append(" AND EXISTS (SELECT 1 FROM review_images ri WHERE ri.review_id = r.review_id)");
+            }
+            
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            ps.setInt(1, bookId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    //lấy review có lọc +phân trang
+    public List<Review> getReviewsFiltered(int bookId, int starFilter, 
+                                            boolean hasImageFilter, int page, int pageSize) {
+        List<Review> list = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            StringBuilder sql = new StringBuilder(
+                "SELECT r.*, u.full_name, u.avatar FROM reviews r " +
+                "JOIN users u ON r.user_id = u.user_id " +
+                "WHERE r.book_id = ?");
+            
+            if (starFilter > 0) {
+                sql.append(" AND r.rating = ").append(starFilter);
+            }
+            if (hasImageFilter) {
+                sql.append(" AND EXISTS (SELECT 1 FROM review_images ri WHERE ri.review_id = r.review_id)");
+            }
+            
+            sql.append(" ORDER BY r.created_at DESC");
+            sql.append(" LIMIT ? OFFSET ?");
+            
+            PreparedStatement ps = conn.prepareStatement(sql.toString());
+            ps.setInt(1, bookId);
+            ps.setInt(2, pageSize);
+            ps.setInt(3, (page - 1) * pageSize);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Review r = new Review();
+                int rId = rs.getInt("review_id");
+                r.setReviewId(rId);
+                r.setBookId(rs.getInt("book_id"));
+                r.setUserId(rs.getInt("user_id"));
+                r.setRating(rs.getInt("rating"));
+                r.setComment(rs.getString("comment"));
+                r.setCreatedAt(rs.getTimestamp("created_at"));
+                r.setUserName(rs.getString("full_name"));
+                r.setUserAvatar(rs.getString("avatar"));
+                r.setImages(getImagesByReviewId(rId));
+                list.add(r);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }
