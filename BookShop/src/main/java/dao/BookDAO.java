@@ -51,9 +51,13 @@ public class BookDAO {
 		Book b = null;
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name, a.image as author_image "
-					+ "FROM books b " + "LEFT JOIN categories c ON b.category_id = c.category_id "
-					+ "LEFT JOIN authors a ON b.author_id = a.author_id " + "WHERE b.book_id = ?";
+			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name, a.image as author_image, "
+			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
+			        + "FROM books b "
+			        + "LEFT JOIN categories c ON b.category_id = c.category_id "
+			        + "LEFT JOIN authors a ON b.author_id = a.author_id "
+			        + "LEFT JOIN reviews r ON r.book_id = b.book_id "
+			        + "WHERE b.book_id = ? GROUP BY b.book_id";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
@@ -73,6 +77,8 @@ public class BookDAO {
 				b.setLanguage(rs.getString("language"));
 				b.setCoverType(rs.getString("cover_type"));
 				b.setSoldQuantity(rs.getInt("sold_quantity"));
+				b.setAvgRating(rs.getDouble("avg_rating"));
+				b.setReviewCount(rs.getInt("review_count"));
 				b.setSubImages(this.getSubImagesByBookId(id));
 
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
@@ -519,8 +525,10 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
-					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id WHERE 1=1";
+			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
+			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
+			        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+			        + "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -534,6 +542,7 @@ public class BookDAO {
 			if (maxPrice != null)
 				sql += " AND b.price <= ?";
 
+			sql += " GROUP BY b.book_id";
 			if ("name_asc".equals(sort))
 				sql += " ORDER BY b.title ASC";
 			else if ("name_desc".equals(sort))
@@ -571,6 +580,8 @@ public class BookDAO {
 				b.setSlug(rs.getString("slug"));
 				b.setOriginPrice(rs.getDouble("origin_price"));
 				b.setStock(rs.getInt("stock"));
+				b.setAvgRating(rs.getDouble("avg_rating"));
+				b.setReviewCount(rs.getInt("review_count"));
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 				list.add(b);
@@ -587,8 +598,10 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
-					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id WHERE 1=1";
+			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
+			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
+			        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+			        + "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -619,6 +632,7 @@ public class BookDAO {
 					sql += j == 0 ? "?" : ",?";
 				sql += ")";
 			}
+			sql += " GROUP BY b.book_id";
 			if ("name_asc".equals(sort))
 				sql += " ORDER BY b.title ASC";
 			else if ("name_desc".equals(sort))
@@ -662,6 +676,8 @@ public class BookDAO {
 				b.setSlug(rs.getString("slug"));
 				b.setOriginPrice(rs.getDouble("origin_price"));
 				b.setStock(rs.getInt("stock"));
+				b.setAvgRating(rs.getDouble("avg_rating"));
+				b.setReviewCount(rs.getInt("review_count"));
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 				list.add(b);
@@ -735,7 +751,7 @@ public class BookDAO {
 			Connection conn = util.DBConnection.getConnection();
 
 			// Chỉ lấy những cột cần thiết để hiển thị ở thanh tìm kiếm (nhẹ và nhanh)
-			String sql = "SELECT book_id, title, price, image FROM books WHERE title LIKE ? LIMIT ?";
+			String sql = "SELECT book_id, title, price, image, slug FROM books WHERE title LIKE ? LIMIT ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 
 			ps.setString(1, "%" + keyword + "%"); // Tìm từ khóa ở bất kỳ vị trí nào trong tên
@@ -748,6 +764,7 @@ public class BookDAO {
 				b.setTitle(rs.getString("title"));
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
+				b.setSlug(rs.getString("slug")); 
 				list.add(b);
 			}
 		} catch (Exception e) {

@@ -59,13 +59,14 @@
 									<div
 										class="d-lg-flex d-sm-inline-flex d-flex align-items-center">
 										<ul class="dz-rating">
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-muted"></i></li>
-										</ul>
-										<h6 class="m-b0">4.0</h6>
+    <c:forEach begin="1" end="5" var="star">
+        <li><i class="flaticon-star ${star <= book.avgRating ? 'text-yellow' : 'text-muted'}"></i></li>
+    </c:forEach>
+</ul>
+<h6 class="m-b0">
+    <fmt:formatNumber value="${book.avgRating}" minFractionDigits="1" maxFractionDigits="1"/>
+    <span style="font-weight:400; font-size:13px; color:#888;">(${book.reviewCount} đánh giá)</span>
+</h6>
 									</div>
 									<!-- Tim -->
 									<div class="bookmark-btn style-1">

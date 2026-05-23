@@ -436,7 +436,7 @@
 								</div>
 							</form>
 							<ul class="nav navbar-nav">
-								<li><a href="javascript:void(0);"><span>Trang
+								<li><a href="${pageContext.request.contextPath}/"><span>Trang
 											chủ</span></a></li>
 								<li class="sub-menu-down"><a href="javascript:void(0);"><span>Các
 											trang khác</span></a>
