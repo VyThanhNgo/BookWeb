@@ -45,43 +45,20 @@
 													<label class="form-label small text-muted mb-1">Từ
 														(₫)</label> <input type="number" id="manualMin"
 														class="form-control form-control-sm" placeholder="0"
-														value="${minPrice != null && minPrice > 0 ? minPrice : ''}">
+														style="min-width: 90px;"
+														value="${minPrice != null && minPrice > 0 ? minPrice.intValue() : ''}">
 												</div>
 												<span class="mt-3">—</span>
 												<div class="flex-fill">
 													<label class="form-label small text-muted mb-1">Đến
 														(₫)</label> <input type="number" id="manualMax"
 														class="form-control form-control-sm"
-														placeholder="${dbMaxPrice}"
-														value="${maxPrice != null && maxPrice < dbMaxPrice ? maxPrice : ''}">
+														placeholder="${dbMaxPrice.intValue()}" style="min-width: 100px;"
+														value="${maxPrice != null && maxPrice < dbMaxPrice ? maxPrice.intValue() : ''}">
 												</div>
 											</div>
 
-											<div id="slider-tooltips"
-												class="noUi-target noUi-ltr noUi-horizontal noUi-txt-dir-ltr">
-												<div class="noUi-base">
-													<div class="noUi-connects">
-														<div class="noUi-connect"
-															style="transform: translate(40%, 0px) scale(0.4, 1);"></div>
-													</div>
-													<div class="noUi-origin"
-														style="transform: translate(-60%, 0px); z-index: 5;">
-														<div class="noUi-handle noUi-handle-lower" data-handle="0"
-															tabindex="0" role="slider" aria-orientation="horizontal">
-															<div class="noUi-touch-area"></div>
-															<div class="noUi-tooltip">40.0</div>
-														</div>
-													</div>
-													<div class="noUi-origin"
-														style="transform: translate(-20%, 0px); z-index: 4;">
-														<div class="noUi-handle noUi-handle-upper" data-handle="1"
-															tabindex="0" role="slider" aria-orientation="horizontal">
-															<div class="noUi-touch-area"></div>
-															<div class="noUi-tooltip">80.00</div>
-														</div>
-													</div>
-												</div>
-											</div>
+											<div id="slider-tooltips"></div>
 										</div>
 									</div>
 								</div>
@@ -139,7 +116,7 @@
 									</div>
 								</div>
 
-								
+
 
 								<%-- Nhà xuất bản --%>
 								<c:if test="${not empty distinctPublishers}">
@@ -240,7 +217,7 @@
 										</div>
 									</div>
 
-									
+
 
 									<div class="accordion-item">
 										<button class="accordion-button collapsed"
@@ -264,7 +241,7 @@
 										</div>
 									</div>
 
-									
+
 
 									<div class="accordion-item">
 										<button class="accordion-button collapsed"
@@ -517,18 +494,22 @@
 						<c:forEach var="b" items="${books}">
 							<div class="col-book style-2">
 								<div class="dz-shop-card style-1">
-									<div class="dz-media" style="position:relative;">
-    <a href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
-        <img
-        src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
-        alt="${b.title}">
-    </a>
-    <c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
-        <span style="position:absolute; top:10px; left:10px; background:#e53935; color:#fff; font-size:12px; font-weight:700; padding:3px 8px; border-radius:4px; z-index:2;">
-            -<fmt:formatNumber value="${(1 - b.price/b.originPrice)*100}" maxFractionDigits="0"/>%
-        </span>
-    </c:if>
-</div>
+									<div class="dz-media" style="position: relative;">
+										<a
+											href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
+											<img
+											src="${not empty b.image ? b.image : pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+											alt="${b.title}">
+										</a>
+										<c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
+											<span
+												style="position: absolute; top: 10px; left: 10px; background: #e53935; color: #fff; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 2;">
+												-<fmt:formatNumber
+													value="${(1 - b.price/b.originPrice)*100}"
+													maxFractionDigits="0" />%
+											</span>
+										</c:if>
+									</div>
 
 									<div class="bookmark-btn style-2">
 										<input class="form-check-input" type="checkbox"
@@ -545,31 +526,32 @@
 										</h5>
 
 										<ul class="dz-tags">
-											<li><a href="javascript:void(0);"> <c:out
-														value="${b.category.name}" default="Chưa phân loại" />
+											<li><a
+												href="${pageContext.request.contextPath}/books?categoryId=${b.category.id}">
+													<c:out value="${b.category.name}" default="Chưa phân loại" />
 											</a></li>
 										</ul>
 
 										<ul class="dz-rating">
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-yellow"></i></li>
-											<li><i class="flaticon-star text-muted"></i></li>
+											<c:forEach begin="1" end="5" var="star">
+												<li><i
+													class="flaticon-star ${star <= b.avgRating ? 'text-yellow' : 'text-muted'}"></i></li>
+											</c:forEach>
 										</ul>
 
 										<div class="book-footer">
-    <div class="price" ">
-        
-        <span class="price-num">
-            <fmt:formatNumber value="${b.price}" pattern="#,###"/> &#8363;
-        </span>
-        <c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
-            <del>
-                <fmt:formatNumber value="${b.originPrice}" pattern="#,###"/> &#8363;
-            </del>
-        </c:if>
-    </div>
+											<div class="price"">
+
+												<span class="price-num"> <fmt:formatNumber
+														value="${b.price}" pattern="#,###" /> &#8363;
+												</span>
+												<c:if test="${b.originPrice > 0 && b.originPrice > b.price}">
+													<del>
+														<fmt:formatNumber value="${b.originPrice}" pattern="#,###" />
+														&#8363;
+													</del>
+												</c:if>
+											</div>
 
 											<button type="button"
 												class="btn btn-secondary box-btn btnhover btnhover2 add-to-cart-btn"
@@ -824,6 +806,41 @@
 	display: flex;
 	flex-direction: column;
 }
+
+/* Ngăn noUiSlider ảnh hưởng ra ngoài */
+#slider-tooltips .noUi-connects {
+	border-radius: 3px;
+}
+
+#slider-tooltips .noUi-connect {
+	background: #1a1668;
+}
+
+#slider-tooltips .noUi-handle {
+	border-radius: 50%;
+	cursor: pointer;
+}
+
+/* Reset lại .inner và .show bị noUiSlider override */
+.dropdown-menu .inner.show {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.bootstrap-select .dropdown-menu.show {
+	display: block !important;
+}
+
+/* Ẩn mũi tên spin của input number */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
 </style>
 
 <script>
@@ -919,60 +936,10 @@
 	});
 </script>
 
-<%--
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var sliderEl = document.getElementById('slider-tooltips');
-    if (sliderEl && typeof noUiSlider !== 'undefined') {
-        var dbMax  = parseFloat('${dbMaxPrice}') || 500000;
-        var curMin = parseFloat('${minPrice}') || 0;
-        var curMax = parseFloat('${maxPrice}') || dbMax;
 
-        if (sliderEl.noUiSlider) sliderEl.noUiSlider.destroy();
 
-        noUiSlider.create(sliderEl, {
-            start: [curMin, curMax],
-            connect: true,
-            range: { min: 0, max: dbMax },
-            step: 1000,
-            format: wNumb({ decimals: 0, thousand: '.', suffix: ' đ' })
-        });
 
-        sliderEl.noUiSlider.on('update', function (values, handle) {
-            var raw = sliderEl.noUiSlider.get(true);
-            if (handle === 0) {
-                document.getElementById('amount-min').value = values[0];
-                document.getElementById('minPriceInput').value = Math.round(raw[0]);
-                if (document.getElementById('manualMin'))
-                    document.getElementById('manualMin').value = Math.round(raw[0]) > 0 ? Math.round(raw[0]) : '';
-            } else {
-                document.getElementById('amount-max').value = values[1];
-                document.getElementById('maxPriceInput').value = Math.round(raw[1]);
-                if (document.getElementById('manualMax'))
-                    document.getElementById('manualMax').value = Math.round(raw[1]) < dbMax ? Math.round(raw[1]) : '';
-            }
-        });
 
-        sliderEl.noUiSlider.on('change', function () {
-            document.getElementById('filterForm').submit();
-        });
-
-        /* Nhập tay → submit */
-        ['manualMin','manualMax'].forEach(function(id) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('keydown', function(e) {
-                if (e.key !== 'Enter') return;
-                var lo = parseInt(document.getElementById('manualMin').value) || 0;
-                var hi = parseInt(document.getElementById('manualMax').value) || dbMax;
-                if (lo > hi) { var t = lo; lo = hi; hi = t; }
-                sliderEl.noUiSlider.set([lo, hi]);
-                document.getElementById('filterForm').submit();
-            });
-        });
-    }
-});
-</script>  --%>
 
 <script>
 function removeFilter(name, value) {

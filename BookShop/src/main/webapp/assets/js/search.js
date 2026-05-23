@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     var html = '';
                     data.forEach(book => {
                         var imgPath = book.image ? book.image : (ctx + '/assets/images/books/default-book.png');
-                        html += '<a href="' + ctx + '/books/detail?id=' + book.id + '" class="search-result-item">' +
+                        html += '<a href="' + ctx + '/books/' + (book.slug ? book.slug : 'book') + '-' + book.id + '" class="search-result-item">' +
                                 '<img src="' + imgPath + '">' +
                                 '<div class="result-info">' +
                                 '<span class="title">' + book.title + '</span>' +

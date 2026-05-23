@@ -22,11 +22,15 @@ public class Book {
 	private int soldQuantity;
 	private List<String> subImages; // Danh sách các ảnh phụ
 
+	private double avgRating;
+	private int reviewCount;
+
 	
 
 	public Book(int id, String title, Author author, Category category, double price, int stock, String description,
 			String image, int publishYear, double originPrice, String isbn, String publisher, String language,
-			String coverType, String slug, int soldQuantity, List<String> subImages) {
+			String coverType, String slug, int soldQuantity, List<String> subImages, double avgRating,
+			int reviewCount) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -45,6 +49,8 @@ public class Book {
 		this.slug = slug;
 		this.soldQuantity = soldQuantity;
 		this.subImages = subImages;
+		this.avgRating = avgRating;
+		this.reviewCount = reviewCount;
 	}
 
 	public String getIsbn() {
@@ -187,4 +193,19 @@ public class Book {
 		this.originPrice = originPrice;
 	}
 
+	public double getAvgRating() {
+		return avgRating;
+	}
+
+	public void setAvgRating(double avgRating) {
+		this.avgRating = avgRating;
+	}
+
+	public int getReviewCount() {
+		return reviewCount;
+	}
+
+	public void setReviewCount(int reviewCount) {
+		this.reviewCount = reviewCount;
+	}
 }
