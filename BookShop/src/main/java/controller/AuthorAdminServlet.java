@@ -38,20 +38,23 @@ public class AuthorAdminServlet extends HttpServlet {
         BookDAO dao = new BookDAO();
 
         if ("delete".equals(action)) {
-            dao.deleteAuthor(Integer.parseInt(req.getParameter("id")));
-            res.sendRedirect(req.getContextPath() + "/admin/authors?success=deleted");
+            int id = Integer.parseInt(req.getParameter("id"));
+            if (dao.canDeleteAuthor(id)) {
+                dao.deleteAuthor(id);
+                res.sendRedirect(req.getContextPath() + "/admin?success=deleted");
+            } else {
+                res.sendRedirect(req.getContextPath() + "/admin?error=has_books");
+            }
 
         } else if ("edit".equals(action)) {
             int id = Integer.parseInt(req.getParameter("id"));
             req.setAttribute("editAuthor", dao.getAuthorById(id));
             req.setAttribute("authors", dao.getAllAuthors());
-            req.getRequestDispatcher("/WEB-INF/views/admin/book/author.jsp")
-               .forward(req, res);
+            res.sendRedirect(req.getContextPath() + "/admin");
 
         } else {
             req.setAttribute("authors", dao.getAllAuthors());
-            req.getRequestDispatcher("/WEB-INF/views/admin/book/author.jsp")
-               .forward(req, res);
+            res.sendRedirect(req.getContextPath() + "/admin");
         }
     }
 
@@ -69,7 +72,7 @@ public class AuthorAdminServlet extends HttpServlet {
                 imageUrl = saveImage(filePart);
             }
             dao.addAuthor(name, imageUrl);
-            res.sendRedirect(req.getContextPath() + "/admin/authors?success=added");
+            res.sendRedirect(req.getContextPath() + "/admin?success=added");
 
         } else if ("edit".equals(action)) {
             int id = Integer.parseInt(req.getParameter("id"));
@@ -80,7 +83,7 @@ public class AuthorAdminServlet extends HttpServlet {
                 imageUrl = saveImage(filePart);
             }
             dao.updateAuthor(id, name, imageUrl);
-            res.sendRedirect(req.getContextPath() + "/admin/authors?success=updated");
+            res.sendRedirect(req.getContextPath() + "/admin?success=updated");
         }
     }
 }

@@ -75,7 +75,7 @@ public class BookAdminServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
             } else {
                 // Gửi thông báo lỗi nếu sách đã có người mua
-                response.sendRedirect(request.getContextPath() + "/admin/books?error=book_has_orders");
+                response.sendRedirect(request.getContextPath() + "/admin?error=book_has_orders");
             }
 
         }else {
@@ -114,10 +114,13 @@ public class BookAdminServlet extends HttpServlet {
             }
           //kiểm tra giá và tồn kho khi thêm sách
             if (price < 0 || stock < 0) {
-            	response.sendRedirect(request.getContextPath() + "/admin/books?error=invalid_value");                
+            	response.sendRedirect(request.getContextPath() + "/admin?error=invalid_value");                
                 return;
             }
-            int bookId = dao.addBook(title, price, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
+            
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
+
+            int bookId = dao.addBook(title, price, originPrice, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
             for (Part part : request.getParts()) {
                 if ("subImages".equals(part.getName()) && part.getSize() > 0) {
@@ -129,7 +132,7 @@ public class BookAdminServlet extends HttpServlet {
                 }
             }
             
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=added");
+            response.sendRedirect(request.getContextPath() + "/admin?success=added");
             
         // sửa sách
         } else if ("edit".equals(action)) {
@@ -157,8 +160,9 @@ public class BookAdminServlet extends HttpServlet {
             	response.sendRedirect(request.getContextPath() + "/admin/books?error=invalid_value");                
                 return;
             }
-            dao.updateBook(bookId, title, price, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
 
+            dao.updateBook(bookId, title, price, originPrice, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
             for (Part part : request.getParts()) {
                 if ("subImages".equals(part.getName()) && part.getSize() > 0) {
                     String subImageUrl = saveImage(part, "books");
@@ -169,7 +173,7 @@ public class BookAdminServlet extends HttpServlet {
                 }
             }
             
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=updated");
+            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
           
         }
     }

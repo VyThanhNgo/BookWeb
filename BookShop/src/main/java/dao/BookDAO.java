@@ -20,8 +20,10 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
-					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id";
+			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
+			        + "a.author_id as aid, a.author_name "
+			        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+			        + "LEFT JOIN authors a ON b.author_id = a.author_id";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 
@@ -35,6 +37,17 @@ public class BookDAO {
 				b.setSlug(rs.getString("slug"));
 				b.setOriginPrice(rs.getDouble("origin_price"));
 
+				b.setSoldQuantity(rs.getInt("sold_quantity"));
+				b.setIsbn(rs.getString("isbn"));
+				b.setPublisher(rs.getString("publisher"));
+				b.setLanguage(rs.getString("language"));
+				b.setCoverType(rs.getString("cover_type"));
+				b.setPublishYear(rs.getInt("publish_year"));
+				b.setDescription(rs.getString("description"));
+
+				Author author = new Author(rs.getInt("aid"), rs.getString("author_name"));
+				b.setAuthor(author);
+				
 				Category cat = new Category(rs.getInt("cid"), rs.getString("cname"));
 				b.setCategory(cat);
 
@@ -52,12 +65,10 @@ public class BookDAO {
 		try {
 			Connection conn = DBConnection.getConnection();
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name, a.image as author_image, "
-			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
-			        + "FROM books b "
-			        + "LEFT JOIN categories c ON b.category_id = c.category_id "
-			        + "LEFT JOIN authors a ON b.author_id = a.author_id "
-			        + "LEFT JOIN reviews r ON r.book_id = b.book_id "
-			        + "WHERE b.book_id = ? GROUP BY b.book_id";
+					+ "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count " + "FROM books b "
+					+ "LEFT JOIN categories c ON b.category_id = c.category_id "
+					+ "LEFT JOIN authors a ON b.author_id = a.author_id "
+					+ "LEFT JOIN reviews r ON r.book_id = b.book_id " + "WHERE b.book_id = ? GROUP BY b.book_id";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
@@ -229,31 +240,32 @@ public class BookDAO {
 	}
 
 	// add book
-	public int addBook(String title, double price, int categoryId, int authorId, int publishYear, String description,
-			int stock, String image, String isbn, String publisher, String language, String coverType) {
+	public int addBook(String title, double price, double originPrice, int categoryId, int authorId, int publishYear, String description,
+	        int stock, String image, String isbn, String publisher, String language, String coverType) {
 		int generatedId = -1;
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "INSERT INTO books (title, price, category_id, author_id, publish_year, "
-					+ "description, stock, image, isbn, publisher, language, cover_type,slug) "
-					+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			String sql = "INSERT INTO books (title, price, origin_price, category_id, author_id, publish_year, "
+			        + "description, stock, image, isbn, publisher, language, cover_type, slug) "
+			        + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 			// Thêm RETURN_GENERATED_KEYS
 			PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
 			ps.setString(1, title);
 			ps.setDouble(2, price);
-			ps.setInt(3, categoryId);
-			ps.setInt(4, authorId);
-			ps.setInt(5, publishYear);
-			ps.setString(6, description);
-			ps.setInt(7, stock);
-			ps.setString(8, image);
-			ps.setString(9, isbn);
-			ps.setString(10, publisher);
-			ps.setString(11, language);
-			ps.setString(12, coverType);
+			ps.setDouble(3, originPrice);  // THÊM
+			ps.setInt(4, categoryId);
+			ps.setInt(5, authorId);
+			ps.setInt(6, publishYear);
+			ps.setString(7, description);
+			ps.setInt(8, stock);
+			ps.setString(9, image);
+			ps.setString(10, isbn);
+			ps.setString(11, publisher);
+			ps.setString(12, language);
+			ps.setString(13, coverType);
 			String slug = StringUtils.toSlug(title);
-			ps.setString(13, slug);
+			ps.setString(14, slug);
 
 			ps.executeUpdate();
 
@@ -371,30 +383,31 @@ public class BookDAO {
 	}
 
 	// update book
-	public void updateBook(int bookId, String title, double price, int categoryId, int authorId, int publishYear,
-			String description, int stock, String image, String isbn, String publisher, String language,
-			String coverType) {
+	public void updateBook(int bookId, String title, double price, double originPrice, int categoryId, int authorId, int publishYear,
+	        String description, int stock, String image, String isbn, String publisher, String language,
+	        String coverType) {
 		try {
 			Connection conn = DBConnection.getConnection();
-			String sql = "UPDATE books SET title=?, price=?, category_id=?, author_id=?, "
-					+ "publish_year=?, description=?, stock=?, image=?, isbn=?, publisher=?, "
-					+ "language=?, cover_type=?, slug=? WHERE book_id=?";
+			String sql = "UPDATE books SET title=?, price=?, origin_price=?, category_id=?, author_id=?, "
+			        + "publish_year=?, description=?, stock=?, image=?, isbn=?, publisher=?, "
+			        + "language=?, cover_type=?, slug=? WHERE book_id=?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, title);
 			ps.setDouble(2, price);
-			ps.setInt(3, categoryId);
-			ps.setInt(4, authorId);
-			ps.setInt(5, publishYear);
-			ps.setString(6, description);
-			ps.setInt(7, stock);
-			ps.setString(8, image);
-			ps.setString(9, isbn);
-			ps.setString(10, publisher);
-			ps.setString(11, language);
-			ps.setString(12, coverType);
+			ps.setDouble(3, originPrice);  // THÊM
+			ps.setInt(4, categoryId);
+			ps.setInt(5, authorId);
+			ps.setInt(6, publishYear);
+			ps.setString(7, description);
+			ps.setInt(8, stock);
+			ps.setString(9, image);
+			ps.setString(10, isbn);
+			ps.setString(11, publisher);
+			ps.setString(12, language);
+			ps.setString(13, coverType);
 			String slug = util.StringUtils.toSlug(title);
-			ps.setString(13, slug);
-			ps.setInt(14, bookId);
+			ps.setString(14, slug);
+			ps.setInt(15, bookId);
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -526,9 +539,9 @@ public class BookDAO {
 		try {
 			Connection conn = DBConnection.getConnection();
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
-			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
-			        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
-			        + "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
+					+ "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
+					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -599,9 +612,9 @@ public class BookDAO {
 		try {
 			Connection conn = DBConnection.getConnection();
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
-			        + "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
-			        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
-			        + "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
+					+ "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
+					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -764,7 +777,7 @@ public class BookDAO {
 				b.setTitle(rs.getString("title"));
 				b.setPrice(rs.getDouble("price"));
 				b.setImage(rs.getString("image"));
-				b.setSlug(rs.getString("slug")); 
+				b.setSlug(rs.getString("slug"));
 				list.add(b);
 			}
 		} catch (Exception e) {
@@ -863,5 +876,70 @@ public class BookDAO {
 			e.printStackTrace();
 		}
 		return publishers;
+	}
+
+	public Category getCategoryById(int id) {
+		try {
+			Connection conn = DBConnection.getConnection();
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE category_id = ?");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next())
+				return new Category(rs.getInt("category_id"), rs.getString("category_name"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public void addCategory(String name) {
+		try {
+			Connection conn = DBConnection.getConnection();
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (category_name) VALUES (?)");
+			ps.setString(1, name);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void updateCategory(int id, String name) {
+		try {
+			Connection conn = DBConnection.getConnection();
+			PreparedStatement ps = conn
+					.prepareStatement("UPDATE categories SET category_name = ? WHERE category_id = ?");
+			ps.setString(1, name);
+			ps.setInt(2, id);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void deleteCategory(int id) {
+		try {
+			Connection conn = DBConnection.getConnection();
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM categories WHERE category_id = ?");
+			ps.setInt(1, id);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean isCategoryNameExists(String name, int excludeId) {
+		String sql = excludeId == -1 ? "SELECT COUNT(*) FROM categories WHERE LOWER(category_name) = LOWER(?)"
+				: "SELECT COUNT(*) FROM categories WHERE LOWER(category_name) = LOWER(?) AND category_id != ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, name);
+			if (excludeId != -1)
+				ps.setInt(2, excludeId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next())
+				return rs.getInt(1) > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
