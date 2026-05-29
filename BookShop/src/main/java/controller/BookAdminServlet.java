@@ -17,18 +17,18 @@ import java.util.Map;
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024,      //  file nhỏ hơn 1MB thì lưu tạm vào RAM, lớn hơn thì ghi ra ổ đĩa tạm. Tránh tốn RAM khi upload file lớn.
     maxFileSize       = 1024 * 1024 * 5,  // giới hạn 1 file tối đa 5MB. Upload file lớn hơn sẽ báo lỗi.
-    maxRequestSize    = 1024 * 1024 * 10  //  giới hạn toàn bộ request tối đa 10MB. Nếu form có nhiều file thì tổng dung lượng không vượt quá 10MB.
+    maxRequestSize    = 1024 * 1024 * 50  //  giới hạn toàn bộ request tối đa 50MB. Nếu form có nhiều file thì tổng dung lượng không vượt quá 50MB.
 )
 public class BookAdminServlet extends HttpServlet {
 
 	private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
 	        "cloud_name", "dqiefayjh", 
 	        "api_key", "496728741237697", 
-	        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", // Thay bằng API Secret thực tế
+	        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", 
 	        "secure", true
 	    ));
 	
-    private String saveImage(Part filePart) throws IOException {
+    private String saveImage(Part filePart, String folder) throws IOException {
     	try (InputStream is = filePart.getInputStream();
     	         ByteArrayOutputStream os = new ByteArrayOutputStream()) {
     	        
@@ -39,12 +39,10 @@ public class BookAdminServlet extends HttpServlet {
     	            os.write(buffer, 0, len);
     	        }
     	        
-    	        // Upload lên Cloudinary vào thư mục tên là 'books'
-    	        Map uploadResult = cloudinary.uploader().upload(os.toByteArray(), 
+    	        Map uploadResult = cloudinary.uploader().upload(os.toByteArray(),
     	            ObjectUtils.asMap("folder", "books"));
     	            
-    	        // Trả về link URL (Ví dụ: https://res.cloudinary.com/...)
-    	        return (String) uploadResult.get("url"); 
+    	        return (String) uploadResult.get("url");
     	    } catch (Exception e) {
     	        e.printStackTrace();
     	        return null;
@@ -72,8 +70,13 @@ public class BookAdminServlet extends HttpServlet {
             int bookId = Integer.parseInt(request.getParameter("id"));
 
           
-            dao.deleteBook(bookId);
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
+            if (dao.canDeleteBook(bookId)) {
+                dao.deleteBook(bookId);
+                response.sendRedirect(request.getContextPath() + "/admin/books?success=deleted");
+            } else {
+                // Gửi thông báo lỗi nếu sách đã có người mua
+                response.sendRedirect(request.getContextPath() + "/admin?error=book_has_orders");
+            }
 
         }else {
             // Trang danh sách sách admin
@@ -99,18 +102,38 @@ public class BookAdminServlet extends HttpServlet {
             int publishYear    = Integer.parseInt(request.getParameter("publishYear"));
             String description = request.getParameter("description");
             int stock          = Integer.parseInt(request.getParameter("stock"));
-
+            String isbn = request.getParameter("isbn");
+            String publisher = request.getParameter("publisher");
+            String language = request.getParameter("language");
+            String coverType = request.getParameter("coverType");
+            
             String imageUrl = null;
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                imageUrl = saveImage(filePart);
+                imageUrl = saveImage(filePart, "books");
             }
+          //kiểm tra giá và tồn kho khi thêm sách
+            if (price < 0 || stock < 0) {
+            	response.sendRedirect(request.getContextPath() + "/admin?error=invalid_value");                
+                return;
+            }
+            
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
 
-            dao.addBook(title, price, categoryId, authorId,
-                        publishYear, description, stock, imageUrl);
+            int bookId = dao.addBook(title, price, originPrice, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=added");
-
+            for (Part part : request.getParts()) {
+                if ("subImages".equals(part.getName()) && part.getSize() > 0) {
+                    String subImageUrl = saveImage(part, "books");
+                    if (subImageUrl != null) {
+                        // bookId là ID vừa lấy được ở trên
+                        dao.addBookImage(bookId, subImageUrl); 
+                    }
+                }
+            }
+            
+            response.sendRedirect(request.getContextPath() + "/admin?success=added");
+            
         // sửa sách
         } else if ("edit".equals(action)) {
             int bookId         = Integer.parseInt(request.getParameter("bookId"));
@@ -121,18 +144,37 @@ public class BookAdminServlet extends HttpServlet {
             int publishYear    = Integer.parseInt(request.getParameter("publishYear"));
             String description = request.getParameter("description");
             int stock          = Integer.parseInt(request.getParameter("stock"));
-
+            String isbn = request.getParameter("isbn");
+            String publisher = request.getParameter("publisher");
+            String language = request.getParameter("language");
+            String coverType = request.getParameter("coverType");
+            
             // Giữ ảnh cũ nếu không upload ảnh mới
             String imageUrl = request.getParameter("oldImage");
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
-                imageUrl = saveImage(filePart); // ghi đè ảnh mới
+                imageUrl = saveImage(filePart, "books"); // ghi đè ảnh mới
             }
+            //kiểm tra giá và tồn kho khi update
+            if (price < 0 || stock < 0) {
+            	response.sendRedirect(request.getContextPath() + "/admin/books?error=invalid_value");                
+                return;
+            }
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
 
-            dao.updateBook(bookId, title, price, categoryId, authorId,
-                           publishYear, description, stock, imageUrl);
-
-            response.sendRedirect(request.getContextPath() + "/admin/books?success=updated");
+            dao.updateBook(bookId, title, price, originPrice, categoryId, authorId, publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
+            for (Part part : request.getParts()) {
+                if ("subImages".equals(part.getName()) && part.getSize() > 0) {
+                    String subImageUrl = saveImage(part, "books");
+                    if (subImageUrl != null) {
+                        // bookId là ID vừa lấy được ở trên
+                        dao.addBookImage(bookId, subImageUrl); 
+                    }
+                }
+            }
+            
+            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
+          
         }
     }
 }

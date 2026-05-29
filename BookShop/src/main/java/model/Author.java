@@ -3,11 +3,13 @@ package model;
 public class Author {
 	private int id;
 	private String name;
+	private String image;
 
 	public Author(int id, String name) {
 		super();
 		this.id = id;
 		this.name = name;
+		
 	}
 
 	public int getId() {
@@ -26,4 +28,11 @@ public class Author {
 		this.name = name;
 	}
 
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
 }

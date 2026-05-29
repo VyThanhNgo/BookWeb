@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 public class Book {
 	private int id;
 	private String title;
@@ -8,11 +10,27 @@ public class Book {
 	private double price;
 	private int stock;
 	private String description;
-	private String image;
+	private String image; // ảnh chính
 	private int publishYear;
+	private double originPrice;
+
+	private String isbn;
+	private String publisher;
+	private String language;
+	private String coverType;
+	private String slug;
+	private int soldQuantity;
+	private List<String> subImages; // Danh sách các ảnh phụ
+
+	private double avgRating;
+	private int reviewCount;
+
+	
 
 	public Book(int id, String title, Author author, Category category, double price, int stock, String description,
-			String image, int publishYear) {
+			String image, int publishYear, double originPrice, String isbn, String publisher, String language,
+			String coverType, String slug, int soldQuantity, List<String> subImages, double avgRating,
+			int reviewCount) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -23,6 +41,64 @@ public class Book {
 		this.description = description;
 		this.image = image;
 		this.publishYear = publishYear;
+		this.originPrice = originPrice;
+		this.isbn = isbn;
+		this.publisher = publisher;
+		this.language = language;
+		this.coverType = coverType;
+		this.slug = slug;
+		this.soldQuantity = soldQuantity;
+		this.subImages = subImages;
+		this.avgRating = avgRating;
+		this.reviewCount = reviewCount;
+	}
+
+	public String getIsbn() {
+		return isbn;
+	}
+
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
+
+	public String getPublisher() {
+		return publisher;
+	}
+
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	public String getCoverType() {
+		return coverType;
+	}
+
+	public void setCoverType(String coverType) {
+		this.coverType = coverType;
+	}
+
+	public int getSoldQuantity() {
+		return soldQuantity;
+	}
+
+	public void setSoldQuantity(int soldQuantity) {
+		this.soldQuantity = soldQuantity;
+	}
+
+	public List<String> getSubImages() {
+		return subImages;
+	}
+
+	public void setSubImages(List<String> subImages) {
+		this.subImages = subImages;
 	}
 
 	public Book() {
@@ -101,4 +177,35 @@ public class Book {
 		this.publishYear = publishYear;
 	}
 
+	public String getSlug() {
+		return slug;
+	}
+
+	public void setSlug(String slug) {
+		this.slug = slug;
+	}
+
+	public double getOriginPrice() {
+		return originPrice;
+	}
+
+	public void setOriginPrice(double originPrice) {
+		this.originPrice = originPrice;
+	}
+
+	public double getAvgRating() {
+		return avgRating;
+	}
+
+	public void setAvgRating(double avgRating) {
+		this.avgRating = avgRating;
+	}
+
+	public int getReviewCount() {
+		return reviewCount;
+	}
+
+	public void setReviewCount(int reviewCount) {
+		this.reviewCount = reviewCount;
+	}
 }
