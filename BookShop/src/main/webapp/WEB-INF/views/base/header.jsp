@@ -270,15 +270,22 @@
 														href="${pageContext.request.contextPath}/change-password"
 														class="dropdown-item d-flex align-items-center ai-icon">
 														<i class="fa fa-key me-2"></i> <span>Đổi mật khẩu</span>
-													</a> <a href="${pageContext.request.contextPath}/order"
-														class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-shopping-bag me-2"></i> <span>Đơn
-															hàng của tôi</span>
-													</a> <a href="javascript:void(0)"
-														class="dropdown-item d-flex align-items-center ai-icon">
-														<i class="fa fa-heart me-2"></i> <span>Danh sách
-															yêu thích</span>
 													</a>
+													<a href="${pageContext.request.contextPath}/my-orders"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-shopping-bag me-2"></i> <span>Đơn hàng của tôi</span>
+													</a>
+													<a href="javascript:void(0)"
+														class="dropdown-item d-flex align-items-center ai-icon">
+														<i class="fa fa-heart me-2"></i> <span>Danh sách yêu thích</span>
+													</a>
+													<c:if test="${sessionScope.loggedInUser.role == 'admin'}">
+														<a href="${pageContext.request.contextPath}/admin"
+															class="dropdown-item d-flex align-items-center ai-icon"
+															style="color:#e65c00;font-weight:600;">
+															<i class="fa fa-shield-halved me-2"></i> <span>Quản trị Admin</span>
+														</a>
+													</c:if>
 												</div>
 
 												<div class="dropdown-footer">

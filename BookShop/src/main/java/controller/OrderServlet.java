@@ -5,6 +5,7 @@ import model.Cart;
 import model.CartItem;
 import model.Order;
 import model.OrderItem;
+import model.User;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -95,12 +96,11 @@ public class OrderServlet extends HttpServlet {
         String paymentMethod = request.getParameter("paymentMethod");
         String shippingFeeStr = request.getParameter("shippingFee");
 
-        /* THÊM 2 THAM SỐ NÀY */
-        String discountStr = request.getParameter("discountAmount");
         String couponCode = request.getParameter("couponCode");
 
         double shippingFee = parseDoubleOrZero(shippingFeeStr);
-        double discount = parseDoubleOrZero(discountStr);
+        // discount luôn = 0 cho đến khi có logic validate coupon server-side
+        double discount = 0;
 
         if (isBlank(customerName) || isBlank(phone) || isBlank(addressLine) || isBlank(paymentMethod)) {
             double subtotal = cart.getTotalPrice();
@@ -121,7 +121,11 @@ public class OrderServlet extends HttpServlet {
         double subtotal = cart.getTotalPrice();
         double total = subtotal + shippingFee - discount;
 
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        int userId = (loggedInUser != null) ? loggedInUser.getId() : 0;
+
         Order order = new Order();
+        order.setUserId(userId);
         order.setCustomerName(customerName);
         order.setPhone(phone);
         order.setEmail(email);
