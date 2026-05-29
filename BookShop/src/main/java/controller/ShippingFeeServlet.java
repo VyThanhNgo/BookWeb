@@ -72,17 +72,7 @@ public class ShippingFeeServlet extends HttpServlet {
                 + "}";
 
         try {
-            System.out.println("=== GHN SHIPPING DEBUG ===");
-            System.out.println("toDistrictId = " + toDistrictId);
-            System.out.println("toWardCode = " + toWardCode);
-            System.out.println("serviceId = " + serviceId);
-            System.out.println("FROM_DISTRICT_ID = " + GhnConfig.FROM_DISTRICT_ID);
-            System.out.println("FROM_WARD_CODE = " + GhnConfig.FROM_WARD_CODE);
-            System.out.println("jsonBody = " + jsonBody);
-
             String ghnResult = GhnApiUtil.doPost("/v2/shipping-order/fee", jsonBody, true);
-
-            System.out.println("ghnResult = " + ghnResult);
 
             if (ghnResult == null || ghnResult.trim().isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

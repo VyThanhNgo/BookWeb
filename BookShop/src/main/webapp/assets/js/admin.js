@@ -636,3 +636,79 @@ window.addEventListener('load', function() {
         }
     });
 });
+
+function updateOrderStatus(orderId, status) {
+    const fd = new FormData();
+    fd.append('orderId', orderId);
+    fd.append('status', status);
+    fetch(document.querySelector('meta[name="ctx"]') ? document.querySelector('meta[name="ctx"]').content + '/admin/orders' : '/BookShop_war/admin/orders', {
+        method: 'POST', body: fd
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) showToast('Cập nhật trạng thái thành công!', 'success');
+        else showToast('Cập nhật thất bại!', 'danger');
+    })
+    .catch(() => showToast('Lỗi kết nối!', 'danger'));
+}
+
+function viewOrderDetail(orderId) {
+    const modal = document.getElementById('order-detail-modal');
+    const body = document.getElementById('modal-order-body');
+    const title = document.getElementById('modal-order-code');
+    body.innerHTML = '<p class="text-slate-400">Đang tải...</p>';
+    modal.classList.remove('hidden');
+
+    const ctx = document.body.getAttribute('data-context-path') || '';
+    fetch(ctx + '/admin/orders?orderId=' + orderId, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) { body.innerHTML = '<p class="text-red-500">' + (data.message || 'Lỗi') + '</p>'; return; }
+        const o = data.order;
+        if (title) title.textContent = 'Đơn hàng #' + o.orderCode;
+
+        const fmt = v => Number(v || 0).toLocaleString('vi-VN');
+        const statusColor = { PENDING:'#92400e', PROCESSING:'#1e40af', SHIPPING:'#0369a1', COMPLETED:'#065f46', CANCELLED:'#991b1b' };
+        const statusBg   = { PENDING:'#fff3cd', PROCESSING:'#dbeafe', SHIPPING:'#e0f2fe', COMPLETED:'#d1fae5', CANCELLED:'#fee2e2' };
+
+        let itemsHtml = data.items.map(it =>
+            `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px 12px;">${it.title}</td>
+                <td style="padding:8px 12px;text-align:center;">${it.quantity}</td>
+                <td style="padding:8px 12px;text-align:right;">${fmt(it.price)}đ</td>
+                <td style="padding:8px 12px;text-align:right;">${fmt(it.price * it.quantity)}đ</td>
+            </tr>`
+        ).join('');
+
+        body.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div style="background:#f8fafc;padding:14px;border-radius:8px;font-size:.9em;">
+                    <p style="font-weight:600;margin-bottom:6px;color:#1e3a5f;">Thông tin giao hàng</p>
+                    <p>${o.customerName}</p><p>${o.phone}</p>
+                    <p>${o.email || ''}</p><p>${o.address}</p>
+                </div>
+                <div style="background:#f8fafc;padding:14px;border-radius:8px;font-size:.9em;">
+                    <p style="font-weight:600;margin-bottom:6px;color:#1e3a5f;">Thanh toán</p>
+                    <p>Phương thức: <strong>${o.paymentMethod}</strong></p>
+                    <p>Tiền hàng: ${fmt(o.subtotal)}đ</p>
+                    <p>Phí ship: ${fmt(o.shippingFee)}đ</p>
+                    <p style="font-size:1.05em;">Tổng: <strong>${fmt(o.totalAmount)}đ</strong></p>
+                    <p>Trạng thái: <span style="padding:2px 10px;border-radius:10px;font-size:.85em;font-weight:600;background:${statusBg[o.status]||'#eee'};color:${statusColor[o.status]||'#333'}">${o.status}</span></p>
+                    <p style="color:#999;font-size:.85em;">${o.createdAt}</p>
+                </div>
+            </div>
+            <p style="font-weight:600;color:#1e3a5f;margin-bottom:8px;">Sản phẩm</p>
+            <table style="width:100%;border-collapse:collapse;font-size:.9em;">
+                <thead><tr style="background:#1e3a5f;color:#fff;">
+                    <th style="padding:8px 12px;text-align:left;">Sách</th>
+                    <th style="padding:8px 12px;text-align:center;">SL</th>
+                    <th style="padding:8px 12px;text-align:right;">Đơn giá</th>
+                    <th style="padding:8px 12px;text-align:right;">Thành tiền</th>
+                </tr></thead>
+                <tbody>${itemsHtml}</tbody>
+            </table>`;
+    })
+    .catch(() => { body.innerHTML = '<p class="text-red-500">Lỗi kết nối server.</p>'; });
+}

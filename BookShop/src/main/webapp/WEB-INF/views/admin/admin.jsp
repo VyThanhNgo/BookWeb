@@ -72,7 +72,8 @@ body {
 </style>
 </head>
 <body
-	class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex transition-colors duration-300">
+	class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex transition-colors duration-300"
+	data-context-path="${pageContext.request.contextPath}">
 
 	<!-- TOAST NOTIFICATION SYSTEM (Hệ thống thông báo thay thế alert) -->
 	<div id="toast-container"
@@ -155,6 +156,10 @@ window.addEventListener('load', function() {
 				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
 				<i class="fa-solid fa-rectangle-ad text-lg"></i> Khuyến Mãi Đồng Giá
 			</button>
+			<button onclick="switchTab('orders')" id="btn-orders"
+				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
+				<i class="fa-solid fa-box text-lg"></i> Quản Lý Đơn Hàng
+			</button>
 			<button onclick="switchTab('messages')" id="btn-messages"
 				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
 				<i class="fa-solid fa-envelope-open-text text-lg"></i> Hòm Thư Liên
@@ -218,10 +223,10 @@ window.addEventListener('load', function() {
 						<span
 							class="text-xs text-slate-400 font-bold uppercase tracking-wider">Tổng
 							Doanh Thu</span>
-						<h3
-							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">45,200,000đ</h3>
-						<span class="text-xs text-emerald-500 font-bold"><i
-							class="fa-solid fa-arrow-trend-up"></i> +14.2% tháng này</span>
+						<h3 class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">
+						<fmt:formatNumber value="${totalRevenue}" pattern="#,###"/>đ
+					</h3>
+					<span class="text-xs text-slate-400 font-bold">Tổng doanh thu thực tế</span>
 					</div>
 					<div
 						class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-blue-600">
@@ -657,6 +662,71 @@ window.addEventListener('load', function() {
 		</section>
 
 		<!-- ================= PANEL 9: HÒM THƯ LIÊN HỆ (Mục 22) ================= -->
+		<!-- ================= PANEL: QUẢN LÝ ĐƠN HÀNG ================= -->
+		<section id="panel-orders" class="tab-panel hidden space-y-6">
+			<div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+				<h3 class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-2">Quản Lý Đơn Hàng</h3>
+				<p class="text-sm text-slate-400 mb-4">Tổng: <strong>${totalOrders}</strong> đơn — Chờ xử lý: <strong class="text-amber-500">${pendingOrders}</strong></p>
+				<div class="overflow-x-auto">
+					<table class="w-full text-left text-sm border-collapse">
+						<thead>
+							<tr class="bg-slate-100 dark:bg-slate-800">
+								<th class="px-4 py-3 rounded-l-lg">Mã đơn</th>
+								<th class="px-4 py-3">Khách hàng</th>
+								<th class="px-4 py-3">SĐT</th>
+								<th class="px-4 py-3">Tổng tiền</th>
+								<th class="px-4 py-3">Ngày đặt</th>
+								<th class="px-4 py-3">Trạng thái</th>
+								<th class="px-4 py-3 rounded-r-lg">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							<c:forEach var="order" items="${recentOrders}">
+							<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+								<td class="px-4 py-3 font-semibold">${order.orderCode}</td>
+								<td class="px-4 py-3">${order.customerName}</td>
+								<td class="px-4 py-3">${order.phone}</td>
+								<td class="px-4 py-3 font-semibold"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/>đ</td>
+								<td class="px-4 py-3 text-slate-400"><fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yy HH:mm"/></td>
+								<td class="px-4 py-3">
+									<select onchange="updateOrderStatus(${order.orderId}, this.value)"
+										class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800">
+										<option value="PENDING" ${order.status=='PENDING'?'selected':''}>Chờ xử lý</option>
+										<option value="PROCESSING" ${order.status=='PROCESSING'?'selected':''}>Đang xử lý</option>
+										<option value="SHIPPING" ${order.status=='SHIPPING'?'selected':''}>Đang giao</option>
+										<option value="COMPLETED" ${order.status=='COMPLETED'?'selected':''}>Hoàn thành</option>
+										<option value="CANCELLED" ${order.status=='CANCELLED'?'selected':''}>Đã hủy</option>
+									</select>
+								</td>
+								<td class="px-4 py-3">
+									<button onclick="viewOrderDetail(${order.orderId})"
+										class="text-xs text-blue-600 hover:underline">Xem</button>
+								</td>
+							</tr>
+							</c:forEach>
+							<c:if test="${empty recentOrders}">
+							<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Chưa có đơn hàng nào.</td></tr>
+							</c:if>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Modal chi tiết đơn hàng -->
+			<div id="order-detail-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+				<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+					<div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
+						<h3 class="font-bold text-lg text-navy-800 dark:text-white" id="modal-order-code">Chi tiết đơn hàng</h3>
+						<button onclick="document.getElementById('order-detail-modal').classList.add('hidden')"
+							class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+					</div>
+					<div id="modal-order-body" class="p-6 text-sm space-y-3">
+						<p class="text-slate-400">Đang tải...</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
 		<section id="panel-messages" class="tab-panel hidden space-y-6">
 			<div
 				class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">

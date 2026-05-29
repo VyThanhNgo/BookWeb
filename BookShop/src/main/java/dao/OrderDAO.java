@@ -3,12 +3,15 @@ package dao;
 import util.DBConnection;
 import model.CartItem;
 import model.Order;
+import model.OrderItem;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public class OrderDAO {
@@ -20,13 +23,15 @@ public class OrderDAO {
         ResultSet rs = null;
 
         String insertOrderSql = "INSERT INTO orders (" +
-                "order_code, customer_name, email, phone, address_line, ward, district, province, note, " +
+                "user_id, order_code, customer_name, email, phone, address_line, ward, district, province, note, " +
                 "payment_method, status, subtotal, shipping_fee, discount_amount, total_amount" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String insertDetailSql = "INSERT INTO order_details (" +
                 "order_id, book_id, book_title, quantity, unit_price, line_total" +
                 ") VALUES (?, ?, ?, ?, ?, ?)";
+
+        String updateStockSql = "UPDATE books SET stock = stock - ?, sold_quantity = sold_quantity + ? WHERE book_id = ? AND stock >= ?";
 
         try {
             conn = DBConnection.getConnection();
@@ -37,21 +42,22 @@ public class OrderDAO {
             }
 
             orderPs = conn.prepareStatement(insertOrderSql, Statement.RETURN_GENERATED_KEYS);
-            orderPs.setString(1, order.getOrderCode());
-            orderPs.setString(2, order.getCustomerName());
-            orderPs.setString(3, order.getEmail());
-            orderPs.setString(4, order.getPhone());
-            orderPs.setString(5, order.getAddressLine());
-            orderPs.setString(6, order.getWard());
-            orderPs.setString(7, order.getDistrict());
-            orderPs.setString(8, order.getProvince());
-            orderPs.setString(9, order.getNote());
-            orderPs.setString(10, order.getPaymentMethod());
-            orderPs.setString(11, order.getStatus());
-            orderPs.setDouble(12, order.getSubtotal());
-            orderPs.setDouble(13, order.getShippingFee());
-            orderPs.setDouble(14, order.getDiscountAmount());
-            orderPs.setDouble(15, order.getTotalAmount());
+            orderPs.setInt(1, order.getUserId());
+            orderPs.setString(2, order.getOrderCode());
+            orderPs.setString(3, order.getCustomerName());
+            orderPs.setString(4, order.getEmail());
+            orderPs.setString(5, order.getPhone());
+            orderPs.setString(6, order.getAddressLine());
+            orderPs.setString(7, order.getWard());
+            orderPs.setString(8, order.getDistrict());
+            orderPs.setString(9, order.getProvince());
+            orderPs.setString(10, order.getNote());
+            orderPs.setString(11, order.getPaymentMethod());
+            orderPs.setString(12, order.getStatus());
+            orderPs.setDouble(13, order.getSubtotal());
+            orderPs.setDouble(14, order.getShippingFee());
+            orderPs.setDouble(15, order.getDiscountAmount());
+            orderPs.setDouble(16, order.getTotalAmount());
 
             int affected = orderPs.executeUpdate();
             if (affected == 0) {
@@ -71,6 +77,7 @@ public class OrderDAO {
             }
 
             detailPs = conn.prepareStatement(insertDetailSql);
+            PreparedStatement stockPs = conn.prepareStatement(updateStockSql);
 
             for (CartItem item : items) {
                 detailPs.setInt(1, orderId);
@@ -80,9 +87,17 @@ public class OrderDAO {
                 detailPs.setDouble(5, item.getPrice());
                 detailPs.setDouble(6, item.getPrice() * item.getQuantity());
                 detailPs.addBatch();
+
+                stockPs.setInt(1, item.getQuantity());
+                stockPs.setInt(2, item.getQuantity());
+                stockPs.setInt(3, item.getBookId());
+                stockPs.setInt(4, item.getQuantity());
+                stockPs.addBatch();
             }
 
             detailPs.executeBatch();
+            stockPs.executeBatch();
+            stockPs.close();
             conn.commit();
 
             order.setOrderId(orderId);
@@ -111,5 +126,140 @@ public class OrderDAO {
 
     private String generateOrderCode() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private Order mapOrder(ResultSet rs) throws Exception {
+        Order o = new Order();
+        o.setOrderId(rs.getInt("order_id"));
+        o.setUserId(rs.getInt("user_id"));
+        o.setOrderCode(rs.getString("order_code"));
+        o.setCustomerName(rs.getString("customer_name"));
+        o.setEmail(rs.getString("email"));
+        o.setPhone(rs.getString("phone"));
+        o.setAddressLine(rs.getString("address_line"));
+        o.setWard(rs.getString("ward"));
+        o.setDistrict(rs.getString("district"));
+        o.setProvince(rs.getString("province"));
+        o.setNote(rs.getString("note"));
+        o.setPaymentMethod(rs.getString("payment_method"));
+        o.setStatus(rs.getString("status"));
+        o.setSubtotal(rs.getDouble("subtotal"));
+        o.setShippingFee(rs.getDouble("shipping_fee"));
+        o.setDiscountAmount(rs.getDouble("discount_amount"));
+        o.setTotalAmount(rs.getDouble("total_amount"));
+        o.setCreatedAt(rs.getTimestamp("created_at"));
+        return o;
+    }
+
+    public List<Order> getOrdersByUserId(int userId) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(mapOrder(rs));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Order> getAllOrders() {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM orders ORDER BY created_at DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(mapOrder(rs));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Order getOrderById(int orderId) {
+        String sql = "SELECT * FROM orders WHERE order_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapOrder(rs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<OrderItem> getOrderItems(int orderId) {
+        List<OrderItem> list = new ArrayList<>();
+        String sql = "SELECT * FROM order_details WHERE order_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                OrderItem item = new OrderItem(
+                    rs.getInt("book_id"),
+                    rs.getString("book_title"),
+                    null,
+                    rs.getInt("quantity"),
+                    rs.getDouble("unit_price")
+                );
+                list.add(item);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateOrderStatus(int orderId, String status) {
+        String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public double getTotalRevenue() {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'CANCELLED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getDouble(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getTotalOrders() {
+        String sql = "SELECT COUNT(*) FROM orders";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getPendingOrders() {
+        String sql = "SELECT COUNT(*) FROM orders WHERE status = 'PENDING'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

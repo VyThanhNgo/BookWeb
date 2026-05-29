@@ -66,12 +66,15 @@ public class LoginServlet extends HttpServlet {
 			session.setAttribute("userRole", user.getRole());
 			session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
-			// Redirect to home or intended page
+			// Redirect to home or intended page — validate to prevent Open Redirect
 			String redirectUrl = request.getParameter("redirect");
-			if (redirectUrl != null && !redirectUrl.isEmpty()) {
-				response.sendRedirect(redirectUrl);
+			String contextPath = request.getContextPath();
+			if (redirectUrl != null && !redirectUrl.isEmpty()
+					&& redirectUrl.startsWith("/")
+					&& !redirectUrl.startsWith("//")) {
+				response.sendRedirect(contextPath + redirectUrl);
 			} else {
-				response.sendRedirect(request.getContextPath() + "/books");
+				response.sendRedirect(contextPath + "/books");
 			}
 		} else {
 			// Login failed
