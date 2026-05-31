@@ -223,10 +223,13 @@ window.addEventListener('load', function() {
 						<span
 							class="text-xs text-slate-400 font-bold uppercase tracking-wider">Tổng
 							Doanh Thu</span>
-						<h3 class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">
-						<fmt:formatNumber value="${totalRevenue}" pattern="#,###"/>đ
-					</h3>
-					<span class="text-xs text-slate-400 font-bold">Tổng doanh thu thực tế</span>
+						<h3
+							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">
+							<fmt:formatNumber value="${totalRevenue}" pattern="#,###" />
+							đ
+						</h3>
+						<span class="text-xs text-slate-400 font-bold">Tổng doanh
+							thu thực tế</span>
 					</div>
 					<div
 						class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-blue-600">
@@ -302,12 +305,12 @@ window.addEventListener('load', function() {
 					</div>
 				</div>
 
-				<!-- Log hoạt động hệ thống (Mục 23) -->
+				<!-- Log hoạt động hệ thống  -->
 				<div
 					class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
 					<h4
 						class="font-bold text-navy-800 dark:text-white heading-font text-lg mb-4">Nhật
-						Ký Quản Trị (Mục 23)</h4>
+						Ký Quản Trị</h4>
 					<div id="log-list"
 						class="flex-1 overflow-y-auto space-y-4 max-h-[320px] pr-2">
 						<!-- Sẽ tự động đổ Logs từ JS -->
@@ -337,11 +340,15 @@ window.addEventListener('load', function() {
 						</select> <select id="filter-author" onchange="filterBooks()"
 							class="bg-slate-100 dark:bg-slate-800 text-sm rounded-xl px-3 py-2 border-none outline-none">
 							<option value="">Tất cả tác giả</option>
+						</select> <select id="filter-status" onchange="filterBooks()"
+							class="bg-slate-100 dark:bg-slate-800 text-sm rounded-xl px-3 py-2 border-none outline-none">
+							<option value="active">Đang kinh doanh</option>
+							<option value="deleted">Đã ẩn (Thùng rác)</option>
 						</select>
 					</div>
 					<button onclick="openBookModal()"
 						class="w-full md:w-auto bg-navy-800 dark:bg-blue-600 hover:opacity-90 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
-						<i class="fa-solid fa-circle-plus"></i> Thêm Sách Mới (Mục 27, 28)
+						<i class="fa-solid fa-circle-plus"></i> Thêm Sách Mới
 					</button>
 				</div>
 
@@ -401,9 +408,16 @@ window.addEventListener('load', function() {
 				<!-- Bảng danh mục -->
 				<div
 					class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm md:col-span-2">
-					<h3
-						class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-4">Danh
-						Sách Danh Mục Hiện Tại</h3>
+					<div class="flex justify-between items-center mb-4">
+						<h3
+							class="font-bold text-lg heading-font text-navy-800 dark:text-white">Danh
+							Sách Danh Mục</h3>
+						<select id="filter-category-status" onchange="renderCategories()"
+							class="bg-slate-100 dark:bg-slate-800 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
+							<option value="active">📁 Danh mục đang dùng</option>
+							<option value="deleted">🗑️ Danh mục đã ẩn</option>
+						</select>
+					</div>
 					<div class="overflow-x-auto">
 						<table class="w-full text-left">
 							<thead>
@@ -433,20 +447,18 @@ window.addEventListener('load', function() {
 					<h3 id="author-form-title"
 						class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-4">Thêm
 						Tác Giả</h3>
-					<form id="author-form"
-      method="POST"
-      action="${pageContext.request.contextPath}/admin/authors"
-      enctype="multipart/form-data"
-      onsubmit="handleAuthorSubmit(event)"
-      class="space-y-4">
-    <input type="hidden" name="id"       id="author-edit-id">
-    <input type="hidden" name="action"   id="author-action-input" value="add">
-    <input type="hidden" name="oldImage" id="author-image">
+					<form id="author-form" method="POST"
+						action="${pageContext.request.contextPath}/admin/authors"
+						enctype="multipart/form-data" onsubmit="handleAuthorSubmit(event)"
+						class="space-y-4">
+						<input type="hidden" name="id" id="author-edit-id"> <input
+							type="hidden" name="action" id="author-action-input" value="add">
+						<input type="hidden" name="oldImage" id="author-image">
 						<div>
 							<label
 								class="block text-xs font-bold text-slate-400 uppercase mb-2">Họ
-								& Tên Tác Giả</label> <input type="text" id="author-name" name="name" required
-								placeholder="Ví dụ: Nguyễn Nhật Ánh"
+								& Tên Tác Giả</label> <input type="text" id="author-name" name="name"
+								required placeholder="Ví dụ: Nguyễn Nhật Ánh"
 								class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-navy-500">
 						</div>
 						<div>
@@ -459,8 +471,8 @@ window.addEventListener('load', function() {
 									<i class="fa-solid fa-user-tie text-xl text-slate-400 mb-1"></i>
 									<span class="text-xs text-slate-500 font-semibold"
 									id="author-file-name">Tải ảnh lên</span> <input type="file"
-									id="author-image-file" name="image" accept="image/*" class="hidden"
-									onchange="previewAuthorImage(event)">
+									id="author-image-file" name="image" accept="image/*"
+									class="hidden" onchange="previewAuthorImage(event)">
 								</label>
 								<div id="author-preview-container" class="hidden shrink-0">
 									<img id="author-preview-img"
@@ -482,9 +494,16 @@ window.addEventListener('load', function() {
 				<!-- Bảng tác giả -->
 				<div
 					class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm md:col-span-2">
-					<h3
-						class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-4">Danh
-						Sách Tác Giả</h3>
+					<div class="flex justify-between items-center mb-4">
+						<h3
+							class="font-bold text-lg heading-font text-navy-800 dark:text-white">Danh
+							Sách Tác Giả</h3>
+						<select id="filter-author-status" onchange="renderAuthors()"
+							class="bg-slate-100 dark:bg-slate-800 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
+							<option value="active">✍️ Tác giả hiển thị</option>
+							<option value="deleted">🗑️ Tác giả đã ẩn</option>
+						</select>
+					</div>
 					<div class="overflow-x-auto">
 						<table class="w-full text-left">
 							<thead>
@@ -520,7 +539,7 @@ window.addEventListener('load', function() {
 					</div>
 					<button onclick="exportUsersToCSV()"
 						class="bg-emerald-600 hover:opacity-90 active:scale-95 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
-						<i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo (Mục 25)
+						<i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo
 					</button>
 				</div>
 
@@ -533,8 +552,8 @@ window.addEventListener('load', function() {
 								<th class="py-4 px-4">Họ & Tên</th>
 								<th class="py-4 px-4">Email</th>
 								<th class="py-4 px-4">SĐT</th>
-								<th class="py-4 px-4">Quyền (Mục 21)</th>
-								<th class="py-4 px-4">Trạng thái (Mục 18)</th>
+								<th class="py-4 px-4">Quyền</th>
+								<th class="py-4 px-4">Trạng thái</th>
 								<th class="py-4 px-4 text-center">Thao tác</th>
 							</tr>
 						</thead>
@@ -664,9 +683,15 @@ window.addEventListener('load', function() {
 		<!-- ================= PANEL 9: HÒM THƯ LIÊN HỆ (Mục 22) ================= -->
 		<!-- ================= PANEL: QUẢN LÝ ĐƠN HÀNG ================= -->
 		<section id="panel-orders" class="tab-panel hidden space-y-6">
-			<div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-				<h3 class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-2">Quản Lý Đơn Hàng</h3>
-				<p class="text-sm text-slate-400 mb-4">Tổng: <strong>${totalOrders}</strong> đơn — Chờ xử lý: <strong class="text-amber-500">${pendingOrders}</strong></p>
+			<div
+				class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+				<h3
+					class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-2">Quản
+					Lý Đơn Hàng</h3>
+				<p class="text-sm text-slate-400 mb-4">
+					Tổng: <strong>${totalOrders}</strong> đơn — Chờ xử lý: <strong
+						class="text-amber-500">${pendingOrders}</strong>
+				</p>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left text-sm border-collapse">
 						<thead>
@@ -682,30 +707,42 @@ window.addEventListener('load', function() {
 						</thead>
 						<tbody>
 							<c:forEach var="order" items="${recentOrders}">
-							<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
-								<td class="px-4 py-3 font-semibold">${order.orderCode}</td>
-								<td class="px-4 py-3">${order.customerName}</td>
-								<td class="px-4 py-3">${order.phone}</td>
-								<td class="px-4 py-3 font-semibold"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/>đ</td>
-								<td class="px-4 py-3 text-slate-400"><fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yy HH:mm"/></td>
-								<td class="px-4 py-3">
-									<select onchange="updateOrderStatus(${order.orderId}, this.value)"
+								<tr
+									class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+									<td class="px-4 py-3 font-semibold">${order.orderCode}</td>
+									<td class="px-4 py-3">${order.customerName}</td>
+									<td class="px-4 py-3">${order.phone}</td>
+									<td class="px-4 py-3 font-semibold"><fmt:formatNumber
+											value="${order.totalAmount}" pattern="#,###" />đ</td>
+									<td class="px-4 py-3 text-slate-400"><fmt:formatDate
+											value="${order.createdAt}" pattern="dd/MM/yy HH:mm" /></td>
+									<td class="px-4 py-3"><select
+										onchange="updateOrderStatus(${order.orderId}, this.value)"
 										class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800">
-										<option value="PENDING" ${order.status=='PENDING'?'selected':''}>Chờ xử lý</option>
-										<option value="PROCESSING" ${order.status=='PROCESSING'?'selected':''}>Đang xử lý</option>
-										<option value="SHIPPING" ${order.status=='SHIPPING'?'selected':''}>Đang giao</option>
-										<option value="COMPLETED" ${order.status=='COMPLETED'?'selected':''}>Hoàn thành</option>
-										<option value="CANCELLED" ${order.status=='CANCELLED'?'selected':''}>Đã hủy</option>
-									</select>
-								</td>
-								<td class="px-4 py-3">
-									<button onclick="viewOrderDetail(${order.orderId})"
-										class="text-xs text-blue-600 hover:underline">Xem</button>
-								</td>
-							</tr>
+											<option value="PENDING"
+												${order.status=='PENDING'?'selected':''}>Chờ xử lý</option>
+											<option value="PROCESSING"
+												${order.status=='PROCESSING'?'selected':''}>Đang xử
+												lý</option>
+											<option value="SHIPPING"
+												${order.status=='SHIPPING'?'selected':''}>Đang giao</option>
+											<option value="COMPLETED"
+												${order.status=='COMPLETED'?'selected':''}>Hoàn
+												thành</option>
+											<option value="CANCELLED"
+												${order.status=='CANCELLED'?'selected':''}>Đã hủy</option>
+									</select></td>
+									<td class="px-4 py-3">
+										<button onclick="viewOrderDetail(${order.orderId})"
+											class="text-xs text-blue-600 hover:underline">Xem</button>
+									</td>
+								</tr>
 							</c:forEach>
 							<c:if test="${empty recentOrders}">
-							<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Chưa có đơn hàng nào.</td></tr>
+								<tr>
+									<td colspan="7" class="px-4 py-8 text-center text-slate-400">Chưa
+										có đơn hàng nào.</td>
+								</tr>
 							</c:if>
 						</tbody>
 					</table>
@@ -713,11 +750,16 @@ window.addEventListener('load', function() {
 			</div>
 
 			<!-- Modal chi tiết đơn hàng -->
-			<div id="order-detail-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-				<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-					<div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
-						<h3 class="font-bold text-lg text-navy-800 dark:text-white" id="modal-order-code">Chi tiết đơn hàng</h3>
-						<button onclick="document.getElementById('order-detail-modal').classList.add('hidden')"
+			<div id="order-detail-modal"
+				class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+				<div
+					class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+					<div
+						class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
+						<h3 class="font-bold text-lg text-navy-800 dark:text-white"
+							id="modal-order-code">Chi tiết đơn hàng</h3>
+						<button
+							onclick="document.getElementById('order-detail-modal').classList.add('hidden')"
 							class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
 					</div>
 					<div id="modal-order-body" class="p-6 text-sm space-y-3">
@@ -732,7 +774,7 @@ window.addEventListener('load', function() {
 				class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
 				<h3
 					class="font-bold text-lg heading-font text-navy-800 dark:text-white mb-4">Ý
-					Kiến Đóng Góp & Form Liên Hệ (Mục 22)</h3>
+					Kiến Đóng Góp & Form Liên Hệ</h3>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left">
 						<thead>
@@ -809,8 +851,8 @@ window.addEventListener('load', function() {
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm
-							Xuất Bản</label> <input type="number" id="book-year" name="publishYear" required min="1000"
-							max="2026"
+							Xuất Bản</label> <input type="number" id="book-year" name="publishYear"
+							required min="1000" max="2026"
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 				</div>
@@ -819,14 +861,15 @@ window.addEventListener('load', function() {
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Giá
-							Bán (đ)</label> <input type="number" id="book-price" name="price" required min="0"
+							Bán (đ)</label> <input type="number" id="book-price" name="price"
+							required min="0"
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Giá
-							Gốc (đ) (Mục 44)</label> <input type="number" id="book-origin-price" name="originPrice"
-							required min="0"
+							Gốc (đ) </label> <input type="number" id="book-origin-price"
+							name="originPrice" required min="0"
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 				</div>
@@ -835,14 +878,14 @@ window.addEventListener('load', function() {
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Số
-							Lượng Tồn Kho</label> <input type="number" id="book-stock" name="stock" required
-							min="0"
+							Lượng Tồn Kho</label> <input type="number" id="book-stock" name="stock"
+							required min="0"
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã
-							ISBN (Mục 27)</label> <input type="text" id="book-isbn" name="isbn" required
+							ISBN </label> <input type="text" id="book-isbn" name="isbn" required
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"
 							placeholder="978-604-...">
 					</div>
@@ -852,13 +895,15 @@ window.addEventListener('load', function() {
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Nhà
-							Xuất Bản (Mục 27)</label> <input type="text" id="book-publisher" name="publisher" required
+							Xuất Bản</label> <input type="text" id="book-publisher" name="publisher"
+							required
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 					<div>
 						<label
 							class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngôn
-							Ngữ</label> <input type="text" id="book-language" name="language" required
+							Ngữ</label> <input type="text" id="book-language" name="language"
+							required
 							class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none">
 					</div>
 					<div>
@@ -884,8 +929,8 @@ window.addEventListener('load', function() {
 							class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1"></i>
 							<span class="text-xs text-slate-500 font-semibold"
 							id="cover-file-name">Tải ảnh bìa lên</span> <input type="file"
-							id="book-cover-image" name="image" accept="image/*" class="hidden"
-							onchange="previewCoverImage(event)">
+							id="book-cover-image" name="image" accept="image/*"
+							class="hidden" onchange="previewCoverImage(event)">
 						</label>
 						<div id="book-cover-preview-container" class="hidden shrink-0">
 							<img id="book-cover-preview"
@@ -905,8 +950,8 @@ window.addEventListener('load', function() {
 						<i class="fa-solid fa-images text-2xl text-slate-400 mb-1"></i> <span
 						class="text-xs text-slate-500 font-semibold"
 						id="detail-files-count">Tải các ảnh chi tiết lên (Có thể
-							chọn nhiều)</span> <input type="file" id="book-detail-images" name="subImages"
-						accept="image/*" multiple class="hidden"
+							chọn nhiều)</span> <input type="file" id="book-detail-images"
+						name="subImages" accept="image/*" multiple class="hidden"
 						onchange="previewDetailImages(event)">
 					</label>
 					<div id="book-details-preview-container"
@@ -966,8 +1011,8 @@ window.addEventListener('load', function() {
 							cập nhật</span>
 					</p>
 					<p>
-						<strong>Địa chỉ nhận hàng (Mục 9):</strong> <span
-							id="user-modal-address">Chưa cập nhật</span>
+						<strong>Địa chỉ nhận hàng :</strong> <span id="user-modal-address">Chưa
+							cập nhật</span>
 					</p>
 					<p>
 						<strong>Ngày tạo tài khoản:</strong> <span id="user-modal-created">2026-04-19</span>
@@ -994,11 +1039,18 @@ window.addEventListener('load', function() {
 	</div>
 
 	<!-- Data thật từ server inject vào JS -->
-<script>
+	<script>
     const CTX = "${pageContext.request.contextPath}";
 
     let categories = [
         <c:forEach var="c" items="${categories}" varStatus="s">
+            {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
+            <c:if test="${!s.last}">,</c:if>
+        </c:forEach>
+    ];
+    
+    let deletedCategories = [
+        <c:forEach var="c" items="${deletedCategories}" varStatus="s">
             {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
             <c:if test="${!s.last}">,</c:if>
         </c:forEach>
@@ -1011,6 +1063,13 @@ window.addEventListener('load', function() {
         </c:forEach>
     ];
 
+    let deletedAuthors = [
+        <c:forEach var="a" items="${deletedAuthors}" varStatus="s">
+            {id:${a.id}, name:"${fn:escapeXml(a.name)}", image:"${a.image}"}
+            <c:if test="${!s.last}">,</c:if>
+        </c:forEach>
+    ];
+    
     let books = [
         <c:forEach var="b" items="${books}" varStatus="s">
             {
@@ -1034,6 +1093,31 @@ window.addEventListener('load', function() {
             <c:if test="${!s.last}">,</c:if>
         </c:forEach>
     ];
+    
+ // data sách đã bị ẩn (thùng rác)
+    let deletedBooks = [
+        <c:forEach var="b" items="${deletedBooks}" varStatus="s">
+            {
+                id:          ${b.id},
+                title:       "${fn:escapeXml(b.title)}",
+                author_id:   ${b.author.id},
+                category_id: ${b.category.id},
+                price:       ${b.price},
+                origin_price:${b.originPrice},
+                stock:       ${b.stock},
+                sold:        ${b.soldQuantity},
+                isbn:        "${b.isbn}",
+                publisher:   "${fn:escapeXml(b.publisher)}",
+                language:    "${b.language}",
+                cover:       "${b.coverType}",
+                image:       "${b.image}",
+                year:        ${b.publishYear},
+                desc:        "",
+                detail_images:[]
+            }
+            <c:if test="${!s.last}">,</c:if>
+        </c:forEach>
+    ];
 
     <c:if test="${not empty param.success or not empty param.error}">
     window._adminNotify = {
@@ -1042,7 +1126,7 @@ window.addEventListener('load', function() {
     </c:if>
 </script>
 
-<!-- Toàn bộ logic JS nằm trong file riêng -->
-<script src="${pageContext.request.contextPath}/assets/js/admin.js"></script>
+	<!-- Toàn bộ logic JS nằm trong file riêng -->
+	<script src="${pageContext.request.contextPath}/assets/js/admin.js"></script>
 </body>
 </html>
