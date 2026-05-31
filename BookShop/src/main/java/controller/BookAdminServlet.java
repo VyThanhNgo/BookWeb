@@ -77,11 +77,29 @@ public class BookAdminServlet extends HttpServlet {
                 // Gửi thông báo lỗi nếu sách đã có người mua
                 response.sendRedirect(request.getContextPath() + "/admin?error=book_has_orders");
             }
+            
+        } else if ("restore".equals(action)) {
+            int bookId = Integer.parseInt(request.getParameter("id"));
+            dao.restoreBook(bookId);
+            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
+
+        } else if ("hardDelete".equals(action)) {
+            int bookId = Integer.parseInt(request.getParameter("id"));
+            //kiểm tra trước khi xóa vĩnh viễn
+            if (dao.canDeleteBook(bookId)) {
+                dao.hardDeleteBook(bookId);
+                response.sendRedirect(request.getContextPath() + "/admin?success=deleted");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin?error=book_has_orders");
+            }
 
         }else {
             // Trang danh sách sách admin
             request.setAttribute("books", dao.getAllBooks());
-            request.getRequestDispatcher("/WEB-INF/views/admin/book/add-book.jsp")
+            request.setAttribute("deletedBooks", dao.getDeletedBooks());
+            request.setAttribute("categories", dao.getAllCategories());
+            request.setAttribute("authors", dao.getAllAuthors());
+            request.getRequestDispatcher("/WEB-INF/views/admin/admin.jsp")
                    .forward(request, response);
         }
     }
