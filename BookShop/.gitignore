@@ -1,2 +1,23 @@
-/build/
-/target/
+# Gradle files
+.gradle/
+build/
+
+# Maven files
+target/
+pom.xml
+
+# IDE files (Eclipse/IntelliJ)
+.settings/
+.classpath
+.project
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Compiled class files
+*.class
+
+# OS files
+Thumbs.db
+.DS_Store
