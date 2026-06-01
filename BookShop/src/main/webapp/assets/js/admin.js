@@ -95,14 +95,14 @@ function switchTab(tabId) {
 
     const titles = {
         dashboard:  "Tổng Quan Hệ Thống",
-        books:      "Quản Lý Kho Sách (Mục 62, 27, 28)",
-        categories: "Quản Lý Danh Mục (Mục 60)",
-        authors:    "Quản Lý Tác Giả (Mục 61)",
-        users:      "Quản Lý Thành Viên (Mục 17, 18, 19)",
-        reviews:    "Kiểm Duyệt Bình Luận (Mục 63)",
-        inventory:  "Quản Trị Tồn Kho (Mục 65)",
-        promotions: "Cấu Hình Đồng Giá (Mục 69)",
-        messages:   "Ý Kiến & Liên Hệ (Mục 22)"
+        books:      "Quản Lý Kho Sách",
+        categories: "Quản Lý Danh Mục",
+        authors:    "Quản Lý Tác Giả",
+        users:      "Quản Lý Thành Viên",
+        reviews:    "Kiểm Duyệt Bình Luận",
+        inventory:  "Quản Trị Tồn Kho",
+        promotions: "Cấu Hình Đồng Giá",
+        messages:   "Ý Kiến & Liên Hệ"
     };
     document.getElementById('current-title').innerText = titles[tabId];
 
@@ -160,8 +160,12 @@ function addAdminLog(action) {
 
 // ===================== SÁCH =====================
 function renderBooks() {
-    const tbody = document.getElementById('book-table-body');
-    tbody.innerHTML = books.map(function(book) {
+	const statusEl = document.getElementById('filter-status');
+	    const status = (statusEl && statusEl.value) ? statusEl.value : 'active';
+	    const source = (status === 'deleted') ? deletedBooks : books;
+
+	    const tbody = document.getElementById('book-table-body');
+	    tbody.innerHTML = source.map(function(book) {
         const authorName = (authors.find(function(a) { return a.id == book.author_id; }) || {name:"Chưa rõ"}).name;
         const categoryName = (categories.find(function(c) { return c.id == book.category_id; }) || {name:"Chưa rõ"}).name;
         const stockClass = book.stock <= 5 ? 'text-rose-500' : 'text-slate-600 dark:text-slate-300';
@@ -172,11 +176,24 @@ function renderBooks() {
             + '<td class="py-4 px-4"><span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-lg">' + categoryName + '</span></td>'
             + '<td class="py-4 px-4 font-bold text-navy-800 dark:text-white">' + book.price.toLocaleString() + 'đ</td>'
             + '<td class="py-4 px-4"><span class="font-bold ' + stockClass + '">' + book.stock + ' cuốn</span></td>'
-            + '<td class="py-4 px-4 font-semibold text-slate-500">' + book.sold + '</td>'
-            + '<td class="py-4 px-4"><div class="flex justify-center gap-2">'
-            + '<button onclick="openBookModal(' + book.id + ')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"><i class="fa-solid fa-pen"></i></button>'
-            + '<button onclick="deleteBook(' + book.id + ')" class="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"><i class="fa-solid fa-trash"></i></button>'
-            + '</div></td></tr>';
+			+ '<td class="py-4 px-4 font-semibold text-slate-500">' + book.sold + '</td>'
+			+ '<td class="py-4 px-4"><div class="flex justify-center gap-2">'
+			+ (function() {
+			    // Kiểm tra xem dropdown filter-status hiện tại đang chọn mục nào
+			    const statusEl = document.getElementById('filter-status');
+			    const isDeletedMode = statusEl && statusEl.value === 'deleted';
+			    
+			    if (isDeletedMode) {
+			        // Giao diện khi xem Thùng rác: Hiện nút Khôi phục và Xóa hẳn
+			        return '<button onclick="restoreBook(' + book.id + ')" class="p-2 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg" title="Khôi phục sách"><i class="fa-solid fa-trash-arrow-up"></i></button>'
+			             + '<button onclick="hardDeleteBook(' + book.id + ')" class="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg" title="Xóa vĩnh viễn"><i class="fa-solid fa-circle-xmark"></i></button>';
+			    } else {
+			        // Giao diện bình thường: Hiện nút Sửa và Xóa tạm thời
+			        return '<button onclick="openBookModal(' + book.id + ')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>'
+			             + '<button onclick="deleteBook(' + book.id + ')" class="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg" title="Xóa tạm thời"><i class="fa-solid fa-trash"></i></button>';
+			    }
+			})() 
+			+ '</div></td></tr>';
     }).join('');
 
     document.getElementById('book-author').innerHTML = authors.map(function(a) { return '<option value="' + a.id + '">' + a.name + '</option>'; }).join('');
@@ -189,14 +206,32 @@ function filterBooks() {
     const query = document.getElementById('search-book').value.toLowerCase();
     const cateId = document.getElementById('filter-category').value;
     const authId = document.getElementById('filter-author').value;
-    const filtered = books.filter(function(b) {
-        return (b.title.toLowerCase().includes(query) || b.isbn.includes(query))
-            && (cateId ? b.category_id == cateId : true)
-            && (authId ? b.author_id == authId : true);
-    });
+    
+    // THÊM: Lấy giá trị trạng thái lọc (active hoặc deleted) từ ô select mới thêm
+    const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'active';
+
+	const source = (statusFilter === 'deleted') ? deletedBooks : books;
+
+	    const filtered = source.filter(function(b) {
+	        return (b.title.toLowerCase().includes(query) || b.isbn.includes(query))
+	            && (cateId ? b.category_id == cateId : true)
+	            && (authId ? b.author_id == authId : true);
+	    });
+
     document.getElementById('book-table-body').innerHTML = filtered.map(function(book) {
         const authorName = (authors.find(function(a) { return a.id == book.author_id; }) || {name:"Chưa rõ"}).name;
         const categoryName = (categories.find(function(c) { return c.id == book.category_id; }) || {name:"Chưa rõ"}).name;
+        
+        // THÊM LOGIC ĐỔI ICON THAO TÁC KHI TÌM KIẾM Y HỆT TRÊN RENDERBOOKS
+        let actionButtons = "";
+        if (statusFilter === 'deleted') {
+            actionButtons = '<button onclick="restoreBook(' + book.id + ')" class="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded" title="Khôi phục"><i class="fa-solid fa-trash-arrow-up"></i></button>'
+                          + '<button onclick="hardDeleteBook(' + book.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded ml-1" title="Xóa vĩnh viễn"><i class="fa-solid fa-circle-xmark"></i></button>';
+        } else {
+            actionButtons = '<button onclick="openBookModal(' + book.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded"><i class="fa-solid fa-pen"></i></button>'
+                          + '<button onclick="deleteBook(' + book.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded ml-1"><i class="fa-solid fa-trash"></i></button>';
+        }
+
         return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-sm">'
             + '<td class="py-4 px-4"><img src="' + book.image + '" class="w-12 h-16 rounded-lg object-cover" alt=""></td>'
             + '<td class="py-4 px-4 max-w-xs"><p class="font-bold">' + book.title + '</p><p class="text-xs text-slate-400">ISBN: ' + book.isbn + '</p></td>'
@@ -205,10 +240,7 @@ function filterBooks() {
             + '<td class="py-4 px-4 font-bold">' + book.price.toLocaleString() + 'đ</td>'
             + '<td class="py-4 px-4">' + book.stock + '</td>'
             + '<td class="py-4 px-4">' + book.sold + '</td>'
-            + '<td class="py-4 px-4 text-center">'
-            + '<button onclick="openBookModal(' + book.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded"><i class="fa-solid fa-pen"></i></button>'
-            + '<button onclick="deleteBook(' + book.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded ml-1"><i class="fa-solid fa-trash"></i></button>'
-            + '</td></tr>';
+            + '<td class="py-4 px-4 text-center">' + actionButtons + '</td></tr>';
     }).join('');
 }
 
@@ -288,16 +320,45 @@ function deleteBook(id) {
     }
 }
 
+// Thêm hàm xử lý Khôi phục sản phẩm (Soft delete -> Active)
+function restoreBook(id) {
+    if (confirm("Bạn có chắc chắn muốn khôi phục cuốn sách này về kho hiển thị công khai không?")) {
+        // Điều hướng gửi request về Controller xử lý cập nhật is_deleted = 0
+        window.location.href = CTX + '/admin/books?action=restore&id=' + id;
+    }
+}
+
+// Thêm hàm xử lý Xóa vĩnh viễn (Hard delete khỏi cơ sở dữ liệu)
+function hardDeleteBook(id) {
+    if (confirm("CẢNH BÁO: Hành động này sẽ xóa vĩnh viễn dữ liệu sách và không thể hoàn tác! Bạn vẫn muốn xóa chứ?")) {
+        // Điều hướng gửi request về Controller chạy lệnh DELETE FROM
+        window.location.href = CTX + '/admin/books?action=hardDelete&id=' + id;
+    }
+}
+
 // ===================== DANH MỤC =====================
 function renderCategories() {
-    document.getElementById('category-table-body').innerHTML = categories.map(function(cate) {
+	const statusEl = document.getElementById('filter-category-status');
+	   const status = (statusEl && statusEl.value) ? statusEl.value : 'active';
+	   const source = (status === 'deleted') ? deletedCategories : categories;
+
+	   document.getElementById('category-table-body').innerHTML = source.map(function(cate) {
         return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-sm">'
             + '<td class="py-3 px-4 font-bold text-slate-400">#0' + cate.id + '</td>'
             + '<td class="py-3 px-4 font-bold text-navy-800 dark:text-slate-200">' + cate.name + '</td>'
-            + '<td class="py-3 px-4 text-center">'
-            + '<button onclick="editCategory(' + cate.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded"><i class="fa-solid fa-pen"></i></button>'
-            + '<button onclick="deleteCategory(' + cate.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1"><i class="fa-solid fa-trash"></i></button>'
-            + '</td></tr>';
+			+ '<td class="py-3 px-4 text-center">'
+			+ (function() {
+			    // Giả định ô select bộ lọc trạng thái danh mục có id là 'filter-category-status'
+			    const statusEl = document.getElementById('filter-category-status');
+			    if (statusEl && statusEl.value === 'deleted') {
+			        return '<button onclick="restoreCategory(' + cate.id + ')" class="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded" title="Khôi phục"><i class="fa-solid fa-trash-arrow-up"></i></button>'
+			             + '<button onclick="hardDeleteCategory(' + cate.id + ')" class="p-1.5 text-rose-700 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1" title="Xóa vĩnh viễn"><i class="fa-solid fa-circle-xmark"></i></button>';
+			    } else {
+			        return '<button onclick="editCategory(' + cate.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded"><i class="fa-solid fa-pen"></i></button>'
+			             + '<button onclick="deleteCategory(' + cate.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1"><i class="fa-solid fa-trash"></i></button>';
+			    }
+			})()
+			+ '</td></tr>';
     }).join('');
 }
 
@@ -346,15 +407,36 @@ function deleteCategory(id) {
     }
 }
 
+function restoreCategory(id) {
+    if (confirm("Xác nhận khôi phục danh mục này hiển thị trở lại?")) {
+        window.location.href = CTX + '/admin/categories?action=restore&id=' + id;
+    }
+}
+
+function hardDeleteCategory(id) {
+    if (confirm("CẢNH BÁO: Xóa VĨNH VIỄN danh mục này và tất cả dữ liệu liên quan sẽ bị ảnh hưởng. Bạn có chắc chắn?")) {
+        window.location.href = CTX + '/admin/categories?action=hardDelete&id=' + id;
+    }
+}
+
 // ===================== TÁC GIẢ =====================
 function renderAuthors() {
-    document.getElementById('author-table-body').innerHTML = authors.map(function(auth) {
+    const statusEl = document.getElementById('filter-author-status');
+    // THÊM: ép mặc định về 'active' nếu chưa có giá trị
+    const status = (statusEl && statusEl.value) ? statusEl.value : 'active';
+    
+    const source = (status === 'deleted') ? deletedAuthors : authors;  // ĐỔI: dùng đúng source
+
+    document.getElementById('author-table-body').innerHTML = source.map(function(auth) {
         return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-sm">'
             + '<td class="py-3 px-4"><img src="' + auth.image + '" class="w-10 h-10 rounded-full object-cover" alt=""></td>'
             + '<td class="py-3 px-4 font-bold text-navy-800 dark:text-slate-200">' + auth.name + '</td>'
             + '<td class="py-3 px-4 text-center">'
-            + '<button onclick="editAuthor(' + auth.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded"><i class="fa-solid fa-pen"></i></button>'
-            + '<button onclick="deleteAuthor(' + auth.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1"><i class="fa-solid fa-trash"></i></button>'
+            + (status === 'deleted'
+                ? '<button onclick="restoreAuthor(' + auth.id + ')" class="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded" title="Khôi phục"><i class="fa-solid fa-trash-arrow-up"></i></button>'
+                + '<button onclick="hardDeleteAuthor(' + auth.id + ')" class="p-1.5 text-rose-700 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1" title="Xóa vĩnh viễn"><i class="fa-solid fa-circle-xmark"></i></button>'
+                : '<button onclick="editAuthor(' + auth.id + ')" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 rounded"><i class="fa-solid fa-pen"></i></button>'
+                + '<button onclick="deleteAuthor(' + auth.id + ')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800 rounded ml-1"><i class="fa-solid fa-trash"></i></button>')
             + '</td></tr>';
     }).join('');
 }
@@ -398,6 +480,18 @@ function deleteAuthor(id) {
     }
     if (confirm("Xác nhận xóa tác giả này?")) {
         window.location.href = CTX + '/admin/authors?action=delete&id=' + id;
+    }
+}
+
+function restoreAuthor(id) {
+    if (confirm("Xác nhận khôi phục tác giả này hoạt động trở lại?")) {
+        window.location.href = CTX + '/admin/authors?action=restore&id=' + id;
+    }
+}
+
+function hardDeleteAuthor(id) {
+    if (confirm("CẢNH BÁO: Hành động này sẽ xóa VĨNH VIỄN tác giả này khỏi hệ thống. Bạn có chắc chắn muốn tiếp tục?")) {
+        window.location.href = CTX + '/admin/authors?action=hardDelete&id=' + id;
     }
 }
 

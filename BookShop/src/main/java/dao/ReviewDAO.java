@@ -16,63 +16,68 @@ public class ReviewDAO {
 
             // Lưu vào bảng reviews
             String sqlReview = "INSERT INTO reviews (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)";
-            PreparedStatement ps = conn.prepareStatement(sqlReview, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, review.getBookId());
-            ps.setInt(2, review.getUserId());
-            ps.setInt(3, review.getRating());
-            ps.setString(4, review.getComment());
-            ps.executeUpdate();
+            try (PreparedStatement ps = conn.prepareStatement(sqlReview, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, review.getBookId());
+                ps.setInt(2, review.getUserId());
+                ps.setInt(3, review.getRating());
+                ps.setString(4, review.getComment());
+                ps.executeUpdate();
 
-            // Lấy ID của review vừa tạo
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                int reviewId = rs.getInt(1);
+                // Lấy ID của review vừa tạo
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int reviewId = rs.getInt(1);
 
-                // 2. Lưu danh sách ảnh vào bảng review_images
-                if (imageUrls != null && !imageUrls.isEmpty()) {
-                    String sqlImg = "INSERT INTO review_images (review_id, image_url) VALUES (?, ?)";
-                    PreparedStatement psImg = conn.prepareStatement(sqlImg);
-                    for (String url : imageUrls) {
-                        psImg.setInt(1, reviewId);
-                        psImg.setString(2, url);
-                        psImg.addBatch(); // Dùng batch để nhanh hơn
+                        // 2. Lưu danh sách ảnh vào bảng review_images
+                        if (imageUrls != null && !imageUrls.isEmpty()) {
+                            String sqlImg = "INSERT INTO review_images (review_id, image_url) VALUES (?, ?)";
+                            try (PreparedStatement psImg = conn.prepareStatement(sqlImg)) {
+                                for (String url : imageUrls) {
+                                    psImg.setInt(1, reviewId);
+                                    psImg.setString(2, url);
+                                    psImg.addBatch(); // Dùng batch để nhanh hơn
+                                }
+                                psImg.executeBatch();
+                            }
+                        }
                     }
-                    psImg.executeBatch();
                 }
             }
             conn.commit();
         } catch (Exception e) {
             try { if(conn != null) conn.rollback(); } catch(Exception ex) {}
             e.printStackTrace();
+        } finally {
+            try { if(conn != null) conn.close(); } catch(Exception ex) {}
         }
     }
 
     public List<Review> getReviewsByBookId(int bookId) {
         List<Review> list = new ArrayList<>();
-        try {
-            Connection conn = DBConnection.getConnection();
-            // Join với bảng users để lấy tên và ảnh đại diện
-            String sql = "SELECT r.*, u.full_name, u.avatar FROM reviews r " +
-                         "JOIN users u ON r.user_id = u.user_id " +
-                         "WHERE r.book_id = ? ORDER BY r.created_at DESC";
-            PreparedStatement ps = conn.prepareStatement(sql);
+        // Join với bảng users để lấy tên và ảnh đại diện
+        String sql = "SELECT r.*, u.full_name, u.avatar FROM reviews r " +
+                     "JOIN users u ON r.user_id = u.user_id " +
+                     "WHERE r.book_id = ? ORDER BY r.created_at DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bookId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Review r = new Review();
-                int rId = rs.getInt("review_id");
-                r.setReviewId(rId);
-                r.setBookId(rs.getInt("book_id"));
-                r.setUserId(rs.getInt("user_id"));
-                r.setRating(rs.getInt("rating"));
-                r.setComment(rs.getString("comment"));
-                r.setCreatedAt(rs.getTimestamp("created_at"));
-                r.setUserName(rs.getString("full_name"));
-                r.setUserAvatar(rs.getString("avatar"));
-                
-                // Lấy ảnh của review
-                r.setImages(getImagesByReviewId(rId));
-                list.add(r);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Review r = new Review();
+                    int rId = rs.getInt("review_id");
+                    r.setReviewId(rId);
+                    r.setBookId(rs.getInt("book_id"));
+                    r.setUserId(rs.getInt("user_id"));
+                    r.setRating(rs.getInt("rating"));
+                    r.setComment(rs.getString("comment"));
+                    r.setCreatedAt(rs.getTimestamp("created_at"));
+                    r.setUserName(rs.getString("full_name"));
+                    r.setUserAvatar(rs.getString("avatar"));
+                    
+                    // Lấy ảnh của review
+                    r.setImages(getImagesByReviewId(rId));
+                    list.add(r);
+                }
             }
         } catch (Exception e) { e.printStackTrace(); }
         return list;
@@ -80,14 +85,14 @@ public class ReviewDAO {
 
     private List<String> getImagesByReviewId(int reviewId) {
         List<String> images = new ArrayList<>();
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "SELECT image_url FROM review_images WHERE review_id = ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
+        String sql = "SELECT image_url FROM review_images WHERE review_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, reviewId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                images.add(rs.getString("image_url"));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    images.add(rs.getString("image_url"));
+                }
             }
         } catch (Exception e) { e.printStackTrace(); }
         return images;
@@ -96,7 +101,6 @@ public class ReviewDAO {
  //đếm tổng review theo filter(dùng cho phân trang)
     public int countReviews(int bookId, int starFilter, boolean hasImageFilter) {
         try {
-            Connection conn = DBConnection.getConnection();
             StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) FROM reviews r WHERE r.book_id = ?");
             
@@ -107,10 +111,13 @@ public class ReviewDAO {
                 sql.append(" AND EXISTS (SELECT 1 FROM review_images ri WHERE ri.review_id = r.review_id)");
             }
             
-            PreparedStatement ps = conn.prepareStatement(sql.toString());
-            ps.setInt(1, bookId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
+            try (Connection conn = DBConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                ps.setInt(1, bookId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
         } catch (Exception e) { e.printStackTrace(); }
         return 0;
     }
@@ -120,7 +127,6 @@ public class ReviewDAO {
                                             boolean hasImageFilter, int page, int pageSize) {
         List<Review> list = new ArrayList<>();
         try {
-            Connection conn = DBConnection.getConnection();
             StringBuilder sql = new StringBuilder(
                 "SELECT r.*, u.full_name, u.avatar FROM reviews r " +
                 "JOIN users u ON r.user_id = u.user_id " +
@@ -136,25 +142,27 @@ public class ReviewDAO {
             sql.append(" ORDER BY r.created_at DESC");
             sql.append(" LIMIT ? OFFSET ?");
             
-            PreparedStatement ps = conn.prepareStatement(sql.toString());
-            ps.setInt(1, bookId);
-            ps.setInt(2, pageSize);
-            ps.setInt(3, (page - 1) * pageSize);
-            ResultSet rs = ps.executeQuery();
-            
-            while (rs.next()) {
-                Review r = new Review();
-                int rId = rs.getInt("review_id");
-                r.setReviewId(rId);
-                r.setBookId(rs.getInt("book_id"));
-                r.setUserId(rs.getInt("user_id"));
-                r.setRating(rs.getInt("rating"));
-                r.setComment(rs.getString("comment"));
-                r.setCreatedAt(rs.getTimestamp("created_at"));
-                r.setUserName(rs.getString("full_name"));
-                r.setUserAvatar(rs.getString("avatar"));
-                r.setImages(getImagesByReviewId(rId));
-                list.add(r);
+            try (Connection conn = DBConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                ps.setInt(1, bookId);
+                ps.setInt(2, pageSize);
+                ps.setInt(3, (page - 1) * pageSize);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Review r = new Review();
+                        int rId = rs.getInt("review_id");
+                        r.setReviewId(rId);
+                        r.setBookId(rs.getInt("book_id"));
+                        r.setUserId(rs.getInt("user_id"));
+                        r.setRating(rs.getInt("rating"));
+                        r.setComment(rs.getString("comment"));
+                        r.setCreatedAt(rs.getTimestamp("created_at"));
+                        r.setUserName(rs.getString("full_name"));
+                        r.setUserAvatar(rs.getString("avatar"));
+                        r.setImages(getImagesByReviewId(rId));
+                        list.add(r);
+                    }
+                }
             }
         } catch (Exception e) { e.printStackTrace(); }
         return list;

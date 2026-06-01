@@ -45,6 +45,21 @@ public class AuthorAdminServlet extends HttpServlet {
             } else {
                 res.sendRedirect(req.getContextPath() + "/admin?error=has_books");
             }
+            
+        } else if ("restore".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            dao.restoreAuthor(id);
+            res.sendRedirect(req.getContextPath() + "/admin?success=updated");
+
+        } else if ("hardDelete".equals(action)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            //kiểm tra còn sách liên kết không (kể cả sách đã ẩn)
+            if (dao.canHardDeleteAuthor(id)) {
+                dao.hardDeleteAuthor(id);
+                res.sendRedirect(req.getContextPath() + "/admin?success=deleted");
+            } else {
+                res.sendRedirect(req.getContextPath() + "/admin?error=has_books");
+            }
 
         } else if ("edit".equals(action)) {
             int id = Integer.parseInt(req.getParameter("id"));
