@@ -102,6 +102,7 @@ function switchTab(tabId) {
         reviews:    "Kiểm Duyệt Bình Luận",
         inventory:  "Quản Trị Tồn Kho",
         promotions: "Cấu Hình Đồng Giá",
+        orders:     "Theo Dõi Trạng Thái Đơn Hàng",
         messages:   "Ý Kiến & Liên Hệ"
     };
     document.getElementById('current-title').innerText = titles[tabId];
@@ -140,8 +141,6 @@ function toggleDarkMode() {
 
 // ===================== DASHBOARD =====================
 function renderDashboard() {
-    document.getElementById('dash-total-users').innerText = users.length;
-    document.getElementById('dash-total-books').innerText = books.length;
     document.getElementById('dash-low-stock').innerText = books.filter(function(b) { return b.stock <= 5; }).length;
 
     document.getElementById('log-list').innerHTML = adminLogs.map(function(log) {
@@ -732,11 +731,11 @@ window.addEventListener('load', function() {
 });
 
 function updateOrderStatus(orderId, status) {
-    const fd = new FormData();
-    fd.append('orderId', orderId);
-    fd.append('status', status);
-    fetch(document.querySelector('meta[name="ctx"]') ? document.querySelector('meta[name="ctx"]').content + '/admin/orders' : '/BookShop_war/admin/orders', {
-        method: 'POST', body: fd
+    const url = document.querySelector('meta[name="ctx"]') ? document.querySelector('meta[name="ctx"]').content + '/admin/orders' : '/BookShop_war/admin/orders';
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'orderId=' + encodeURIComponent(orderId) + '&status=' + encodeURIComponent(status)
     })
     .then(r => r.json())
     .then(data => {

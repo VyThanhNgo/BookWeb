@@ -193,7 +193,9 @@ public class OrderDAO {
 
     public List<OrderItem> getOrderItems(int orderId) {
         List<OrderItem> list = new ArrayList<>();
-        String sql = "SELECT * FROM order_details WHERE order_id = ?";
+        String sql = "SELECT od.*, b.image FROM order_details od " +
+                     "LEFT JOIN books b ON od.book_id = b.book_id " +
+                     "WHERE od.order_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -202,7 +204,7 @@ public class OrderDAO {
                 OrderItem item = new OrderItem(
                     rs.getInt("book_id"),
                     rs.getString("book_title"),
-                    null,
+                    rs.getString("image"),
                     rs.getInt("quantity"),
                     rs.getDouble("unit_price")
                 );

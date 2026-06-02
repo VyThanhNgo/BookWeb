@@ -65,10 +65,18 @@
                     <tbody>
                         <c:forEach var="item" items="${orderItems}">
                             <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:10px 14px;">${item.title}</td>
+                                <td style="padding:10px 14px;">
+                                    <div style="display:flex;align-items:center;gap:12px;">
+                                        <c:if test="${not empty item.image}">
+                                            <img src="${item.image}" alt="${item.bookTitle}"
+                                                 style="width:52px;height:70px;object-fit:cover;border-radius:4px;flex-shrink:0;">
+                                        </c:if>
+                                        <span>${item.bookTitle}</span>
+                                    </div>
+                                </td>
                                 <td style="padding:10px 14px;text-align:center;">${item.quantity}</td>
-                                <td style="padding:10px 14px;text-align:right;"><fmt:formatNumber value="${item.price}" pattern="#,###"/>đ</td>
-                                <td style="padding:10px 14px;text-align:right;"><fmt:formatNumber value="${item.price * item.quantity}" pattern="#,###"/>đ</td>
+                                <td style="padding:10px 14px;text-align:right;"><fmt:formatNumber value="${item.unitPrice}" pattern="#,###"/>đ</td>
+                                <td style="padding:10px 14px;text-align:right;"><fmt:formatNumber value="${item.lineTotal}" pattern="#,###"/>đ</td>
                             </tr>
                         </c:forEach>
                     </tbody>
