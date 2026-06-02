@@ -10,9 +10,9 @@ public class DBConnection {
 
     // ========== Cấu hình kết nối ==========
    
-    private static final String URL = "jdbc:mysql://localhost:3306/bookstore";
-    private static final String USER = "root";
-    private static final String PASSWORD = "1234";
+	private static final String URL = "jdbc:mysql://192.168.1.40:3306/bookstore";
+	private static final String USER = "root";
+    private static final String PASSWORD = "12345";
 
  
 //    private static final String URL =
@@ -25,7 +25,7 @@ public class DBConnection {
 
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(URL + "?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8");
+        config.setJdbcUrl(URL + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8");
         config.setUsername(USER);
         config.setPassword(PASSWORD);
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
