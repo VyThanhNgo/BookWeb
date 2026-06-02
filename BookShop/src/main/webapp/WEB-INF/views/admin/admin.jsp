@@ -240,9 +240,9 @@ window.addEventListener('load', function() {
 							class="text-xs text-slate-400 font-bold uppercase tracking-wider">Khách
 							Hàng Mới</span>
 						<h3 id="dash-total-users"
-							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">1,240</h3>
+							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">${totalUsers}</h3>
 						<span class="text-xs text-emerald-500 font-bold"><i
-							class="fa-solid fa-circle-check"></i> +8 user hôm nay</span>
+							class="fa-solid fa-circle-check"></i> +${usersToday} user hôm nay</span>
 					</div>
 					<div
 						class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl text-emerald-600">
@@ -256,9 +256,9 @@ window.addEventListener('load', function() {
 							class="text-xs text-slate-400 font-bold uppercase tracking-wider">Sách
 							Đang Quản Lý</span>
 						<h3 id="dash-total-books"
-							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">19</h3>
-						<span class="text-xs text-slate-500 dark:text-slate-400">Đã
-							cập nhật 200 sách mới</span>
+							class="text-2xl font-black heading-font text-navy-800 dark:text-white mt-1">${totalBooks}</h3>
+						<span class="text-xs text-slate-500 dark:text-slate-400">Tổng
+							sách đang bán</span>
 					</div>
 					<div
 						class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl text-purple-600">

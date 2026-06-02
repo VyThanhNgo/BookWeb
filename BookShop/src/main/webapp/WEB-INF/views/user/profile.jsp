@@ -23,7 +23,7 @@
 									class="list-group-item list-group-item-action">
 									<i class="fas fa-key me-2"></i> Đổi mật khẩu
 								</a>
-								<a href="${pageContext.request.contextPath}/orders"
+								<a href="${pageContext.request.contextPath}/my-orders"
 									class="list-group-item list-group-item-action">
 									<i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
 								</a>

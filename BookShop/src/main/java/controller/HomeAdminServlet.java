@@ -2,6 +2,7 @@ package controller;
 
 import dao.BookDAO;
 import dao.OrderDAO;
+import dao.UserDAO;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -13,8 +14,10 @@ public class HomeAdminServlet extends HttpServlet {
 			throws ServletException, IOException {
 		BookDAO bookDAO = new BookDAO();
 		OrderDAO orderDAO = new OrderDAO();
+		UserDAO userDAO = new UserDAO();
 
-		request.setAttribute("books", bookDAO.getAllBooks());
+		java.util.List books = bookDAO.getAllBooks();
+		request.setAttribute("books", books);
 		request.setAttribute("categories", bookDAO.getAllCategories());
 		request.setAttribute("authors", bookDAO.getAllAuthors());
 
@@ -23,6 +26,9 @@ public class HomeAdminServlet extends HttpServlet {
 		request.setAttribute("totalOrders", orderDAO.getTotalOrders());
 		request.setAttribute("pendingOrders", orderDAO.getPendingOrders());
 		request.setAttribute("recentOrders", orderDAO.getAllOrders());
+		request.setAttribute("totalUsers", userDAO.getUserCount());
+		request.setAttribute("usersToday", userDAO.getUsersToday());
+		request.setAttribute("totalBooks", books.size());
 
 		request.getRequestDispatcher("/WEB-INF/views/admin/admin.jsp").forward(request, response);
 	}
