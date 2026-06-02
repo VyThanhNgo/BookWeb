@@ -22,6 +22,21 @@ public class CategoryAdminServlet extends HttpServlet {
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin?error=has_books");
             }
+        } else if ("restore".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            dao.restoreCategory(id);
+            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
+
+        } else if ("hardDelete".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            //kiểm tra còn sách liên kết không (kể cả sách đã ẩn)
+            if (dao.canHardDeleteCategory(id)) {
+                dao.hardDeleteCategory(id);
+                response.sendRedirect(request.getContextPath() + "/admin?success=deleted");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin?error=has_books");
+            }
+
         } else {
             response.sendRedirect(request.getContextPath() + "/admin");
         }

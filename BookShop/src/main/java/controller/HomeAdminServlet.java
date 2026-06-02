@@ -20,6 +20,9 @@ public class HomeAdminServlet extends HttpServlet {
 		request.setAttribute("books", books);
 		request.setAttribute("categories", bookDAO.getAllCategories());
 		request.setAttribute("authors", bookDAO.getAllAuthors());
+		request.setAttribute("deletedBooks", bookDAO.getDeletedBooks());
+		request.setAttribute("deletedCategories", bookDAO.getDeletedCategories());
+		request.setAttribute("deletedAuthors", bookDAO.getDeletedAuthors());
 
 		// Số liệu thực từ DB
 		request.setAttribute("totalRevenue", orderDAO.getTotalRevenue());

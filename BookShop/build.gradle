@@ -1,0 +1,96 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.hidetake.ssh' version '2.10.1'
+    id 'war'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    api libs.com.mysql.mysql.connector.j
+    api libs.javax.servlet.jstl
+    api libs.taglibs.standard
+    api libs.com.cloudinary.cloudinary.http44
+    api libs.org.mindrot.jbcrypt
+    api libs.com.google.code.gson.gson
+    api libs.com.zaxxer.hikaricp
+    providedCompile libs.javax.servlet.javax.servlet.api
+    providedCompile libs.javax.servlet.jsp.javax.servlet.jsp.api
+}
+
+group = 'BookShop'
+version = '0.0.1-SNAPSHOT'
+description = 'BookShop'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
+war {
+    archiveFileName = 'BookShop.war'
+    webAppDirectory = file('src/main/webapp')
+}
+
+remotes {
+    host {
+        host = '192.168.1.40'
+        user = 'zev'
+        password = '106'
+    }
+}
+
+ssh.settings {
+    knownHosts = allowAnyHosts
+}
+
+task docker_app_start {
+    doLast {
+        ssh.run {
+            session(remotes.host) {
+                execute 'docker stop tomcat9', ignoreError: true
+                execute 'docker rm tomcat9', ignoreError: true
+                execute 'docker run -d --name tomcat9 --restart always -v /usr/deploy:/usr/local/tomcat/webapps -p 80:8080 tomcat:9.0'
+            }
+        }
+    }
+}
+
+task docker_upload_file_to_server {
+    doLast {
+        ssh.run {
+            session(remotes.host) {
+                execute 'rm -f /usr/deploy/BookShop.war', ignoreError: true
+                execute 'rm -rf /usr/deploy/BookShop/', ignoreError: true
+                put from: "${project.projectDir}/build/libs/BookShop.war",
+                        into: "/usr/deploy/BookShop.war"
+            }
+        }
+    }
+}
+
+task docker_deploy {
+    dependsOn build
+    dependsOn docker_upload_file_to_server
+    dependsOn docker_app_start
+    docker_upload_file_to_server.mustRunAfter build
+    docker_app_start.mustRunAfter docker_upload_file_to_server
+}
