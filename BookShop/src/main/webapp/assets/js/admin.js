@@ -830,54 +830,9 @@ function hideAdminError(divId) {
     document.getElementById(divId).style.display = 'none';
 }
 
-// Validate 1 file (ảnh bìa, ảnh tác giả)
-function validateSingleImage(input, errorDivId) {
-    hideAdminError(errorDivId);
-    const file = input.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const bytes = new Uint8Array(e.target.result);
-        if (!isValidImageBytes(bytes)) {
-            showAdminError(errorDivId,
-                '"' + file.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
-            input.value = ''; // xóa file đã chọn
-            // Ẩn preview nếu có
-            const previewCover = document.getElementById('book-cover-preview-container');
-            const previewAuthor = document.getElementById('author-preview-container');
-            if (previewCover) previewCover.classList.add('hidden');
-            if (previewAuthor) previewAuthor.classList.add('hidden');
-        }
-    };
-    reader.readAsArrayBuffer(file.slice(0, 8));
-}
 
-// Validate nhiều file (ảnh chi tiết)
-function validateMultipleImages(input, errorDivId) {
-    hideAdminError(errorDivId);
-    const files = Array.from(input.files);
-    if (!files.length) return;
 
-    let checked = 0;
-    files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const bytes = new Uint8Array(e.target.result);
-            if (!isValidImageBytes(bytes)) {
-                showAdminError(errorDivId,
-                    '"' + file.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
-                input.value = '';
-                document.getElementById('book-details-preview-container').innerHTML = '';
-                document.getElementById('detail-files-count').textContent = 'Tải các ảnh chi tiết lên (Có thể chọn nhiều)';
-            }
-            checked++;
-        };
-        reader.readAsArrayBuffer(file.slice(0, 8));
-    });
-}
-
-// Submit form sách — kiểm tra không có lỗi trước khi submit
 // Validate 1 file, trả về Promise<boolean>
 function checkSingleFile(file) {
     return new Promise(function(resolve) {
@@ -919,9 +874,13 @@ function submitAuthorForm() {
             const preview = document.getElementById('author-preview-container');
             if (preview) preview.classList.add('hidden');
             document.getElementById('author-file-name').innerText = 'Tải ảnh lên';
-        } else {
-            document.getElementById('author-form').submit();
+            return;
         }
+        // Resize trước khi submit
+        resizeImageFile(file, MAX_WIDTH, MAX_HEIGHT, QUALITY).then(function(resized) {
+            replaceFileInInput(input, resized);
+            document.getElementById('author-form').submit();
+        });
     });
 }
 
@@ -930,9 +889,9 @@ function submitBookForm() {
     hideAdminError('cover-error');
     hideAdminError('detail-error');
 
-    const coverInput = document.getElementById('book-cover-image');
+    const coverInput  = document.getElementById('book-cover-image');
     const detailInput = document.getElementById('book-detail-images');
-    const coverFile = coverInput.files[0];
+    const coverFile   = coverInput.files[0];
 
     checkSingleFile(coverFile).then(function(coverOk) {
         if (!coverOk) {
@@ -944,6 +903,7 @@ function submitBookForm() {
             document.getElementById('cover-file-name').innerText = 'Tải ảnh bìa lên';
             return;
         }
+
         checkMultipleFiles(detailInput.files).then(function(badFile) {
             if (badFile) {
                 showAdminError('detail-error',
@@ -953,7 +913,74 @@ function submitBookForm() {
                 document.getElementById('detail-files-count').innerText = 'Tải các ảnh chi tiết lên (Có thể chọn nhiều)';
                 return;
             }
-            document.getElementById('book-form').submit();
+
+            // Resize ảnh bìa
+            const resizeCover = coverFile
+                ? resizeImageFile(coverFile, MAX_WIDTH, MAX_HEIGHT, QUALITY).then(function(r) { replaceFileInInput(coverInput, r); })
+                : Promise.resolve();
+
+            // Resize tất cả ảnh chi tiết
+            const detailFiles = Array.from(detailInput.files);
+            const resizeDetails = detailFiles.length
+                ? Promise.all(detailFiles.map(function(f) { return resizeImageFile(f, 1200, 1200, QUALITY); }))
+                    .then(function(resizedList) { replaceMultipleFilesInInput(detailInput, resizedList); })
+                : Promise.resolve();
+
+            Promise.all([resizeCover, resizeDetails]).then(function() {
+                document.getElementById('book-form').submit();
+            });
         });
+    });
+}
+
+// Thay 1 file trong input bằng file đã resize
+function replaceFileInInput(input, newFile) {
+    const dt = new DataTransfer();
+    dt.items.add(newFile);
+    input.files = dt.files;
+}
+
+// Thay nhiều file trong input bằng danh sách đã resize
+function replaceMultipleFilesInInput(input, newFiles) {
+    const dt = new DataTransfer();
+    newFiles.forEach(function(f) { dt.items.add(f); });
+    input.files = dt.files;
+}
+
+// ===================== RESIZE ẢNH TRƯỚC KHI UPLOAD =====================
+// Giới hạn kích thước tối đa
+const MAX_WIDTH  = 800;  // ảnh bìa sách / tác giả
+const MAX_HEIGHT = 800;
+const QUALITY    = 0.85; // chất lượng JPEG (0.0 - 1.0)
+
+function resizeImageFile(file, maxW, maxH, quality) {
+    return new Promise(function(resolve) {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = function() {
+            URL.revokeObjectURL(url);
+
+            let w = img.width;
+            let h = img.height;
+
+            // Tính tỉ lệ thu nhỏ
+            if (w > maxW || h > maxH) {
+                const ratio = Math.min(maxW / w, maxH / h);
+                w = Math.round(w * ratio);
+                h = Math.round(h * ratio);
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width  = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+            canvas.toBlob(function(blob) {
+                // Tạo File mới từ blob, giữ tên file gốc
+                const resized = new File([blob], file.name, { type: 'image/jpeg' });
+                resolve(resized);
+            }, 'image/jpeg', quality);
+        };
+        img.src = url;
     });
 }
