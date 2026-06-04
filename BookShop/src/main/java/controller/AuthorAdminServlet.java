@@ -5,6 +5,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
+import util.FileUploadValidator;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import dao.BookDAO;
@@ -84,6 +85,11 @@ public class AuthorAdminServlet extends HttpServlet {
             String imageUrl = null;
             Part filePart = req.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
+                String validationError = FileUploadValidator.validate(filePart);
+                if (validationError != null) {
+                    res.sendRedirect(req.getContextPath() + "/admin?error=invalid_file");
+                    return;
+                }
                 imageUrl = saveImage(filePart);
             }
             dao.addAuthor(name, imageUrl);
@@ -95,6 +101,11 @@ public class AuthorAdminServlet extends HttpServlet {
             String imageUrl = req.getParameter("oldImage");
             Part filePart = req.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
+                String validationError = FileUploadValidator.validate(filePart);
+                if (validationError != null) {
+                    res.sendRedirect(req.getContextPath() + "/admin?error=invalid_file");
+                    return;
+                }
                 imageUrl = saveImage(filePart);
             }
             dao.updateAuthor(id, name, imageUrl);

@@ -14,14 +14,18 @@
 				<div class="col">
 					<div class="dz-box">
 						<div class="dz-media">
-    <div class="main-img-container" style="position: relative;">
-        <%-- Tag giảm giá góc trên trái --%>
-        <c:if test="${book.originPrice > 0 && book.originPrice > book.price}">
-            <span style="position:absolute; top:10px; left:10px; background:#e53935; color:#fff; font-size:13px; font-weight:700; padding:4px 10px; border-radius:4px; z-index:2;">
-                -<fmt:formatNumber value="${(1 - book.price/book.originPrice)*100}" maxFractionDigits="0"/>%
-            </span>
-        </c:if>
-        <img id="main-book-img"
+							<div class="main-img-container" style="position: relative;">
+								<%-- Tag giảm giá góc trên trái --%>
+								<c:if
+									test="${book.originPrice > 0 && book.originPrice > book.price}">
+									<span
+										style="position: absolute; top: 10px; left: 10px; background: #e53935; color: #fff; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 4px; z-index: 2;">
+										-<fmt:formatNumber
+											value="${(1 - book.price/book.originPrice)*100}"
+											maxFractionDigits="0" />%
+									</span>
+								</c:if>
+								<img id="main-book-img"
 									src="${not empty book.image ? book.image : ctx.concat('/assets/images/books/default-book.png')}"
 									alt="${book.title}"
 									style="aspect-ratio: 2/3; object-fit: cover; width: 100%; border: 1px solid #eee;">
@@ -59,14 +63,17 @@
 									<div
 										class="d-lg-flex d-sm-inline-flex d-flex align-items-center">
 										<ul class="dz-rating">
-    <c:forEach begin="1" end="5" var="star">
-        <li><i class="flaticon-star ${star <= book.avgRating ? 'text-yellow' : 'text-muted'}"></i></li>
-    </c:forEach>
-</ul>
-<h6 class="m-b0">
-    <fmt:formatNumber value="${book.avgRating}" minFractionDigits="1" maxFractionDigits="1"/>
-    <span style="font-weight:400; font-size:13px; color:#888;">(${book.reviewCount} đánh giá)</span>
-</h6>
+											<c:forEach begin="1" end="5" var="star">
+												<li><i
+													class="flaticon-star ${star <= book.avgRating ? 'text-yellow' : 'text-muted'}"></i></li>
+											</c:forEach>
+										</ul>
+										<h6 class="m-b0">
+											<fmt:formatNumber value="${book.avgRating}"
+												minFractionDigits="1" maxFractionDigits="1" />
+											<span style="font-weight: 400; font-size: 13px; color: #888;">(${book.reviewCount}
+												đánh giá)</span>
+										</h6>
 									</div>
 									<!-- Tim -->
 									<div class="bookmark-btn style-1">
@@ -114,17 +121,22 @@
 									style="flex-direction: column; align-items: flex-start;">
 
 									<!-- Dòng 1: Giá -->
-									<div class="price" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-    
-    <h5 style="margin:0;">
-        <fmt:formatNumber value="${book.price}" pattern="#,###"/> &#8363;
-    </h5>
-    <c:if test="${book.originPrice > 0 && book.originPrice > book.price}">
-        <p class="p-lr10" style="margin: 0;">
-            <fmt:formatNumber value="${book.originPrice}" pattern="#,###"/> &#8363;
-        </p>
-    </c:if>
-</div>
+									<div class="price"
+										style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+
+										<h5 style="margin: 0;">
+											<fmt:formatNumber value="${book.price}" pattern="#,###" />
+											&#8363;
+										</h5>
+										<c:if
+											test="${book.originPrice > 0 && book.originPrice > book.price}">
+											<p class="p-lr10" style="margin: 0;">
+												<fmt:formatNumber value="${book.originPrice}"
+													pattern="#,###" />
+												&#8363;
+											</p>
+										</c:if>
+									</div>
 
 									<form action="${ctx}/cart" method="post">
 										<input type="hidden" name="id" value="${book.id}">
@@ -234,28 +246,48 @@
 							<div id="developement-1" class="tab-pane">
 								<div class="clear" id="comment-list">
 									<div class="post-comments comments-area style-1 clearfix">
-										<h4 class="comments-title">${book.reviewCount} đánh giá</h4>
+										<h4 class="comments-title">${book.reviewCount}đánhgiá</h4>
 										<div id="comment">
-    <%-- Bộ lọc --%>
-    <div id="review-filter-bar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
-        <span style="font-weight:600; color:#555;">Lọc:</span>
-        <button class="btn btn-sm btn-outline-secondary filter-star-btn active-filter" data-star="0">Tất cả</button>
-        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="5">⭐ 5 sao</button>
-        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="4">⭐ 4 sao</button>
-        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="3">⭐ 3 sao</button>
-        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="2">⭐ 2 sao</button>
-        <button class="btn btn-sm btn-outline-warning filter-star-btn" data-star="1">⭐ 1 sao</button>
-        <button class="btn btn-sm btn-outline-info" id="btn-has-image">📷 Có ảnh</button>
-    </div>
+											<%-- Bộ lọc --%>
+											<div id="review-filter-bar"
+												style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;">
+												<span style="font-weight: 600; color: #555;">Lọc:</span>
+												<button
+													class="btn btn-sm btn-outline-secondary filter-star-btn active-filter"
+													data-star="0">Tất cả</button>
+												<button
+													class="btn btn-sm btn-outline-warning filter-star-btn"
+													data-star="5">⭐ 5 sao</button>
+												<button
+													class="btn btn-sm btn-outline-warning filter-star-btn"
+													data-star="4">⭐ 4 sao</button>
+												<button
+													class="btn btn-sm btn-outline-warning filter-star-btn"
+													data-star="3">⭐ 3 sao</button>
+												<button
+													class="btn btn-sm btn-outline-warning filter-star-btn"
+													data-star="2">⭐ 2 sao</button>
+												<button
+													class="btn btn-sm btn-outline-warning filter-star-btn"
+													data-star="1">⭐ 1 sao</button>
+												<button class="btn btn-sm btn-outline-info"
+													id="btn-has-image">📷 Có ảnh</button>
+											</div>
 
-    <%-- Danh sách review render bằng JS --%>
-    <ol class="comment-list" id="review-ol" style="padding:0; list-style:none;"></ol>
-    <div id="review-loading" style="display:none; text-align:center; padding:20px;">Đang tải...</div>
-    <div id="review-empty" style="display:none; padding:16px; color:#888;">Chưa có đánh giá nào phù hợp.</div>
+											<%-- Danh sách review render bằng JS --%>
+											<ol class="comment-list" id="review-ol"
+												style="padding: 0; list-style: none;"></ol>
+											<div id="review-loading"
+												style="display: none; text-align: center; padding: 20px;">Đang
+												tải...</div>
+											<div id="review-empty"
+												style="display: none; padding: 16px; color: #888;">Chưa
+												có đánh giá nào phù hợp.</div>
 
-    <%-- Phân trang --%>
-    <div id="review-pagination" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:16px;"></div>
-</div>
+											<%-- Phân trang --%>
+											<div id="review-pagination"
+												style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 16px;"></div>
+										</div>
 
 										<c:if test="${not empty sessionScope.loggedInUser}">
 											<div class="comment-respond" id="respond">
@@ -265,6 +297,16 @@
 												<form action="${ctx}/add-review" method="post"
 													enctype="multipart/form-data" class="comment-form">
 													<input type="hidden" name="bookId" value="${book.id}">
+
+													<%-- Thông báo lỗi upload ảnh --%>
+													<c:if test="${param.error == 'invalid_file'}">
+														<div class="alert alert-danger"
+															style="margin-bottom: 12px;">
+															<i class="fa-solid fa-triangle-exclamation"></i> Ảnh
+															không hợp lệ! Chỉ chấp nhận JPG, PNG, GIF, WEBP. File có
+															thể đã bị đổi tên để qua mặt hệ thống.
+														</div>
+													</c:if>
 
 													<div class="comment-form-rating">
 														<label>Số sao: </label> <select name="rating"
@@ -280,7 +322,13 @@
 													<div class="form-group mb-3">
 														<label>Hình ảnh thực tế (Bạn có thể chọn nhiều
 															ảnh):</label> <input type="file" name="reviewPhotos"
-															class="form-control" multiple accept="image/*">
+															id="reviewPhotos" class="form-control" multiple
+															accept="image/*">
+														<div id="file-error"
+															style="display: none; color: #dc3545; margin-top: 6px; font-size: 13px;">
+															<i class="fa-solid fa-triangle-exclamation"></i> <span
+																id="file-error-msg"></span>
+														</div>
 													</div>
 
 													<div class="comment-form-comment">
@@ -290,8 +338,8 @@
 													</div>
 
 													<div class="form-submit mt-2">
-														<button type="submit" class="btn btn-primary btnhover">Gửi
-															Đánh Giá</button>
+														<button type="button" class="btn btn-primary btnhover"
+															onclick="submitReview(event)">Gửi Đánh Giá</button>
 													</div>
 												</form>
 											</div>
@@ -309,16 +357,20 @@
 							<c:forEach var="rb" items="${relatedBooks}">
 								<div class="col-xl-12 col-lg-6">
 									<div class="dz-shop-card style-5">
-										<div class="dz-media" style="position:relative;">
-    <c:if test="${rb.originPrice > 0 && rb.originPrice > rb.price}">
-        <span style="position:absolute; top:8px; left:8px; background:#e53935; color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; z-index:2;">
-            -<fmt:formatNumber value="${(1 - rb.price/rb.originPrice)*100}" maxFractionDigits="0"/>%
-        </span>
-    </c:if>
-    <img
-        src="${not empty rb.image ? rb.image : ctx.concat('/assets/images/books/default-book.png')}"
-        alt="${rb.title}">
-</div>
+										<div class="dz-media" style="position: relative;">
+											<c:if
+												test="${rb.originPrice > 0 && rb.originPrice > rb.price}">
+												<span
+													style="position: absolute; top: 8px; left: 8px; background: #e53935; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; z-index: 2;">
+													-<fmt:formatNumber
+														value="${(1 - rb.price/rb.originPrice)*100}"
+														maxFractionDigits="0" />%
+												</span>
+											</c:if>
+											<img
+												src="${not empty rb.image ? rb.image : ctx.concat('/assets/images/books/default-book.png')}"
+												alt="${rb.title}">
+										</div>
 										<div class="dz-content">
 											<h5 class="subtitle">
 												<a
@@ -333,7 +385,7 @@
 														value="${rb.price}" pattern="#,###" />&#8363;</span>
 												<c:if
 													test="${rb.originPrice > 0 && rb.originPrice > rb.price}">
-													<del >
+													<del>
 														<fmt:formatNumber value="${rb.originPrice}"
 															pattern="#,###" />
 														&#8363;
@@ -549,25 +601,28 @@ function changeQty(bookId, delta) {
 <%-- style lọc review --%>
 <style>
 .active-filter {
-    background-color: #e9a44a !important;
-    color: #fff !important;
-    border-color: #e9a44a !important;
+	background-color: #e9a44a !important;
+	color: #fff !important;
+	border-color: #e9a44a !important;
 }
+
 #review-pagination .page-btn {
-    padding: 5px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 14px;
+	padding: 5px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+	font-size: 14px;
 }
+
 #review-pagination .page-btn.active {
-    background: #e9a44a;
-    color: #fff;
-    border-color: #e9a44a;
+	background: #e9a44a;
+	color: #fff;
+	border-color: #e9a44a;
 }
+
 #review-pagination .page-btn:hover:not(.active) {
-    background: #f5f5f5;
+	background: #f5f5f5;
 }
 </style>
 
@@ -750,5 +805,78 @@ function changeQty(bookId, delta) {
     fetchReviews();
 
 })();
+</script>
+
+<script>
+//validate file upload
+// Magic bytes của các định dạng ảnh hợp lệ
+const MAGIC = {
+    jpeg: [0xFF, 0xD8, 0xFF],
+    png:  [0x89, 0x50, 0x4E, 0x47],
+    gif:  [0x47, 0x49, 0x46, 0x38],
+    webp: [0x52, 0x49, 0x46, 0x46]
+};
+
+function startsWith(bytes, prefix) {
+    for (let i = 0; i < prefix.length; i++) {
+        if (bytes[i] !== prefix[i]) return false;
+    }
+    return true;
+}
+
+function isValidImageBytes(bytes) {
+    return startsWith(bytes, MAGIC.jpeg)
+        || startsWith(bytes, MAGIC.png)
+        || startsWith(bytes, MAGIC.gif)
+        || startsWith(bytes, MAGIC.webp);
+}
+
+function showFileError(msg) {
+    document.getElementById('file-error-msg').textContent = msg;
+    document.getElementById('file-error').style.display = 'block';
+}
+
+function hideFileError() {
+    document.getElementById('file-error').style.display = 'none';
+}
+
+function submitReview(event) {
+    hideFileError();
+    const input = document.getElementById('reviewPhotos');
+    const files = input.files;
+
+    if (files.length === 0) {
+        // Không chọn ảnh thì cho gửi bình thường
+        input.closest('form').submit();
+        return;
+    }
+
+    // Đọc từng file, kiểm tra magic bytes
+    let checked = 0;
+    let hasError = false;
+
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (hasError) return;
+            const bytes = new Uint8Array(e.target.result);
+            if (!isValidImageBytes(bytes)) {
+                hasError = true;
+                showFileError(
+                    '"' + file.name + '" không phải ảnh thật. '
+                    + 'Chỉ chấp nhận JPG, PNG, GIF, WEBP. '
+                    + 'File có thể đã bị đổi tên để qua mặt hệ thống.'
+                );
+            }
+            checked++;
+            // Tất cả file đã được kiểm tra và không có lỗi thì submit
+            if (checked === files.length && !hasError) {
+                input.closest('form').submit();
+            }
+        };
+        // Chỉ đọc 8 byte đầu tiên — đủ để kiểm tra magic bytes
+        reader.readAsArrayBuffer(file.slice(0, 8));
+    });
+}
 </script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>
