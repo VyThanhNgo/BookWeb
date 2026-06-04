@@ -8,6 +8,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
+import util.FileUploadValidator;
 import java.nio.file.*;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -128,6 +129,11 @@ public class BookAdminServlet extends HttpServlet {
             String imageUrl = null;
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
+                String validationError = FileUploadValidator.validate(filePart);
+                if (validationError != null) {
+                    response.sendRedirect(request.getContextPath() + "/admin?error=invalid_file");
+                    return;
+                }
                 imageUrl = saveImage(filePart, "books");
             }
           //kiểm tra giá và tồn kho khi thêm sách
@@ -171,6 +177,11 @@ public class BookAdminServlet extends HttpServlet {
             String imageUrl = request.getParameter("oldImage");
             Part filePart = request.getPart("image");
             if (filePart != null && filePart.getSize() > 0) {
+                String validationError = FileUploadValidator.validate(filePart);
+                if (validationError != null) {
+                    response.sendRedirect(request.getContextPath() + "/admin?error=invalid_file");
+                    return;
+                }
                 imageUrl = saveImage(filePart, "books"); // ghi đè ảnh mới
             }
             //kiểm tra giá và tồn kho khi update

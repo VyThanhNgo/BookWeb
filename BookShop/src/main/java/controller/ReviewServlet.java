@@ -22,6 +22,7 @@ import com.cloudinary.utils.ObjectUtils;
 import dao.ReviewDAO;
 import model.Review;
 import model.User;
+import util.FileUploadValidator;
 
 @WebServlet("/add-review")
 @MultipartConfig(
@@ -56,8 +57,14 @@ public class ReviewServlet extends HttpServlet {
         //  Xử lý upload nhiều ảnh lên Cloudinary
         List<String> imageUrls = new ArrayList<>();
         for (Part part : request.getParts()) {
-            // reviewPhotos là tên name của input file trong trang jsp
             if ("reviewPhotos".equals(part.getName()) && part.getSize() > 0) {
+                // Validate từng ảnh trước khi upload
+                String validationError = FileUploadValidator.validate(part);
+                if (validationError != null) {
+                    response.sendRedirect(request.getContextPath() 
+                        + "/books/detail?id=" + bookId + "&error=invalid_file");
+                    return;
+                }
                 String url = uploadToCloudinary(part);
                 if (url != null) {
                     imageUrls.add(url);

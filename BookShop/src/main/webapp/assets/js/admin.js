@@ -805,3 +805,155 @@ function viewOrderDetail(orderId) {
     })
     .catch(() => { body.innerHTML = '<p class="text-red-500">Lỗi kết nối server.</p>'; });
 }
+
+// ===== MAGIC BYTES VALIDATE (dùng chung) =====
+const MAGIC_BYTES = {
+    jpeg: [0xFF, 0xD8, 0xFF],
+    png:  [0x89, 0x50, 0x4E, 0x47],
+    gif:  [0x47, 0x49, 0x46, 0x38],
+    webp: [0x52, 0x49, 0x46, 0x46]
+};
+
+function isValidImageBytes(bytes) {
+    return Object.values(MAGIC_BYTES).some(magic =>
+        magic.every((b, i) => bytes[i] === b)
+    );
+}
+
+function showAdminError(divId, msg) {
+    const div = document.getElementById(divId);
+    div.querySelector('span').textContent = msg;
+    div.style.display = 'block';
+}
+
+function hideAdminError(divId) {
+    document.getElementById(divId).style.display = 'none';
+}
+
+// Validate 1 file (ảnh bìa, ảnh tác giả)
+function validateSingleImage(input, errorDivId) {
+    hideAdminError(errorDivId);
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const bytes = new Uint8Array(e.target.result);
+        if (!isValidImageBytes(bytes)) {
+            showAdminError(errorDivId,
+                '"' + file.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+            input.value = ''; // xóa file đã chọn
+            // Ẩn preview nếu có
+            const previewCover = document.getElementById('book-cover-preview-container');
+            const previewAuthor = document.getElementById('author-preview-container');
+            if (previewCover) previewCover.classList.add('hidden');
+            if (previewAuthor) previewAuthor.classList.add('hidden');
+        }
+    };
+    reader.readAsArrayBuffer(file.slice(0, 8));
+}
+
+// Validate nhiều file (ảnh chi tiết)
+function validateMultipleImages(input, errorDivId) {
+    hideAdminError(errorDivId);
+    const files = Array.from(input.files);
+    if (!files.length) return;
+
+    let checked = 0;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const bytes = new Uint8Array(e.target.result);
+            if (!isValidImageBytes(bytes)) {
+                showAdminError(errorDivId,
+                    '"' + file.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+                input.value = '';
+                document.getElementById('book-details-preview-container').innerHTML = '';
+                document.getElementById('detail-files-count').textContent = 'Tải các ảnh chi tiết lên (Có thể chọn nhiều)';
+            }
+            checked++;
+        };
+        reader.readAsArrayBuffer(file.slice(0, 8));
+    });
+}
+
+// Submit form sách — kiểm tra không có lỗi trước khi submit
+// Validate 1 file, trả về Promise<boolean>
+function checkSingleFile(file) {
+    return new Promise(function(resolve) {
+        if (!file) { resolve(true); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            resolve(isValidImageBytes(new Uint8Array(e.target.result)));
+        };
+        reader.readAsArrayBuffer(file.slice(0, 8));
+    });
+}
+
+// Validate nhiều file, trả về Promise<string|null>
+function checkMultipleFiles(files) {
+    const promises = Array.from(files).map(function(file) {
+        return checkSingleFile(file).then(function(ok) { return ok ? null : file.name; });
+    });
+    return Promise.all(promises).then(function(results) {
+        return results.find(function(r) { return r !== null; }) || null;
+    });
+}
+
+// Submit form tác giả
+function submitAuthorForm() {
+    hideAdminError('author-error');
+    const input = document.getElementById('author-image-file');
+    const file = input.files[0];
+
+    if (!file) {
+        document.getElementById('author-form').submit();
+        return;
+    }
+
+    checkSingleFile(file).then(function(ok) {
+        if (!ok) {
+            showAdminError('author-error',
+                '"' + file.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+            input.value = '';
+            const preview = document.getElementById('author-preview-container');
+            if (preview) preview.classList.add('hidden');
+            document.getElementById('author-file-name').innerText = 'Tải ảnh lên';
+        } else {
+            document.getElementById('author-form').submit();
+        }
+    });
+}
+
+// Submit form sách
+function submitBookForm() {
+    hideAdminError('cover-error');
+    hideAdminError('detail-error');
+
+    const coverInput = document.getElementById('book-cover-image');
+    const detailInput = document.getElementById('book-detail-images');
+    const coverFile = coverInput.files[0];
+
+    checkSingleFile(coverFile).then(function(coverOk) {
+        if (!coverOk) {
+            showAdminError('cover-error',
+                '"' + coverFile.name + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+            coverInput.value = '';
+            const p = document.getElementById('book-cover-preview-container');
+            if (p) p.classList.add('hidden');
+            document.getElementById('cover-file-name').innerText = 'Tải ảnh bìa lên';
+            return;
+        }
+        checkMultipleFiles(detailInput.files).then(function(badFile) {
+            if (badFile) {
+                showAdminError('detail-error',
+                    '"' + badFile + '" không phải ảnh thật. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+                detailInput.value = '';
+                document.getElementById('book-details-preview-container').innerHTML = '';
+                document.getElementById('detail-files-count').innerText = 'Tải các ảnh chi tiết lên (Có thể chọn nhiều)';
+                return;
+            }
+            document.getElementById('book-form').submit();
+        });
+    });
+}

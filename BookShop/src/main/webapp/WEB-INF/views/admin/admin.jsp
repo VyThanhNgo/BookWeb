@@ -88,6 +88,7 @@ window.addEventListener('load', function() {
         'book_has_orders': ['Không thể xóa sách đang có đơn hàng!',  'danger'],
         'has_books':       ['Không thể xóa! Vẫn còn sách liên kết.', 'danger'],
         'invalid_value':   ['Giá hoặc tồn kho không hợp lệ!',        'danger'],
+        'invalid_file':    ['File không hợp lệ hoặc không phải ảnh thật!', 'danger'],
         'duplicate':       ['Tên đã tồn tại trong hệ thống!',        'danger']
     };
     const key = '${not empty param.success ? param.success : param.error}';
@@ -472,8 +473,13 @@ window.addEventListener('load', function() {
 									<span class="text-xs text-slate-500 font-semibold"
 									id="author-file-name">Tải ảnh lên</span> <input type="file"
 									id="author-image-file" name="image" accept="image/*"
-									class="hidden" onchange="previewAuthorImage(event)">
+									class="hidden"
+									onchange="previewAuthorImage(event); validateSingleImage(this, 'author-error')">
 								</label>
+								<div id="author-error"
+									style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px;">
+									<i class="fa-solid fa-triangle-exclamation"></i> <span></span>
+								</div>
 								<div id="author-preview-container" class="hidden shrink-0">
 									<img id="author-preview-img"
 										class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm">
@@ -482,7 +488,7 @@ window.addEventListener('load', function() {
 							<!-- Hidden input lưu trữ URL hiện tại hoặc Base64 của ảnh -->
 							<input type="hidden" id="author-image">
 						</div>
-						<button type="submit"
+						<button type="button" onclick="submitAuthorForm()"
 							class="w-full bg-navy-800 dark:bg-blue-600 hover:opacity-90 text-white font-bold text-sm py-2.5 rounded-xl transition-all">
 							Lưu Thông Tin</button>
 						<button type="button" onclick="resetAuthorForm()"
@@ -930,8 +936,13 @@ window.addEventListener('load', function() {
 							<span class="text-xs text-slate-500 font-semibold"
 							id="cover-file-name">Tải ảnh bìa lên</span> <input type="file"
 							id="book-cover-image" name="image" accept="image/*"
-							class="hidden" onchange="previewCoverImage(event)">
+							class="hidden"
+							onchange="previewCoverImage(event); validateSingleImage(this, 'cover-error')">
 						</label>
+						<div id="cover-error"
+							style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px;">
+							<i class="fa-solid fa-triangle-exclamation"></i> <span></span>
+						</div>
 						<div id="book-cover-preview-container" class="hidden shrink-0">
 							<img id="book-cover-preview"
 								class="w-16 h-20 object-cover rounded-lg border shadow-sm">
@@ -952,7 +963,11 @@ window.addEventListener('load', function() {
 						id="detail-files-count">Tải các ảnh chi tiết lên (Có thể
 							chọn nhiều)</span> <input type="file" id="book-detail-images"
 						name="subImages" accept="image/*" multiple class="hidden"
-						onchange="previewDetailImages(event)">
+						onchange="previewDetailImages(event); validateMultipleImages(this, 'detail-error')">
+						<div id="detail-error"
+							style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px;">
+							<i class="fa-solid fa-triangle-exclamation"></i> <span></span>
+						</div>
 					</label>
 					<div id="book-details-preview-container"
 						class="flex flex-wrap gap-2 mt-2"></div>
@@ -966,7 +981,7 @@ window.addEventListener('load', function() {
 						class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"></textarea>
 				</div>
 
-				<button type="submit"
+				<button type="button" onclick="submitBookForm()"
 					class="w-full bg-navy-800 dark:bg-blue-600 hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all">
 					Lưu Sách Vào Database</button>
 			</form>

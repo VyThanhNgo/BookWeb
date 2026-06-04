@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'org.hidetake.ssh' version '2.10.1'
     id 'war'
+    id 'eclipse'
 }
 
 repositories {
@@ -13,15 +14,15 @@ repositories {
 }
 
 dependencies {
-    api libs.com.mysql.mysql.connector.j
-    api libs.javax.servlet.jstl
-    api libs.taglibs.standard
-    api libs.com.cloudinary.cloudinary.http44
-    api libs.org.mindrot.jbcrypt
-    api libs.com.google.code.gson.gson
-    api libs.com.zaxxer.hikaricp
-    providedCompile libs.javax.servlet.javax.servlet.api
-    providedCompile libs.javax.servlet.jsp.javax.servlet.jsp.api
+    api 'com.mysql:mysql-connector-j:8.3.0'
+    api 'javax.servlet:jstl:1.2'
+    api 'taglibs:standard:1.1.2'
+    api 'com.cloudinary:cloudinary-http44:1.36.0'
+    api 'org.mindrot:jbcrypt:0.4'
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'com.zaxxer:HikariCP:4.0.3'
+    providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
+    providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
 }
 
 group = 'BookShop'
