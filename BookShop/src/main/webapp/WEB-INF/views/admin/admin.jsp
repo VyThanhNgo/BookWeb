@@ -78,25 +78,7 @@ body {
 	<!-- TOAST NOTIFICATION SYSTEM (Hệ thống thông báo thay thế alert) -->
 	<div id="toast-container"
 		class="fixed top-5 right-5 z-50 flex flex-col gap-3">
-		<c:if test="${not empty param.success or not empty param.error}">
-			<script>
-window.addEventListener('load', function() {
-    const map = {
-        'added':           ['Thêm mới thành công!',                   'success'],
-        'updated':         ['Cập nhật thành công!',                   'success'],
-        'deleted':         ['Đã xóa thành công!',                     'success'],
-        'book_has_orders': ['Không thể xóa sách đang có đơn hàng!',  'danger'],
-        'has_books':       ['Không thể xóa! Vẫn còn sách liên kết.', 'danger'],
-        'invalid_value':   ['Giá hoặc tồn kho không hợp lệ!',        'danger'],
-        'invalid_file':    ['File không hợp lệ hoặc không phải ảnh thật!', 'danger'],
-        'duplicate':       ['Tên đã tồn tại trong hệ thống!',        'danger']
-    };
-    const key = '${not empty param.success ? param.success : param.error}';
-    const [msg, type] = map[key] || ['Thao tác hoàn tất.', 'success'];
-    showToast(msg, type);
-});
-</script>
-		</c:if>
+		
 	</div>
 
 	<!-- SIDEBAR - ĐIỀU HƯỚNG CHÍNH -->

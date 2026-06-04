@@ -712,16 +712,22 @@ public class BookDAO {
 	}
 	// crud Author
 
-	public void addAuthor(String name, String image) {
+	public int addAuthor(String name, String image) {
+		int newId = -1;
+		String sql = "INSERT INTO authors (author_name, image) VALUES (?, ?)";
 		try (Connection conn = DBConnection.getConnection();
-				PreparedStatement ps = conn
-						.prepareStatement("INSERT INTO authors (author_name, image) VALUES (?, ?)")) {
+				PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 			ps.setString(1, name);
 			ps.setString(2, image);
 			ps.executeUpdate();
+			try (ResultSet rs = ps.getGeneratedKeys()) {
+				if (rs.next())
+					newId = rs.getInt(1);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return newId;
 	}
 
 	public void deleteAuthor(int id) {
@@ -777,7 +783,7 @@ public class BookDAO {
 		return list;
 	}
 
-	// Soft delete-Kiểm tra danh mục có sách đang bán  không trước khi xóa
+	// Soft delete-Kiểm tra danh mục có sách đang bán không trước khi xóa
 	public boolean canDeleteCategory(int categoryId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE category_id = ? AND is_deleted = 0";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -791,7 +797,7 @@ public class BookDAO {
 		return false;
 	}
 
-	// Soft delete-kiểm tra tác giả có sách đang bán  không trước khi xóa
+	// Soft delete-kiểm tra tác giả có sách đang bán không trước khi xóa
 	public boolean canDeleteAuthor(int authorId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE author_id = ? AND is_deleted = 0";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -805,7 +811,8 @@ public class BookDAO {
 		return false;
 	}
 
-	// Kiểm tra hard delete category — không cho xóa nếu còn bất kỳ sách nào (kể cả đã ẩn)
+	// Kiểm tra hard delete category — không cho xóa nếu còn bất kỳ sách nào (kể cả
+	// đã ẩn)
 	public boolean canHardDeleteCategory(int categoryId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE category_id = ?";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -819,7 +826,8 @@ public class BookDAO {
 		return false;
 	}
 
-	// Kiểm tra hard delete author — không cho xóa nếu còn bất kỳ sách nào (kể cả đã ẩn)
+	// Kiểm tra hard delete author — không cho xóa nếu còn bất kỳ sách nào (kể cả đã
+	// ẩn)
 	public boolean canHardDeleteAuthor(int authorId) {
 		String sql = "SELECT COUNT(*) FROM books WHERE author_id = ?";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -833,35 +841,34 @@ public class BookDAO {
 		return false;
 	}
 
-	//  Soft Delete_Kiểm tra sách có trong đơn hàng đang giao không trước khi xóa
+	// Soft Delete_Kiểm tra sách có trong đơn hàng đang giao không trước khi xóa
 	public boolean canDeleteBook(int bookId) {
-	    String sql = "SELECT COUNT(*) FROM order_details od "
-	               + "JOIN orders o ON od.order_id = o.order_id "
-	               + "WHERE od.book_id = ? "
-	               + "AND o.status IN ('PENDING','PROCESSING','SHIPPING')";
-	    try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-	        ps.setInt(1, bookId);
-	        ResultSet rs = ps.executeQuery();
-	        if (rs.next())
-	            return rs.getInt(1) == 0; // true = không có đơn active → cho phép ẩn
+		String sql = "SELECT COUNT(*) FROM order_details od " + "JOIN orders o ON od.order_id = o.order_id "
+				+ "WHERE od.book_id = ? " + "AND o.status IN ('PENDING','PROCESSING','SHIPPING')";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, bookId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next())
+				return rs.getInt(1) == 0; // true = không có đơn active → cho phép ẩn
 		} catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	    return false;
+			e.printStackTrace();
+		}
+		return false;
 	}
-	
-	//Hard Delete_ không cho xóa nếu sách đã từng nằm trong bất kỳ đơn hàng nào trong quá khứ
+
+	// Hard Delete_ không cho xóa nếu sách đã từng nằm trong bất kỳ đơn hàng nào
+	// trong quá khứ
 	public boolean canHardDeleteBook(int bookId) {
-	    String sql = "SELECT COUNT(*) FROM order_details WHERE book_id = ?";
-	    try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-	        ps.setInt(1, bookId);
-	        ResultSet rs = ps.executeQuery();
-	        if (rs.next())
-	            return rs.getInt(1) == 0; // true = chưa từng có trong đơn nào → cho phép xóa hẳn
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	    return false;
+		String sql = "SELECT COUNT(*) FROM order_details WHERE book_id = ?";
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, bookId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next())
+				return rs.getInt(1) == 0; // true = chưa từng có trong đơn nào → cho phép xóa hẳn
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	// hàm láy giá cao nhất để set cho filter giá
@@ -924,14 +931,21 @@ public class BookDAO {
 		return null;
 	}
 
-	public void addCategory(String name) {
+	public int addCategory(String name) {
+		int newId = -1;
+		String sql = "INSERT INTO categories (category_name) VALUES (?)";
 		try (Connection conn = DBConnection.getConnection();
-				PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (category_name) VALUES (?)")) {
+				PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 			ps.setString(1, name);
 			ps.executeUpdate();
+			try (ResultSet rs = ps.getGeneratedKeys()) {
+				if (rs.next())
+					newId = rs.getInt(1);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return newId;
 	}
 
 	public void updateCategory(int id, String name) {
