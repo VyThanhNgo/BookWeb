@@ -87,7 +87,7 @@ public class BookAdminServlet extends HttpServlet {
         } else if ("hardDelete".equals(action)) {
             int bookId = Integer.parseInt(request.getParameter("id"));
             //kiểm tra trước khi xóa vĩnh viễn
-            if (dao.canDeleteBook(bookId)) {
+            if (dao.canHardDeleteBook(bookId)) {
                 dao.hardDeleteBook(bookId);
                 response.sendRedirect(request.getContextPath() + "/admin?success=deleted");
             } else {

@@ -833,19 +833,35 @@ public class BookDAO {
 		return false;
 	}
 
-	// Kiểm tra sách có trong đơn hàng không trước khi xóa
+	//  Soft Delete_Kiểm tra sách có trong đơn hàng đang giao không trước khi xóa
 	public boolean canDeleteBook(int bookId) {
-
-		String sql = "SELECT COUNT(*) FROM order_items WHERE book_id = ?";
-		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, bookId);
-			ResultSet rs = ps.executeQuery();
-			if (rs.next())
-				return rs.getInt(1) == 0;
+	    String sql = "SELECT COUNT(*) FROM order_details od "
+	               + "JOIN orders o ON od.order_id = o.order_id "
+	               + "WHERE od.book_id = ? "
+	               + "AND o.status IN ('PENDING','PROCESSING','SHIPPING')";
+	    try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, bookId);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next())
+	            return rs.getInt(1) == 0; // true = không có đơn active → cho phép ẩn
 		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
+	        e.printStackTrace();
+	    }
+	    return false;
+	}
+	
+	//Hard Delete_ không cho xóa nếu sách đã từng nằm trong bất kỳ đơn hàng nào trong quá khứ
+	public boolean canHardDeleteBook(int bookId) {
+	    String sql = "SELECT COUNT(*) FROM order_details WHERE book_id = ?";
+	    try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, bookId);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next())
+	            return rs.getInt(1) == 0; // true = chưa từng có trong đơn nào → cho phép xóa hẳn
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return false;
 	}
 
 	// hàm láy giá cao nhất để set cho filter giá
