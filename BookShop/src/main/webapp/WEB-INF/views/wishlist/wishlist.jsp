@@ -39,79 +39,47 @@
 										</tr>
 									</thead>
 								<tbody>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book3.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 1</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-												<input id="demo_vertical2" type="text" value="1" name="demo_vertical2"/>
-											</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book2.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 2</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-												<input id="demo_vertical3" type="text" value="1" name="demo_vertical2"/>
-											</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book1.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 3</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-												<input id="demo_vertical4" type="text" value="1" name="demo_vertical2"/>
-											</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book4.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 4</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-												<input id="demo_vertical5" type="text" value="1" name="demo_vertical2"/>
-											</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book5.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 5</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-											<input id="demo_vertical6" type="text" value="1" name="demo_vertical2"/>
-										</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-									<tr>
-										<td class="product-item-img"><img src="images/books/grid/book6.jpg" alt=""></td>
-										<td class="product-item-name">Prduct Item 6</td>
-										<td class="product-item-price">$28.00</td>
-										<td class="product-item-quantity">
-											<div class="quantity btn-quantity style-1 me-3">
-											<input id="demo_vertical7" type="text" value="1" name="demo_vertical2"/>
-										</div>
-										</td>
-										<td class="product-item-totle"><a href="shop-cart.html" class="btn btn-primary btnhover">Add To Cart</a></td>
-										<td class="product-item-close"><a href="javascript:void(0);" class="ti-close"></a></td>
-									</tr>
-								</tbody>
+    <c:choose>
+        <c:when test="${empty wishlistBooks}">
+            <tr>
+                <td colspan="6" class="text-center p-5">
+                    <h5>Danh sách yêu thích trống</h5>
+                    <a href="${pageContext.request.contextPath}/books"
+                       class="btn btn-primary mt-3">Khám phá sách</a>
+                </td>
+            </tr>
+        </c:when>
+        <c:otherwise>
+            <c:forEach var="b" items="${wishlistBooks}">
+                <tr id="wishlist-row-${b.id}">
+                    <td class="product-item-img">
+                        <img src="${not empty b.image ? b.image :
+                            pageContext.request.contextPath.concat('/assets/images/books/default-book.png')}"
+                             alt="${b.title}" style="width:60px;">
+                    </td>
+                    <td class="product-item-name">
+                        <a href="${pageContext.request.contextPath}/books/${b.slug}-${b.id}">
+                            ${b.title}
+                        </a>
+                    </td>
+                    <td class="product-item-price">
+                        <fmt:formatNumber value="${b.price}" pattern="#,###"/> ₫
+                    </td>
+                    <td class="product-item-quantity">—</td>
+                    <td class="product-item-totle">
+                        <a href="${pageContext.request.contextPath}/cart?action=add&id=${b.id}&quantity=1"
+                           class="btn btn-primary btnhover">Thêm vào giỏ</a>
+                    </td>
+                    <td class="product-item-close">
+                        <a href="javascript:void(0);"
+                           class="ti-close remove-wishlist-btn"
+                           data-book-id="${b.id}"></a>
+                    </td>
+                </tr>
+            </c:forEach>
+        </c:otherwise>
+    </c:choose>
+</tbody>
 							</table>
 						</div>
 					</div>
@@ -119,5 +87,27 @@
 			</div>
 		</div>
 	</div>
+	
+	<script>
+document.querySelectorAll('.remove-wishlist-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const bookId = this.dataset.bookId;
+        const row = document.getElementById('wishlist-row-' + bookId);
+        const ctx = '${pageContext.request.contextPath}';
+
+        fetch(ctx + '/wishlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'bookId=' + bookId
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'removed' && row) {
+                row.remove();
+            }
+        });
+    });
+});
+</script>
 
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

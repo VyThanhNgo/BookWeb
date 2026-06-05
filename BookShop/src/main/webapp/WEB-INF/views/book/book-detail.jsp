@@ -75,12 +75,13 @@
 												đánh giá)</span>
 										</h6>
 									</div>
-									<!-- Tim -->
+									<!-- Tim / Wishlist -->
 									<div class="bookmark-btn style-1">
-										<input class="form-check-input" type="checkbox"
-											id="flexCheckDefault1"> <label
-											class="form-check-label" for="flexCheckDefault1"> <i
-											class="flaticon-heart"></i>
+										<input class="form-check-input wishlist-toggle"
+											type="checkbox" id="wishlist-detail-btn"
+											data-book-id="${book.id}" ${isInWishlist ? 'checked' : ''}>
+										<label class="form-check-label" for="wishlist-detail-btn">
+											<i class="flaticon-heart"></i>
 										</label>
 									</div>
 									<div class="social-area">
@@ -877,6 +878,60 @@ function submitReview(event) {
         // Chỉ đọc 8 byte đầu tiên — đủ để kiểm tra magic bytes
         reader.readAsArrayBuffer(file.slice(0, 8));
     });
+}
+</script>
+
+<script>
+// wishlist
+document.querySelector('.wishlist-toggle')?.addEventListener('change', function() {
+    const bookId = this.dataset.bookId;
+    const checkbox = this;
+    const ctx = '${pageContext.request.contextPath}';
+
+    fetch(ctx + '/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'bookId=' + bookId
+    })
+    .then(res => {
+        if (res.status === 401) {
+            checkbox.checked = !checkbox.checked; // hoàn tác
+            window.location.href = ctx + '/login';
+            return null;
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (!data) return;
+        if (data.status === 'added') {
+            showWishlistToast('❤️ Đã thêm vào yêu thích!', '#e53935');
+        } else {
+            showWishlistToast('🤍 Đã xóa khỏi yêu thích', '#888');
+        }
+        if (typeof updateWishlistBadge === 'function') updateWishlistBadge(data.wishlistCount);
+    })
+    .catch(() => checkbox.checked = !checkbox.checked);
+});
+
+function showWishlistToast(msg, color) {
+    let toast = document.getElementById('wishlist-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'wishlist-toast';
+        Object.assign(toast.style, {
+            position:'fixed', top:'20px', right:'20px', zIndex:'9999',
+            color:'#fff', padding:'10px 18px', borderRadius:'8px',
+            boxShadow:'0 4px 12px rgba(0,0,0,.15)', fontWeight:'600',
+            fontSize:'14px', transition:'opacity .3s'
+        });
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.background = color;
+    toast.style.display = 'block';
+    toast.style.opacity = '1';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 2000);
 }
 </script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

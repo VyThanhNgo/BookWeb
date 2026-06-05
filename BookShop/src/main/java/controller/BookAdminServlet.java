@@ -1,210 +1,193 @@
 package controller;
 
 import dao.BookDAO;
+import model.Author;
 import model.Book;
+import model.Category;
+import util.AdminJsonUtil;
+import util.FileUploadValidator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
-import util.FileUploadValidator;
-import java.nio.file.*;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+
+import java.util.List;
 import java.util.Map;
 
 @WebServlet("/admin/books")
-@MultipartConfig(fileSizeThreshold = 1024 * 1024, // file nhỏ hơn 1MB thì lưu tạm vào RAM, lớn hơn thì ghi ra ổ đĩa tạm.
-													// Tránh tốn RAM khi upload file lớn.
-		maxFileSize = 1024 * 1024 * 5, // giới hạn 1 file tối đa 5MB. Upload file lớn hơn sẽ báo lỗi.
-		maxRequestSize = 1024 * 1024 * 50 // giới hạn toàn bộ request tối đa 50MB. Nếu form có nhiều file thì tổng dung
-											// lượng không vượt quá 50MB.
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024,
+    maxFileSize       = 1024 * 1024 * 5,
+    maxRequestSize    = 1024 * 1024 * 50
 )
 public class BookAdminServlet extends HttpServlet {
 
-	private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap("cloud_name", "dqiefayjh", "api_key",
-			"496728741237697", "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ", "secure", true));
+    private static final Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+        "cloud_name", "dqiefayjh",
+        "api_key",    "496728741237697",
+        "api_secret", "S9lcM_6dRXMrWBiUKLMPPQD1kjQ",
+        "secure",     true
+    ));
 
-	private String saveImage(Part filePart, String folder) throws IOException {
-		try (InputStream is = filePart.getInputStream(); ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+    private String saveImage(Part filePart, String folder) throws IOException {
+        try (InputStream is = filePart.getInputStream();
+             ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = is.read(buffer)) != -1) os.write(buffer, 0, len);
+            Map uploadResult = cloudinary.uploader().upload(os.toByteArray(),
+                ObjectUtils.asMap("folder", folder));
+            return (String) uploadResult.get("url");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			// Chuyển file thành mảng Byte
-			byte[] buffer = new byte[1024];
-			int len;
-			while ((len = is.read(buffer)) != -1) {
-				os.write(buffer, 0, len);
-			}
+    private void json(HttpServletResponse res, boolean success, String message) throws IOException {
+        res.setContentType("application/json; charset=UTF-8");
+        res.getWriter().write("{\"success\":" + success + ",\"message\":\"" + message + "\"}");
+    }
 
-			Map uploadResult = cloudinary.uploader().upload(os.toByteArray(), ObjectUtils.asMap("folder", "books"));
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-			return (String) uploadResult.get("url");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+        BookDAO dao = new BookDAO();
+        String action = request.getParameter("action");
 
-	private void json(HttpServletResponse res, boolean success, String message) throws IOException {
-		res.setContentType("application/json; charset=UTF-8");
-		res.getWriter().write("{\"success\":" + success + ",\"message\":\"" + message + "\"}");
-	}
+        if ("delete".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            if (dao.canDeleteBook(id)) {
+                dao.deleteBook(id);
+                json(response, true, "deleted");
+            } else {
+                json(response, false, "book_has_orders");
+            }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		BookDAO dao = new BookDAO();
-		request.setAttribute("categories", dao.getAllCategories());
-		request.setAttribute("authors", dao.getAllAuthors());
+        } else if ("restore".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            dao.restoreBook(id);
+            json(response, true, "updated");
 
-		String action = request.getParameter("action");
+        } else if ("hardDelete".equals(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            if (dao.canHardDeleteBook(id)) {
+                dao.hardDeleteBook(id);
+                json(response, true, "deleted");
+            } else {
+                json(response, false, "book_has_orders");
+            }
 
-		// edit sách
-		if ("edit".equals(action)) {
-			int bookId = Integer.parseInt(request.getParameter("id"));
-			Book book = dao.getBookById(bookId);
-			request.setAttribute("book", book);
-			request.getRequestDispatcher("/WEB-INF/views/admin/book/edit-book.jsp").forward(request, response);
-			// xóa sách
+        } else {
+            // Trang danh sách sách — dùng chung AdminJsonUtil
+            List<Book>     books             = dao.getAllBooks();
+            List<Book>     deletedBooks      = dao.getDeletedBooks();
+            List<Category> categories        = dao.getAllCategories();
+            List<Category> deletedCategories = dao.getDeletedCategories();
+            List<Author>   authors           = dao.getAllAuthors();
+            List<Author>   deletedAuthors    = dao.getDeletedAuthors();
 
-		} else if ("delete".equals(action)) {
-			int bookId = Integer.parseInt(request.getParameter("id"));
+            request.setAttribute("books",             books);
+            request.setAttribute("deletedBooks",      deletedBooks);
+            request.setAttribute("categories",        categories);
+            request.setAttribute("authors",           authors);
 
-			if (dao.canDeleteBook(bookId)) {
-				dao.deleteBook(bookId);
-				json(response, true, "deleted");
-			} else {
-				// Gửi thông báo lỗi nếu sách đã có người mua
-				json(response, false, "book_has_orders");
-			}
+            request.setAttribute("booksJson",             AdminJsonUtil.serializeBooks(books));
+            request.setAttribute("deletedBooksJson",      AdminJsonUtil.serializeBooks(deletedBooks));
+            request.setAttribute("categoriesJson",        AdminJsonUtil.serializeCategories(categories));
+            request.setAttribute("deletedCategoriesJson", AdminJsonUtil.serializeCategories(deletedCategories));
+            request.setAttribute("authorsJson",           AdminJsonUtil.serializeAuthors(authors));
+            request.setAttribute("deletedAuthorsJson",    AdminJsonUtil.serializeAuthors(deletedAuthors));
 
-		} else if ("restore".equals(action)) {
-			int bookId = Integer.parseInt(request.getParameter("id"));
-			dao.restoreBook(bookId);
-			json(response, true, "updated");
+            request.getRequestDispatcher("/WEB-INF/views/admin/admin.jsp").forward(request, response);
+        }
+    }
 
-		} else if ("hardDelete".equals(action)) {
-			int bookId = Integer.parseInt(request.getParameter("id"));
-			// kiểm tra trước khi xóa vĩnh viễn
-			if (dao.canHardDeleteBook(bookId)) {
-				dao.hardDeleteBook(bookId);
-				json(response, true, "deleted");
-			} else {
-				json(response, false, "book_has_orders");
-			}
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
 
-		} else {
-			// Trang danh sách sách admin
-			request.setAttribute("books", dao.getAllBooks());
-			request.setAttribute("deletedBooks", dao.getDeletedBooks());
-			request.setAttribute("categories", dao.getAllCategories());
-			request.setAttribute("authors", dao.getAllAuthors());
-			request.getRequestDispatcher("/WEB-INF/views/admin/admin.jsp").forward(request, response);
-		}
-	}
+        String action = request.getParameter("action");
+        BookDAO dao = new BookDAO();
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
+        if ("add".equals(action)) {
+            String title       = request.getParameter("title");
+            double price       = Double.parseDouble(request.getParameter("price"));
+            int categoryId     = Integer.parseInt(request.getParameter("categoryId"));
+            int authorId       = Integer.parseInt(request.getParameter("authorId"));
+            int publishYear    = Integer.parseInt(request.getParameter("publishYear"));
+            String description = request.getParameter("description");
+            int stock          = Integer.parseInt(request.getParameter("stock"));
+            String isbn        = request.getParameter("isbn");
+            String publisher   = request.getParameter("publisher");
+            String language    = request.getParameter("language");
+            String coverType   = request.getParameter("coverType");
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
 
-		String action = request.getParameter("action");
-		BookDAO dao = new BookDAO();
+            if (price < 0 || stock < 0) { json(response, false, "invalid_value"); return; }
 
-		// thêm sách
-		if ("add".equals(action)) {
-			String title = request.getParameter("title");
-			double price = Double.parseDouble(request.getParameter("price"));
-			int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-			int authorId = Integer.parseInt(request.getParameter("authorId"));
-			int publishYear = Integer.parseInt(request.getParameter("publishYear"));
-			String description = request.getParameter("description");
-			int stock = Integer.parseInt(request.getParameter("stock"));
-			String isbn = request.getParameter("isbn");
-			String publisher = request.getParameter("publisher");
-			String language = request.getParameter("language");
-			String coverType = request.getParameter("coverType");
+            String imageUrl = null;
+            Part filePart = request.getPart("image");
+            if (filePart != null && filePart.getSize() > 0) {
+                String err = FileUploadValidator.validate(filePart);
+                if (err != null) { json(response, false, "invalid_file"); return; }
+                imageUrl = saveImage(filePart, "books");
+            }
 
-			String imageUrl = null;
-			Part filePart = request.getPart("image");
-			if (filePart != null && filePart.getSize() > 0) {
-				String validationError = FileUploadValidator.validate(filePart);
-				if (validationError != null) {
-					json(response, false, "invalid_file");
-					return;
-				}
-				imageUrl = saveImage(filePart, "books");
-			}
-			// kiểm tra giá và tồn kho khi thêm sách
-			if (price < 0 || stock < 0) {
-				json(response, false, "invalid_value");
-				return;
-			}
+            int bookId = dao.addBook(title, price, originPrice, categoryId, authorId,
+                publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
-			double originPrice = Double.parseDouble(request.getParameter("originPrice"));
+            for (Part part : request.getParts()) {
+                if ("subImages".equals(part.getName()) && part.getSize() > 0) {
+                    String subUrl = saveImage(part, "books");
+                    if (subUrl != null) dao.addBookImage(bookId, subUrl);
+                }
+            }
 
-			int bookId = dao.addBook(title, price, originPrice, categoryId, authorId, publishYear, description, stock,
-					imageUrl, isbn, publisher, language, coverType);
+            response.setContentType("application/json; charset=UTF-8");
+            response.getWriter().write("{\"success\":true,\"message\":\"added\",\"id\":" + bookId + "}");
 
-			for (Part part : request.getParts()) {
-				if ("subImages".equals(part.getName()) && part.getSize() > 0) {
-					String subImageUrl = saveImage(part, "books");
-					if (subImageUrl != null) {
-						// bookId là ID vừa lấy được ở trên
-						dao.addBookImage(bookId, subImageUrl);
-					}
-				}
-			}
+        } else if ("edit".equals(action)) {
+            int bookId         = Integer.parseInt(request.getParameter("bookId"));
+            String title       = request.getParameter("title");
+            double price       = Double.parseDouble(request.getParameter("price"));
+            int categoryId     = Integer.parseInt(request.getParameter("categoryId"));
+            int authorId       = Integer.parseInt(request.getParameter("authorId"));
+            int publishYear    = Integer.parseInt(request.getParameter("publishYear"));
+            String description = request.getParameter("description");
+            int stock          = Integer.parseInt(request.getParameter("stock"));
+            String isbn        = request.getParameter("isbn");
+            String publisher   = request.getParameter("publisher");
+            String language    = request.getParameter("language");
+            String coverType   = request.getParameter("coverType");
+            double originPrice = Double.parseDouble(request.getParameter("originPrice"));
 
-			response.setContentType("application/json; charset=UTF-8");
-			response.getWriter().write("{\"success\":true,\"message\":\"added\",\"id\":" + bookId + "}");
-			return;
+            if (price < 0 || stock < 0) { json(response, false, "invalid_value"); return; }
 
-			// sửa sách
-		} else if ("edit".equals(action)) {
-			int bookId = Integer.parseInt(request.getParameter("bookId"));
-			String title = request.getParameter("title");
-			double price = Double.parseDouble(request.getParameter("price"));
-			int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-			int authorId = Integer.parseInt(request.getParameter("authorId"));
-			int publishYear = Integer.parseInt(request.getParameter("publishYear"));
-			String description = request.getParameter("description");
-			int stock = Integer.parseInt(request.getParameter("stock"));
-			String isbn = request.getParameter("isbn");
-			String publisher = request.getParameter("publisher");
-			String language = request.getParameter("language");
-			String coverType = request.getParameter("coverType");
+            String imageUrl = request.getParameter("oldImage");
+            Part filePart = request.getPart("image");
+            if (filePart != null && filePart.getSize() > 0) {
+                String err = FileUploadValidator.validate(filePart);
+                if (err != null) { json(response, false, "invalid_file"); return; }
+                imageUrl = saveImage(filePart, "books");
+            }
 
-			// Giữ ảnh cũ nếu không upload ảnh mới
-			String imageUrl = request.getParameter("oldImage");
-			Part filePart = request.getPart("image");
-			if (filePart != null && filePart.getSize() > 0) {
-				String validationError = FileUploadValidator.validate(filePart);
-				if (validationError != null) {
-					json(response, false, "invalid_file");
-					return;
-				}
-				imageUrl = saveImage(filePart, "books"); // ghi đè ảnh mới
-			}
-			// kiểm tra giá và tồn kho khi update
-			if (price < 0 || stock < 0) {
-				json(response, false, "invalid_value");
-				return;
-			}
-			double originPrice = Double.parseDouble(request.getParameter("originPrice"));
+            dao.updateBook(bookId, title, price, originPrice, categoryId, authorId,
+                publishYear, description, stock, imageUrl, isbn, publisher, language, coverType);
 
-			dao.updateBook(bookId, title, price, originPrice, categoryId, authorId, publishYear, description, stock,
-					imageUrl, isbn, publisher, language, coverType);
-			for (Part part : request.getParts()) {
-				if ("subImages".equals(part.getName()) && part.getSize() > 0) {
-					String subImageUrl = saveImage(part, "books");
-					if (subImageUrl != null) {
-						// bookId là ID vừa lấy được ở trên
-						dao.addBookImage(bookId, subImageUrl);
-					}
-				}
-			}
+            for (Part part : request.getParts()) {
+                if ("subImages".equals(part.getName()) && part.getSize() > 0) {
+                    String subUrl = saveImage(part, "books");
+                    if (subUrl != null) dao.addBookImage(bookId, subUrl);
+                }
+            }
 
-			json(response, true, "updated");
-			return;
-		}
-	}
+            json(response, true, "updated");
+            return;
+        }
+    }
 }

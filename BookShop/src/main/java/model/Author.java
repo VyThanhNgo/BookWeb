@@ -5,6 +5,8 @@ public class Author {
 	private String name;
 	private String image;
 
+	public Author() {}
+	
 	public Author(int id, String name) {
 		super();
 		this.id = id;

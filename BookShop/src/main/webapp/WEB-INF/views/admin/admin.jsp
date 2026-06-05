@@ -77,9 +77,7 @@ body {
 
 	<!-- TOAST NOTIFICATION SYSTEM (Hệ thống thông báo thay thế alert) -->
 	<div id="toast-container"
-		class="fixed top-5 right-5 z-50 flex flex-col gap-3">
-		
-	</div>
+		class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
 
 	<!-- SIDEBAR - ĐIỀU HƯỚNG CHÍNH -->
 	<aside
@@ -789,6 +787,32 @@ body {
 			<p>© 2026 Admin Bookland - Góc Sách. Bảo lưu mọi quyền.</p>
 			<p>Thiết kế cho Môn Thực Tập Lập Trình Web - Đạt điểm A+</p>
 		</footer>
+		<!-- Modal xác nhận dùng chung -->
+		<div id="confirmModal"
+			class="fixed inset-0 z-[999] hidden bg-black/50 flex items-center justify-center p-4">
+			<div
+				class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+				<div class="flex items-center gap-3">
+					<div class="bg-amber-100 dark:bg-amber-900/30 p-2.5 rounded-xl">
+						<i class="fa-solid fa-circle-exclamation text-amber-500 text-xl"></i>
+					</div>
+					<h3 id="confirmModalTitle"
+						class="font-bold text-lg text-navy-800 dark:text-white">Xác
+						nhận</h3>
+				</div>
+				<p id="confirmModalMessage"
+					class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+					Bạn có chắc muốn thực hiện hành động này?</p>
+				<div class="flex gap-3 pt-2">
+					<button id="confirmModalCancel"
+						class="flex-1 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-semibold py-2.5 rounded-xl transition-all">
+						Hủy bỏ</button>
+					<button id="confirmModalOk"
+						class="flex-1 bg-navy-800 hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-xl transition-all">
+						Xác nhận</button>
+				</div>
+			</div>
+		</div>
 	</main>
 
 	<!-- MODAL 1: THÊM / CHỈNH SỬA SÁCH (Mục 62, 27) -->
@@ -1037,90 +1061,16 @@ body {
 
 	<!-- Data thật từ server inject vào JS -->
 	<script>
-    const CTX = "${pageContext.request.contextPath}";
-
-    let categories = [
-        <c:forEach var="c" items="${categories}" varStatus="s">
-            {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
-    let deletedCategories = [
-        <c:forEach var="c" items="${deletedCategories}" varStatus="s">
-            {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    let authors = [
-        <c:forEach var="a" items="${authors}" varStatus="s">
-            {id:${a.id}, name:"${fn:escapeXml(a.name)}", image:"${a.image}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    let deletedAuthors = [
-        <c:forEach var="a" items="${deletedAuthors}" varStatus="s">
-            {id:${a.id}, name:"${fn:escapeXml(a.name)}", image:"${a.image}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
-    let books = [
-        <c:forEach var="b" items="${books}" varStatus="s">
-            {
-                id:           ${b.id},
-                title:        "${fn:escapeXml(b.title)}",
-                author_id:    ${b.author.id},
-                category_id:  ${b.category.id},
-                price:        ${b.price},
-                origin_price: ${b.originPrice},
-                stock:        ${b.stock},
-                sold:         ${b.soldQuantity},
-                isbn:         "${b.isbn}",
-                publisher:    "${fn:escapeXml(b.publisher)}",
-                language:     "${b.language}",
-                cover:        "${b.coverType}",
-                image:        "${b.image}",
-                year:         ${b.publishYear},
-                desc:         "",
-                detail_images: []
-            }
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
- // data sách đã bị ẩn (thùng rác)
-    let deletedBooks = [
-        <c:forEach var="b" items="${deletedBooks}" varStatus="s">
-            {
-                id:          ${b.id},
-                title:       "${fn:escapeXml(b.title)}",
-                author_id:   ${b.author.id},
-                category_id: ${b.category.id},
-                price:       ${b.price},
-                origin_price:${b.originPrice},
-                stock:       ${b.stock},
-                sold:        ${b.soldQuantity},
-                isbn:        "${b.isbn}",
-                publisher:   "${fn:escapeXml(b.publisher)}",
-                language:    "${b.language}",
-                cover:       "${b.coverType}",
-                image:       "${b.image}",
-                year:        ${b.publishYear},
-                desc:        "",
-                detail_images:[]
-            }
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    <c:if test="${not empty param.success or not empty param.error}">
-    window._adminNotify = {
-        key: '${not empty param.success ? param.success : param.error}'
-    };
-    </c:if>
+const CTX = "${pageContext.request.contextPath}";
+let books             = ${booksJson};
+let deletedBooks      = ${deletedBooksJson};
+let categories        = ${categoriesJson};
+let deletedCategories = ${deletedCategoriesJson};
+let authors           = ${authorsJson};
+let deletedAuthors    = ${deletedAuthorsJson};
+<c:if test="${not empty param.success or not empty param.error}">
+window._adminNotify = { key: '${not empty param.success ? param.success : param.error}' };
+</c:if>
 </script>
 
 	<!-- Toàn bộ logic JS nằm trong file riêng -->
