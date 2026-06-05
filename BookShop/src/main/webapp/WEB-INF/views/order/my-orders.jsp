@@ -44,11 +44,50 @@
                         </p>
                         <p>Trạng thái:
                             <span style="padding:3px 10px;border-radius:12px;font-size:.85em;font-weight:600;
-                                background:${orderDetail.status == 'PENDING' ? '#fff3cd' : orderDetail.status == 'COMPLETED' ? '#d1fae5' : orderDetail.status == 'CANCELLED' ? '#fee2e2' : '#dbeafe'};
-                                color:${orderDetail.status == 'PENDING' ? '#92400e' : orderDetail.status == 'COMPLETED' ? '#065f46' : orderDetail.status == 'CANCELLED' ? '#991b1b' : '#1e40af'};">
-                                ${orderDetail.status}
+                                background:${orderDetail.status == 'PENDING' ? '#fff3cd' : orderDetail.status == 'CONFIRMED' ? '#d1fae5' : orderDetail.status == 'COMPLETED' ? '#d1fae5' : orderDetail.status == 'PAYMENT_FAILED' ? '#fee2e2' : orderDetail.status == 'CANCELLED' ? '#fee2e2' : '#dbeafe'};
+                                color:${orderDetail.status == 'PENDING' ? '#92400e' : orderDetail.status == 'CONFIRMED' ? '#065f46' : orderDetail.status == 'COMPLETED' ? '#065f46' : orderDetail.status == 'PAYMENT_FAILED' ? '#991b1b' : orderDetail.status == 'CANCELLED' ? '#991b1b' : '#1e40af'};">
+                                ${orderDetail.status == 'PAYMENT_FAILED' ? 'Thanh toán thất bại' :
+                                  orderDetail.status == 'PENDING'        ? 'Chờ xử lý' :
+                                  orderDetail.status == 'CONFIRMED'      ? 'Đã xác nhận' :
+                                  orderDetail.status == 'COMPLETED'      ? 'Hoàn thành' :
+                                  orderDetail.status == 'CANCELLED'      ? 'Đã huỷ' : orderDetail.status}
                             </span>
                         </p>
+
+                        <%-- Nút thanh toán — hiện cho PENDING và PAYMENT_FAILED với VNPAY/MOMO --%>
+                        <c:if test="${(orderDetail.status == 'PAYMENT_FAILED' or orderDetail.status == 'PENDING') and
+                                     (orderDetail.paymentMethod == 'VNPAY' or orderDetail.paymentMethod == 'MOMO')}">
+                            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eee;">
+                                <c:choose>
+                                    <c:when test="${orderDetail.status == 'PAYMENT_FAILED'}">
+                                        <p style="color:#991b1b;font-size:.85em;margin-bottom:10px;">
+                                            ⚠️ Thanh toán thất bại. Bạn có thể thử lại.
+                                        </p>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p style="color:#92400e;font-size:.85em;margin-bottom:10px;">
+                                            ⏳ Đơn hàng chưa được thanh toán.
+                                        </p>
+                                    </c:otherwise>
+                                </c:choose>
+                                <form action="${ctx}/retry-payment" method="post">
+                                    <input type="hidden" name="orderId" value="${orderDetail.orderId}"/>
+                                    <button type="submit"
+                                        style="width:100%;padding:10px 0;background:#1e3a5f;color:#fff;
+                                               border:none;border-radius:6px;font-size:.95em;font-weight:600;
+                                               cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                        <c:choose>
+                                            <c:when test="${orderDetail.paymentMethod == 'VNPAY'}">
+                                                💳 ${orderDetail.status == 'PAYMENT_FAILED' ? 'Thanh toán lại qua VNPay' : 'Tiếp tục thanh toán qua VNPay'}
+                                            </c:when>
+                                            <c:otherwise>
+                                                📱 ${orderDetail.status == 'PAYMENT_FAILED' ? 'Thanh toán lại qua MoMo' : 'Tiếp tục thanh toán qua MoMo'}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </button>
+                                </form>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
 
@@ -119,14 +158,31 @@
                                         </td>
                                         <td style="padding:12px 14px;text-align:center;">
                                             <span style="padding:3px 10px;border-radius:12px;font-size:.82em;font-weight:600;
-                                                background:${order.status == 'PENDING' ? '#fff3cd' : order.status == 'COMPLETED' ? '#d1fae5' : order.status == 'CANCELLED' ? '#fee2e2' : '#dbeafe'};
-                                                color:${order.status == 'PENDING' ? '#92400e' : order.status == 'COMPLETED' ? '#065f46' : order.status == 'CANCELLED' ? '#991b1b' : '#1e40af'};">
-                                                ${order.status}
+                                                background:${order.status == 'PENDING' ? '#fff3cd' : order.status == 'CONFIRMED' ? '#d1fae5' : order.status == 'COMPLETED' ? '#d1fae5' : order.status == 'PAYMENT_FAILED' ? '#fee2e2' : order.status == 'CANCELLED' ? '#fee2e2' : '#dbeafe'};
+                                                color:${order.status == 'PENDING' ? '#92400e' : order.status == 'CONFIRMED' ? '#065f46' : order.status == 'COMPLETED' ? '#065f46' : order.status == 'PAYMENT_FAILED' ? '#991b1b' : order.status == 'CANCELLED' ? '#991b1b' : '#1e40af'};">
+                                                ${order.status == 'PAYMENT_FAILED' ? 'TT thất bại' :
+                                                  order.status == 'PENDING'        ? 'Chờ xử lý' :
+                                                  order.status == 'CONFIRMED'      ? 'Đã xác nhận' :
+                                                  order.status == 'COMPLETED'      ? 'Hoàn thành' :
+                                                  order.status == 'CANCELLED'      ? 'Đã huỷ' : order.status}
                                             </span>
                                         </td>
-                                        <td style="padding:12px 14px;text-align:center;">
+                                        <td style="padding:12px 14px;text-align:center;white-space:nowrap;">
                                             <a href="${ctx}/my-orders?orderId=${order.orderId}"
                                                style="color:#1e3a5f;font-size:.9em;text-decoration:underline;">Xem</a>
+                                            <%-- Nút thanh toán lại nhanh ngay trong danh sách --%>
+                                            <c:if test="${(order.status == 'PAYMENT_FAILED' or order.status == 'PENDING') and
+                                                         (order.paymentMethod == 'VNPAY' or order.paymentMethod == 'MOMO')}">
+                                                <form action="${ctx}/retry-payment" method="post" style="display:inline;">
+                                                    <input type="hidden" name="orderId" value="${order.orderId}"/>
+                                                    <button type="submit"
+                                                        style="margin-left:8px;padding:4px 10px;color:#fff;
+                                                               border:none;border-radius:4px;font-size:.82em;cursor:pointer;font-weight:600;
+                                                               background:${order.status == 'PAYMENT_FAILED' ? '#dc2626' : '#d97706'};">
+                                                        ${order.status == 'PAYMENT_FAILED' ? 'Thanh toán lại' : 'Tiếp tục TT'}
+                                                    </button>
+                                                </form>
+                                            </c:if>
                                         </td>
                                     </tr>
                                 </c:forEach>

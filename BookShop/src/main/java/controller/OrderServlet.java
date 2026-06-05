@@ -82,6 +82,39 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
+        String paymentMethodEarly = request.getParameter("paymentMethod");
+
+        // ZaloPay chưa được tích hợp — chặn sớm trước khi tạo đơn
+        if ("ZALOPAY".equals(paymentMethodEarly)) {
+            double subtotalE = cart.getTotalPrice();
+            request.setAttribute("pageTitle", "Thanh toán");
+            request.setAttribute("error", "ZaloPay hiện chưa được hỗ trợ. Vui lòng chọn phương thức thanh toán khác.");
+            request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+            request.setAttribute("subtotal", subtotalE);
+            request.setAttribute("shippingFee", 0.0);
+            request.setAttribute("discount", 0.0);
+            request.setAttribute("total", subtotalE);
+            request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
+            return;
+        }
+
+        // Bank Transfer — yêu cầu xác nhận đã chuyển khoản
+        if ("BANK_TRANSFER".equals(paymentMethodEarly)) {
+            String bankConfirmed = request.getParameter("bankConfirmed");
+            if (!"1".equals(bankConfirmed)) {
+                double subtotalE = cart.getTotalPrice();
+                request.setAttribute("pageTitle", "Thanh toán");
+                request.setAttribute("error", "Vui lòng xác nhận đã chuyển khoản trước khi đặt hàng.");
+                request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+                request.setAttribute("subtotal", subtotalE);
+                request.setAttribute("shippingFee", 0.0);
+                request.setAttribute("discount", 0.0);
+                request.setAttribute("total", subtotalE);
+                request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
+                return;
+            }
+        }
+
         String customerName = request.getParameter("customerName");
         String phone = request.getParameter("phone");
         String email = request.getParameter("email");
@@ -158,11 +191,30 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
+        // Đơn hàng đã lưu vào DB — xóa giỏ hàng ngay
+        List<OrderItem> placedItems = mapOrderItems(cart.getItems());
+        cart.clear();
+
+        // Điều hướng theo phương thức thanh toán
+        if ("VNPAY".equals(paymentMethod)) {
+            session.setAttribute("pendingPaymentOrderCode", order.getOrderCode());
+            response.sendRedirect(request.getContextPath() + "/vnpay/pay");
+            return;
+        }
+
+        if ("MOMO".equals(paymentMethod)) {
+            session.setAttribute("pendingPaymentOrderCode", order.getOrderCode());
+            response.sendRedirect(request.getContextPath() + "/momo/pay");
+            return;
+        }
+
+        // COD / BANK_TRANSFER — hiển thị trang thành công ngay
         request.setAttribute("pageTitle", "Đặt hàng thành công");
         request.setAttribute("placedOrder", order);
-        request.setAttribute("placedOrderItems", mapOrderItems(cart.getItems()));
-
-        cart.clear();
+        request.setAttribute("placedOrderItems", placedItems);
+        if ("BANK_TRANSFER".equals(paymentMethod)) {
+            request.setAttribute("bankTransfer", true);
+        }
 
         request.getRequestDispatcher("/WEB-INF/views/order/order-success.jsp").forward(request, response);
     }
