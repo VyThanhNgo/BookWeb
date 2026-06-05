@@ -142,7 +142,7 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		try {
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
-					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id " + "WHERE 1=1";
+					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id " + "WHERE b.is_deleted = 0";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -208,8 +208,8 @@ public class BookDAO {
 	public List<Book> getRelatedBooks(int categoryId, int excludeBookId) {
 		List<Book> list = new ArrayList<>();
 		String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname "
-				+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
-				+ "WHERE b.category_id = ? AND b.book_id != ? LIMIT 3";
+		        + "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
+		        + "WHERE b.category_id = ? AND b.book_id != ? AND b.is_deleted = 0 LIMIT 3";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, categoryId);
 			ps.setInt(2, excludeBookId);
@@ -291,7 +291,8 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " + "FROM books b "
 				+ "LEFT JOIN categories c ON b.category_id = c.category_id "
-				+ "LEFT JOIN authors a ON b.author_id = a.author_id " + "ORDER BY b.book_id DESC LIMIT ?";
+				+ "LEFT JOIN authors a ON b.author_id = a.author_id "
+				+ "WHERE b.is_deleted = 0 ORDER BY b.book_id DESC LIMIT ?";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, limit);
 			try (ResultSet rs = ps.executeQuery()) {
@@ -324,8 +325,9 @@ public class BookDAO {
 	public List<Book> getBestSellers(int limit) {
 		List<Book> list = new ArrayList<>();
 		String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " + "FROM books b "
-				+ "LEFT JOIN categories c ON b.category_id = c.category_id "
-				+ "LEFT JOIN authors a ON b.author_id = a.author_id " + "ORDER BY RAND() LIMIT ?";
+		        + "LEFT JOIN categories c ON b.category_id = c.category_id "
+		        + "LEFT JOIN authors a ON b.author_id = a.author_id "
+		        + "WHERE b.is_deleted = 0 ORDER BY RAND() LIMIT ?";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, limit);
 			try (ResultSet rs = ps.executeQuery()) {
@@ -417,7 +419,7 @@ public class BookDAO {
 	public int countBooks(String keyword, List<Integer> categoryIds, Double minPrice, Double maxPrice) {
 		int total = 0;
 		try {
-			String sql = "SELECT COUNT(*) FROM books b WHERE 1=1";
+			String sql = "SELECT COUNT(*) FROM books b WHERE b.is_deleted = 0";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -458,7 +460,7 @@ public class BookDAO {
 			List<Integer> publishYears, List<Integer> authorIds, List<String> publishers) {
 		int total = 0;
 		try {
-			String sql = "SELECT COUNT(*) FROM books b WHERE 1=1";
+			String sql = "SELECT COUNT(*) FROM books b WHERE b.is_deleted = 0";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -528,7 +530,7 @@ public class BookDAO {
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
 					+ "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
 					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
-					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
+					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE b.is_deleted = 0";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -602,7 +604,7 @@ public class BookDAO {
 			String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, "
 					+ "COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.review_id) as review_count "
 					+ "FROM books b LEFT JOIN categories c ON b.category_id = c.category_id "
-					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE 1=1";
+					+ "LEFT JOIN reviews r ON r.book_id = b.book_id WHERE b.is_deleted = 0";
 			if (keyword != null && !keyword.isEmpty())
 				sql += " AND b.title LIKE ?";
 			if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -758,7 +760,7 @@ public class BookDAO {
 		List<Book> list = new ArrayList<>();
 		try {
 			// Chỉ lấy những cột cần thiết để hiển thị ở thanh tìm kiếm (nhẹ và nhanh)
-			String sql = "SELECT book_id, title, price, image, slug FROM books WHERE title LIKE ? LIMIT ?";
+			String sql = "SELECT book_id, title, price, image, slug FROM books WHERE title LIKE ? AND is_deleted = 0 LIMIT ?";
 			try (Connection conn = util.DBConnection.getConnection();
 					PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -874,7 +876,7 @@ public class BookDAO {
 	// hàm láy giá cao nhất để set cho filter giá
 	public double getMaxPrice() {
 		double max = 0;
-		String sql = "SELECT MAX(price) FROM books";
+		String sql = "SELECT MAX(price) FROM books WHERE is_deleted = 0";
 		try (Connection conn = DBConnection.getConnection();
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ResultSet rs = ps.executeQuery()) {
@@ -890,7 +892,7 @@ public class BookDAO {
 	// Lấy danh sách năm xuất bản có sách
 	public List<Integer> getDistinctPublishYears() {
 		List<Integer> years = new ArrayList<>();
-		String sql = "SELECT DISTINCT publish_year FROM books WHERE publish_year IS NOT NULL AND publish_year > 0 ORDER BY publish_year DESC";
+		String sql = "SELECT DISTINCT publish_year FROM books WHERE publish_year IS NOT NULL AND publish_year > 0 AND is_deleted = 0 ORDER BY publish_year DESC";
 		try (Connection conn = DBConnection.getConnection();
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ResultSet rs = ps.executeQuery()) {
@@ -905,7 +907,7 @@ public class BookDAO {
 	// Lấy danh sách NXB có sách
 	public List<String> getDistinctPublishers() {
 		List<String> publishers = new ArrayList<>();
-		String sql = "SELECT DISTINCT publisher FROM books WHERE publisher IS NOT NULL AND publisher != '' ORDER BY publisher ASC";
+		String sql = "SELECT DISTINCT publisher FROM books WHERE publisher IS NOT NULL AND publisher != '' AND is_deleted = 0 ORDER BY publisher ASC";
 		try (Connection conn = DBConnection.getConnection();
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ResultSet rs = ps.executeQuery()) {
