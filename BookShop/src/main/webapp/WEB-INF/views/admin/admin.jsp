@@ -1061,90 +1061,16 @@ body {
 
 	<!-- Data thật từ server inject vào JS -->
 	<script>
-    const CTX = "${pageContext.request.contextPath}";
-
-    let categories = [
-        <c:forEach var="c" items="${categories}" varStatus="s">
-            {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
-    let deletedCategories = [
-        <c:forEach var="c" items="${deletedCategories}" varStatus="s">
-            {id:${c.id}, name:"${fn:escapeXml(c.name)}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    let authors = [
-        <c:forEach var="a" items="${authors}" varStatus="s">
-            {id:${a.id}, name:"${fn:escapeXml(a.name)}", image:"${a.image}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    let deletedAuthors = [
-        <c:forEach var="a" items="${deletedAuthors}" varStatus="s">
-            {id:${a.id}, name:"${fn:escapeXml(a.name)}", image:"${a.image}"}
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
-    let books = [
-        <c:forEach var="b" items="${books}" varStatus="s">
-            {
-                id:           ${b.id},
-                title:        "${fn:escapeXml(b.title)}",
-                author_id:    ${b.author.id},
-                category_id:  ${b.category.id},
-                price:        ${b.price},
-                origin_price: ${b.originPrice},
-                stock:        ${b.stock},
-                sold:         ${b.soldQuantity},
-                isbn:         "${b.isbn}",
-                publisher:    "${fn:escapeXml(b.publisher)}",
-                language:     "${b.language}",
-                cover:        "${b.coverType}",
-                image:        "${b.image}",
-                year:         ${b.publishYear},
-                desc:         "${fn:escapeXml(b.description)}",
-                detail_images: []
-            }
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-    
- // data sách đã bị ẩn (thùng rác)
-    let deletedBooks = [
-        <c:forEach var="b" items="${deletedBooks}" varStatus="s">
-            {
-                id:          ${b.id},
-                title:       "${fn:escapeXml(b.title)}",
-                author_id:   ${b.author.id},
-                category_id: ${b.category.id},
-                price:       ${b.price},
-                origin_price:${b.originPrice},
-                stock:       ${b.stock},
-                sold:        ${b.soldQuantity},
-                isbn:        "${b.isbn}",
-                publisher:   "${fn:escapeXml(b.publisher)}",
-                language:    "${b.language}",
-                cover:       "${b.coverType}",
-                image:       "${b.image}",
-                year:        ${b.publishYear},
-                desc:        "${fn:escapeXml(b.description)}",
-                detail_images:[]
-            }
-            <c:if test="${!s.last}">,</c:if>
-        </c:forEach>
-    ];
-
-    <c:if test="${not empty param.success or not empty param.error}">
-    window._adminNotify = {
-        key: '${not empty param.success ? param.success : param.error}'
-    };
-    </c:if>
+const CTX = "${pageContext.request.contextPath}";
+let books             = ${booksJson};
+let deletedBooks      = ${deletedBooksJson};
+let categories        = ${categoriesJson};
+let deletedCategories = ${deletedCategoriesJson};
+let authors           = ${authorsJson};
+let deletedAuthors    = ${deletedAuthorsJson};
+<c:if test="${not empty param.success or not empty param.error}">
+window._adminNotify = { key: '${not empty param.success ? param.success : param.error}' };
+</c:if>
 </script>
 
 	<!-- Toàn bộ logic JS nằm trong file riêng -->
