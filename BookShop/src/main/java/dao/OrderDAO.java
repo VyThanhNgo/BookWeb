@@ -193,7 +193,9 @@ public class OrderDAO {
 
     public List<OrderItem> getOrderItems(int orderId) {
         List<OrderItem> list = new ArrayList<>();
-        String sql = "SELECT * FROM order_details WHERE order_id = ?";
+        String sql = "SELECT od.*, b.image FROM order_details od " +
+                     "LEFT JOIN books b ON od.book_id = b.book_id " +
+                     "WHERE od.order_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -202,7 +204,7 @@ public class OrderDAO {
                 OrderItem item = new OrderItem(
                     rs.getInt("book_id"),
                     rs.getString("book_title"),
-                    null,
+                    rs.getString("image"),
                     rs.getInt("quantity"),
                     rs.getDouble("unit_price")
                 );
@@ -261,5 +263,58 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public Order getOrderByCode(String orderCode) {
+        String sql = "SELECT * FROM orders WHERE order_code = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, orderCode);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapOrder(rs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Cập nhật trạng thái đơn hàng và ghi nhận thanh toán vào bảng payments.
+     * Dùng sau khi nhận kết quả từ cổng thanh toán (VNPay / MoMo).
+     */
+    public boolean updateOrderPayment(String orderCode, String orderStatus, String paymentStatus) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            PreparedStatement ps1 = conn.prepareStatement(
+                    "UPDATE orders SET status = ? WHERE order_code = ?");
+            ps1.setString(1, orderStatus);
+            ps1.setString(2, orderCode);
+            ps1.executeUpdate();
+            ps1.close();
+
+            PreparedStatement ps2 = conn.prepareStatement(
+                    "INSERT INTO payments (order_id, method, status, paid_at) " +
+                    "SELECT order_id, payment_method, ?, ? FROM orders WHERE order_code = ?");
+            ps2.setString(1, paymentStatus);
+            ps2.setTimestamp(2, "SUCCESS".equals(paymentStatus)
+                    ? new java.sql.Timestamp(System.currentTimeMillis()) : null);
+            ps2.setString(3, orderCode);
+            ps2.executeUpdate();
+            ps2.close();
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
+            return false;
+        } finally {
+            try {
+                if (conn != null) { conn.setAutoCommit(true); conn.close(); }
+            } catch (Exception ignored) {}
+        }
     }
 }

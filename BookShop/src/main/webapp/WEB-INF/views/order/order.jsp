@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
@@ -25,7 +25,7 @@
             <div class="alert alert-danger mb-4">${error}</div>
         </c:if>
 
-        <form action="${ctx}/order" method="post">
+        <form id="orderForm" action="${ctx}/order" method="post">
 
             <div class="checkout-grid">
 
@@ -69,6 +69,7 @@
                             <input type="hidden" id="shippingFeeInput" name="shippingFee" value="${shippingFee}">
                             <input type="hidden" id="subtotalValue" value="${subtotal}">
                             <input type="hidden" id="discountValue" value="${discount}">
+                            <input type="hidden" id="bankConfirmedInput" name="bankConfirmed" value="0">
 
                             <input type="text" name="addressLine" placeholder="Địa chỉ cụ thể *" required class="full">
 
@@ -81,12 +82,81 @@
                         <h3 class="checkout-title">Phương thức thanh toán</h3>
 
                         <div class="payment-list">
-                            <label><input type="radio" name="paymentMethod" value="COD" checked> COD</label>
-                            <label><input type="radio" name="paymentMethod" value="BANK_TRANSFER"> Bank</label>
-                            <label><input type="radio" name="paymentMethod" value="MOMO"> MoMo</label>
-                            <label><input type="radio" name="paymentMethod" value="ZALOPAY"> ZaloPay</label>
-                            <label><input type="radio" name="paymentMethod" value="VNPAY"> VNPay</label>
+
+                            <label class="payment-option" id="lbl-COD">
+                                <input type="radio" name="paymentMethod" value="COD" checked onchange="onPaymentChange(this)">
+                                <span class="pm-icon">🚚</span>
+                                <span class="pm-info">
+                                    <strong>COD — Thanh toán khi nhận hàng</strong>
+                                    <small>Trả tiền mặt khi giao hàng tận nơi</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-option" id="lbl-BANK_TRANSFER">
+                                <input type="radio" name="paymentMethod" value="BANK_TRANSFER" onchange="onPaymentChange(this)">
+                                <span class="pm-icon">🏦</span>
+                                <span class="pm-info">
+                                    <strong>Chuyển khoản ngân hàng</strong>
+                                    <small>Quét QR — xác nhận sau khi đã chuyển tiền</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-option" id="lbl-MOMO">
+                                <input type="radio" name="paymentMethod" value="MOMO" onchange="onPaymentChange(this)">
+                                <span class="pm-icon pm-logo" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;">
+                                    <span style="display:inline-flex;align-items:center;justify-content:center;
+                                                 background:#a50064;color:#fff;font-weight:900;font-size:12px;
+                                                 border-radius:8px;width:36px;height:36px;letter-spacing:.5px;
+                                                 font-family:Arial,sans-serif;flex-shrink:0;">
+                                        MoMo
+                                    </span>
+                                </span>
+                                <span class="pm-info">
+                                    <strong>Ví MoMo</strong>
+                                    <small>Thanh toán qua ứng dụng MoMo — nhanh chóng &amp; an toàn</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-option" id="lbl-VNPAY">
+                                <input type="radio" name="paymentMethod" value="VNPAY" onchange="onPaymentChange(this)">
+                                <span class="pm-icon pm-logo">
+                                    <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png" alt="VNPay" style="height:28px;border-radius:6px;">
+                                </span>
+                                <span class="pm-info">
+                                    <strong>VNPay</strong>
+                                    <small>Thanh toán qua VNPay — hỗ trợ ATM / thẻ quốc tế / QR</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-option disabled-pm" id="lbl-ZALOPAY" title="Tính năng đang được phát triển">
+                                <input type="radio" name="paymentMethod" value="ZALOPAY" disabled>
+                                <span class="pm-icon pm-logo">
+                                    <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png" alt="ZaloPay" style="height:28px;border-radius:6px;filter:grayscale(60%);">
+                                </span>
+                                <span class="pm-info">
+                                    <strong style="color:#aaa">ZaloPay</strong>
+                                    <small>Thanh toán qua ví ZaloPay</small>
+                                </span>
+                                <span class="pm-badge">Sắp có</span>
+                            </label>
+
                         </div>
+
+                        <!-- Bank info preview (hiện khi chọn BANK_TRANSFER) -->
+                        <div id="bankInfo" class="bank-info-box" style="display:none">
+                            <div class="bank-info-row"><span>🏦 Ngân hàng</span><strong>Vietcombank (VCB)</strong></div>
+                            <div class="bank-info-row"><span>💳 Số tài khoản</span><strong>1234567890</strong></div>
+                            <div class="bank-info-row"><span>👤 Chủ tài khoản</span><strong>CÔNG TY TNHH GÓC SÁCH</strong></div>
+                            <div style="margin-top:12px;text-align:center">
+                                <button type="button" class="btn-show-qr" onclick="showBankModal()">
+                                    📱 Xem mã QR & xác nhận chuyển khoản
+                                </button>
+                            </div>
+                            <p style="font-size:12px;color:#777;margin-top:8px;text-align:center">
+                                Vui lòng chuyển khoản và xác nhận trước khi đặt hàng
+                            </p>
+                        </div>
+
                     </div>
 
                 </div>
@@ -151,6 +221,63 @@
     </div>
 </div>
 
+<!-- Bank Transfer QR Modal -->
+<div id="bankTransferModal" class="bt-overlay" style="display:none" onclick="handleOverlayClick(event)">
+    <div class="bt-modal">
+        <button class="bt-close" onclick="closeBankModal()" aria-label="Đóng">✕</button>
+        <h3 class="bt-title">Thanh toán chuyển khoản</h3>
+
+        <div class="bt-body">
+            <!-- QR -->
+            <div class="bt-qr-section">
+                <img id="bankQRImg" src="" alt="QR thanh toán" class="bt-qr-img">
+                <p class="bt-qr-caption">Quét mã bằng app ngân hàng hoặc MoMo / ZaloPay</p>
+            </div>
+
+            <!-- Bank info -->
+            <div class="bt-info-section">
+                <div class="bt-info-row">
+                    <span>Ngân hàng</span>
+                    <strong>Vietcombank (VCB)</strong>
+                </div>
+                <div class="bt-info-row">
+                    <span>Số tài khoản</span>
+                    <strong>1234567890</strong>
+                </div>
+                <div class="bt-info-row">
+                    <span>Chủ tài khoản</span>
+                    <strong>CÔNG TY TNHH GÓC SÁCH</strong>
+                </div>
+                <div class="bt-info-row amount-row">
+                    <span>Số tiền</span>
+                    <strong id="btAmount" class="bt-amount"></strong>
+                </div>
+                <div class="bt-info-row ref-row">
+                    <span>Nội dung CK</span>
+                    <strong id="btRef" class="bt-ref"></strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="bt-steps">
+            <p><strong>📋 Hướng dẫn thanh toán:</strong></p>
+            <ol>
+                <li>Quét mã QR hoặc chuyển khoản theo thông tin trên</li>
+                <li>Ghi <strong>đúng nội dung chuyển khoản</strong> để hệ thống xác nhận tự động</li>
+                <li>Nhấn <em>"Tôi đã chuyển khoản thành công"</em> để hoàn tất đặt hàng</li>
+                <li>Đơn hàng sẽ được xử lý trong <strong>1–2 giờ làm việc</strong></li>
+            </ol>
+        </div>
+
+        <div class="bt-actions">
+            <button class="btn-confirm-bank" onclick="confirmBankTransfer()">
+                ✅ Tôi đã chuyển khoản thành công
+            </button>
+            <button class="btn-back-bank" onclick="closeBankModal()">↩ Quay lại</button>
+        </div>
+    </div>
+</div>
+
 <!-- CSS -->
 <style>
 
@@ -207,12 +334,189 @@
     }
 
     /* PAYMENT */
-    .payment-list label {
-        display: block;
-        padding: 10px;
+    .payment-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border: 2px solid #eee;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+    }
+    .payment-option:hover { border-color: #c5b8ff; background: #faf8ff; }
+    .payment-option.selected { border-color: #241c7a; background: #f5f3ff; }
+    .payment-option input[type=radio] { display: none; }
+
+    .pm-icon { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; }
+    .pm-logo { display: flex; align-items: center; }
+
+    .pm-info { display: flex; flex-direction: column; gap: 2px; }
+    .pm-info strong { font-size: 14px; color: #222; }
+    .pm-info small  { font-size: 12px; color: #888; }
+
+    /* Disabled payment option (ZaloPay) */
+    .payment-option.disabled-pm {
+        opacity: .55;
+        cursor: not-allowed;
+        pointer-events: none;
+        position: relative;
+    }
+    .pm-badge {
+        margin-left: auto;
+        background: #f59e0b;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Bank info preview */
+    .bank-info-box {
+        margin-top: 12px;
+        background: #f0f7ff;
+        border: 1px solid #bee3f8;
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #333;
+    }
+    .bank-info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid #e3f0fb;
+    }
+    .bank-info-row:last-of-type { border-bottom: none; }
+    .bank-info-row span { color: #666; }
+
+    .btn-show-qr {
+        background: #1565c0;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background .2s;
+    }
+    .btn-show-qr:hover { background: #0d47a1; }
+
+    /* Bank Transfer Modal */
+    .bt-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .bt-overlay.show {
+        display: flex;
+    }
+    .bt-modal {
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px 28px 20px;
+        max-width: 680px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .bt-close {
+        position: absolute;
+        top: 12px; right: 16px;
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+        line-height: 1;
+        padding: 4px 8px;
+    }
+    .bt-close:hover { color: #000; }
+    .bt-title {
+        font-size: 20px;
+        color: #241c7a;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .bt-body {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+        margin-bottom: 16px;
+    }
+    .bt-qr-section { text-align: center; }
+    .bt-qr-img {
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
         border: 1px solid #eee;
-        border-radius: 6px;
-        margin-bottom: 8px;
+        border-radius: 8px;
+        background: #fafafa;
+    }
+    .bt-qr-caption { font-size: 11px; color: #888; margin-top: 6px; }
+    .bt-info-section { display: flex; flex-direction: column; gap: 4px; }
+    .bt-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+    .bt-info-row:last-child { border-bottom: none; }
+    .bt-info-row span { color: #777; min-width: 120px; }
+    .bt-info-row strong { text-align: right; word-break: break-all; }
+    .bt-amount { color: #d32f2f; font-size: 18px; }
+    .bt-ref    { color: #1565c0; letter-spacing: .5px; }
+    .amount-row { margin-top: 4px; }
+    .bt-steps {
+        background: #fffde7;
+        border: 1px solid #fff176;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        line-height: 1.8;
+    }
+    .bt-steps ol { margin: 6px 0 0 16px; padding: 0; }
+    .bt-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-confirm-bank {
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s;
+    }
+    .btn-confirm-bank:hover { background: #1b5e20; }
+    .btn-back-bank {
+        background: none;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        color: #555;
+    }
+    .btn-back-bank:hover { background: #f5f5f5; }
+    @media (max-width: 560px) {
+        .bt-body { grid-template-columns: 1fr; }
+        .bt-qr-img { width: 140px; height: 140px; }
     }
 
     /* ORDER LIST */
@@ -479,5 +783,74 @@
 
         loadProvinces();
     })();
+
+    // ---- Payment method UI ----
+    function onPaymentChange(radio) {
+        document.querySelectorAll('.payment-option:not(.disabled-pm)').forEach(el => el.classList.remove('selected'));
+        radio.closest('.payment-option').classList.add('selected');
+        document.getElementById('bankInfo').style.display =
+            radio.value === 'BANK_TRANSFER' ? 'block' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mark COD selected by default
+        const defaultRadio = document.querySelector('input[name="paymentMethod"]:checked');
+        if (defaultRadio) onPaymentChange(defaultRadio);
+
+        // Intercept form submit for BANK_TRANSFER confirmation
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+            if (method === 'BANK_TRANSFER') {
+                const confirmed = document.getElementById('bankConfirmedInput').value;
+                if (confirmed !== '1') {
+                    e.preventDefault();
+                    showBankModal();
+                }
+            }
+        });
+    });
+
+    // ---- Bank Transfer Modal ----
+    function getGrandTotal() {
+        const subtotal = parseFloat(document.getElementById('subtotalValue').value || 0);
+        const shipping = parseFloat(document.getElementById('shippingFeeInput').value || 0);
+        const discount = parseFloat(document.getElementById('discountValue').value || 0);
+        return Math.round(subtotal + shipping - discount);
+    }
+
+    function showBankModal() {
+        const total  = getGrandTotal();
+        const phone  = (document.querySelector('input[name="phone"]')?.value || '').replace(/\s/g, '');
+        const ref    = 'GOCSACH ' + (phone || 'KHACH HANG');
+
+        // Update modal info
+        document.getElementById('btAmount').textContent = total.toLocaleString('vi-VN') + ' đ';
+        document.getElementById('btRef').textContent    = ref;
+
+        // Generate VietQR image (free, no API key needed)
+        const qrUrl = 'https://img.vietqr.io/image/VCB-1234567890-compact2.png'
+            + '?amount='      + encodeURIComponent(total)
+            + '&addInfo='     + encodeURIComponent(ref)
+            + '&accountName=' + encodeURIComponent('CONG TY TNHH GOC SACH');
+        document.getElementById('bankQRImg').src = qrUrl;
+
+        document.getElementById('bankTransferModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBankModal() {
+        document.getElementById('bankTransferModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+        if (e.target.id === 'bankTransferModal') closeBankModal();
+    }
+
+    function confirmBankTransfer() {
+        document.getElementById('bankConfirmedInput').value = '1';
+        closeBankModal();
+        document.getElementById('orderForm').submit();
+    }
 </script>
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

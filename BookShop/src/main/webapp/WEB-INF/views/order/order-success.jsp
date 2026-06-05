@@ -12,8 +12,19 @@
             <div class="success-box">
                 <div class="success-head">
                     <div class="success-icon"><i class="fa fa-check"></i></div>
-                    <h2>Đặt hàng thành công</h2>
-                    <p>Cảm ơn bạn đã mua sách tại Góc Sách.</p>
+                    <c:choose>
+                        <c:when test="${paymentSuccess}">
+                            <h2>Đặt hàng &amp; Thanh toán thành công</h2>
+                            <p>Đơn hàng đã được xác nhận và thanh toán. Cảm ơn bạn đã mua sách tại Góc Sách.</p>
+                            <c:if test="${not empty transactionNo}">
+                                <small style="color:#888">Mã giao dịch: <strong>${transactionNo}</strong></small>
+                            </c:if>
+                        </c:when>
+                        <c:otherwise>
+                            <h2>Đặt hàng thành công</h2>
+                            <p>Cảm ơn bạn đã mua sách tại Góc Sách.</p>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <div class="success-grid">
@@ -65,9 +76,32 @@
                     </c:forEach>
                 </div>
 
+                <!-- Bank transfer pending notice -->
+                <c:if test="${bankTransfer}">
+                    <div class="bank-pending-box">
+                        <h4>🏦 Thông tin chuyển khoản</h4>
+                        <div class="bp-row"><span>Ngân hàng</span><strong>Vietcombank (VCB)</strong></div>
+                        <div class="bp-row"><span>Số tài khoản</span><strong>1234567890</strong></div>
+                        <div class="bp-row"><span>Chủ tài khoản</span><strong>CÔNG TY TNHH GÓC SÁCH</strong></div>
+                        <div class="bp-row"><span>Số tiền</span>
+                            <strong style="color:#d32f2f">
+                                <fmt:formatNumber value="${placedOrder.totalAmount}" pattern="#,#00"/> đ
+                            </strong>
+                        </div>
+                        <div class="bp-row"><span>Nội dung CK</span>
+                            <strong style="color:#1565c0">GOCSACH ${placedOrder.phone}</strong>
+                        </div>
+                        <p class="bp-note">
+                            ⏳ Đơn hàng sẽ được xác nhận trong <strong>1–2 giờ làm việc</strong>
+                            sau khi thanh toán được xác minh. Nếu đã chuyển sai nội dung,
+                            vui lòng liên hệ hỗ trợ với mã đơn hàng <strong>${placedOrder.orderCode}</strong>.
+                        </p>
+                    </div>
+                </c:if>
+
                 <div class="success-actions">
                     <a href="${ctx}/books" class="btn btn-primary btnhover">Tiếp tục mua sắm</a>
-                    <a href="${ctx}/cart" class="btn btn-outline-secondary ms-2">Về giỏ hàng</a>
+                    <a href="${ctx}/my-orders" class="btn btn-outline-secondary ms-2">Xem đơn hàng của tôi</a>
                 </div>
             </div>
         </div>
@@ -189,6 +223,35 @@
     .item-total {
         font-weight: 700;
         white-space: nowrap;
+    }
+    .bank-pending-box {
+        background: #e8f5e9;
+        border: 1px solid #a5d6a7;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+    .bank-pending-box h4 { color: #2e7d32; margin-bottom: 14px; }
+    .bp-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #c8e6c9;
+        font-size: 14px;
+    }
+    .bp-row:last-of-type { border-bottom: none; }
+    .bp-row span { color: #555; min-width: 120px; }
+    .bp-note {
+        margin-top: 14px;
+        font-size: 13px;
+        color: #444;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        border: 1px solid #c8e6c9;
+        line-height: 1.6;
     }
     .success-actions {
         margin-top: 28px;
