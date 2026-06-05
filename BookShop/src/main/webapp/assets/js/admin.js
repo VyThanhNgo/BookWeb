@@ -1,6 +1,29 @@
 /**
  * 
  */
+// Thay thế confirm()của trình duyệt(hộp thoại localhost:8080 says) bằng modal đẹp
+function showConfirm(message, title, btnLabel, onConfirm) {
+    document.getElementById('confirmModalMessage').textContent = message;
+    document.getElementById('confirmModalTitle').textContent = title || 'Xác nhận';
+    const okBtn = document.getElementById('confirmModalOk');
+    okBtn.textContent = btnLabel || 'Xác nhận';
+    okBtn.className = 'confirmModalOkBtn ' + (btnLabel === 'Xóa vĩnh viễn' 
+        ? 'bg-red-700 hover:bg-red-800' : 'bg-navy-800 hover:opacity-90') 
+        + ' text-white text-sm font-bold px-5 py-2 rounded-xl transition-all';
+    const modal = document.getElementById('confirmModal');
+    modal.classList.remove('hidden');
+    const fresh = okBtn.cloneNode(true);
+    fresh.className = okBtn.className;
+    okBtn.parentNode.replaceChild(fresh, okBtn);
+    fresh.addEventListener('click', function () {
+        modal.classList.add('hidden');
+        onConfirm();
+    });
+    document.getElementById('confirmModalCancel').onclick = function () {
+        modal.classList.add('hidden');
+    };
+}
+
 // Các biến mock không liên quan đến server
 let users = [
 	{ id: 1, username: "quynh", fullname: "Hương Quỳnh", email: "shodakima@gmail.com", phone: "0982736152", role: "user", is_active: true, created_at: "2026-04-19" },
@@ -314,51 +337,60 @@ function validateBook() {
 
 function deleteBook(id) {
 	const book = books.find(function(b) { return b.id == id; });
-	if (!confirm('Xác nhận ẩn "' + book.title + '"?')) return;
-	fetch(CTX + '/admin/books?action=delete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				books = books.filter(b => b.id != id);
-				deletedBooks.push(book);
-				showToast('Đã ẩn sách thành công!', 'success');
-				renderBooks();
-			} else {
-				showToast('Không thể ẩn! Sách đang có đơn hàng đang xử lý.', 'danger');
-			}
-		});
+	showConfirm('Bạn muốn ẩn sách "' + book.title + '"? Sách sẽ không hiển thị với khách hàng.', 'Ẩn sách', 'Xác nhận ẩn', function() {
+	    fetch(CTX + '/admin/books?action=delete&id=' + id)
+	        .then(r => r.json())
+	        .then(data => {
+	            if (data.success) {
+	                books = books.filter(b => b.id != id);
+	                deletedBooks.push(book);
+	                showToast('Đã ẩn sách thành công!', 'success');
+	                renderBooks();
+	            } else {
+	                showToast('Không thể ẩn! Sách đang có đơn hàng đang xử lý.', 'danger');
+	            }
+	        });
+	});
+	return; // thoát sớm, fetch nằm trong callback
+	
 }
 
 // Thêm hàm xử lý Khôi phục sản phẩm (Soft delete -> Active)
 function restoreBook(id) {
-	if (!confirm('Khôi phục sách này?')) return;
-	fetch(CTX + '/admin/books?action=restore&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				const book = deletedBooks.find(b => b.id == id);
-				deletedBooks = deletedBooks.filter(b => b.id != id);
-				books.push(book);
-				showToast('Đã khôi phục sách!', 'success');
-				renderBooks();
-			}
-		});
+	showConfirm('Khôi phục sách này về danh sách đang kinh doanh?', 'Khôi phục sách', 'Khôi phục', function() {
+	    fetch(CTX + '/admin/books?action=restore&id=' + id)
+	        .then(r => r.json())
+	        .then(data => {
+	            if (data.success) {
+	                const book = deletedBooks.find(b => b.id == id);
+	                deletedBooks = deletedBooks.filter(b => b.id != id);
+	                books.push(book);
+	                showToast('Đã khôi phục sách!', 'success');
+	                renderBooks();
+	            }
+	        });
+	});
+	return;
+
 }
 
 // Thêm hàm xử lý Xóa vĩnh viễn (Hard delete khỏi cơ sở dữ liệu)
 function hardDeleteBook(id) {
-	if (!confirm('CẢNH BÁO: Xóa vĩnh viễn, không thể hoàn tác!')) return;
-	fetch(CTX + '/admin/books?action=hardDelete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				deletedBooks = deletedBooks.filter(b => b.id != id);
-				showToast('Đã xóa vĩnh viễn!', 'success');
-				renderBooks();
-			} else {
-				showToast('Không thể xóa! Sách đã từng có trong đơn hàng.', 'danger');
-			}
-		});
+	showConfirm('⚠️ Hành động này không thể hoàn tác! Sách sẽ bị xóa khỏi hệ thống vĩnh viễn.', 'Xóa vĩnh viễn', 'Xóa vĩnh viễn', function() {
+	    fetch(CTX + '/admin/books?action=hardDelete&id=' + id)
+	        .then(r => r.json())
+	        .then(data => {
+	            if (data.success) {
+	                deletedBooks = deletedBooks.filter(b => b.id != id);
+	                showToast('Đã xóa vĩnh viễn!', 'success');
+	                renderBooks();
+	            } else {
+	                showToast('Không thể xóa! Sách đã từng có trong đơn hàng.', 'danger');
+	            }
+	        });
+	});
+	return;
+	
 }
 
 // ===================== DANH MỤC =====================
@@ -439,50 +471,54 @@ function resetCategoryForm() {
 }
 
 function deleteCategory(id) {
-	if (!confirm('Xác nhận ẩn danh mục này?')) return;
-	fetch(CTX + '/admin/categories?action=delete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				const cat = categories.find(c => c.id == id);
-				categories = categories.filter(c => c.id != id);
-				deletedCategories.push(cat);
-				showToast('Đã ẩn danh mục!', 'success');
-				renderCategories();
-			} else {
-				showToast('Không thể xóa! Danh mục còn sách liên kết.', 'danger');
-			}
-		});
+	showConfirm('Ẩn danh mục này? Danh mục sẽ không hiển thị khi thêm sách mới.', 'Ẩn danh mục', 'Xác nhận ẩn', function() {
+	    fetch(CTX + '/admin/categories?action=delete&id=' + id)
+	        .then(r => r.json())
+	        .then(data => {
+	            if (data.success) {
+	                const cat = categories.find(c => c.id == id);
+	                categories = categories.filter(c => c.id != id);
+	                deletedCategories.push(cat);
+	                showToast('Đã ẩn danh mục!', 'success');
+	                renderCategories();
+	            } else {
+	                showToast('Không thể xóa! Danh mục còn sách liên kết.', 'danger');
+	            }
+	        });
+	});
+	return;
 }
 
 function restoreCategory(id) {
-	if (!confirm('Khôi phục danh mục này?')) return;
-	fetch(CTX + '/admin/categories?action=restore&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				const cat = deletedCategories.find(c => c.id == id);
-				deletedCategories = deletedCategories.filter(c => c.id != id);
-				categories.push(cat);
-				showToast('Đã khôi phục danh mục!', 'success');
-				renderCategories();
-			}
-		});
+	showConfirm('Khôi phục danh mục này về danh sách đang sử dụng?', 'Khôi phục danh mục', 'Khôi phục', function() {
+		fetch(CTX + '/admin/categories?action=restore&id=' + id)
+			.then(r => r.json())
+			.then(data => {
+				if (data.success) {
+					const cat = deletedCategories.find(c => c.id == id);
+					deletedCategories = deletedCategories.filter(c => c.id != id);
+					categories.push(cat);
+					showToast('Đã khôi phục danh mục!', 'success');
+					renderCategories();
+				}
+			});
+	});
 }
 
 function hardDeleteCategory(id) {
-	if (!confirm('Xóa vĩnh viễn danh mục?')) return;
-	fetch(CTX + '/admin/categories?action=hardDelete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				deletedCategories = deletedCategories.filter(c => c.id != id);
-				showToast('Đã xóa vĩnh viễn!', 'success');
-				renderCategories();
-			} else {
-				showToast('Không thể xóa! Còn sách liên kết.', 'danger');
-			}
-		});
+	showConfirm('⚠️ Xóa vĩnh viễn danh mục này? Hành động không thể hoàn tác!', 'Xóa vĩnh viễn', 'Xóa vĩnh viễn', function() {
+		fetch(CTX + '/admin/categories?action=hardDelete&id=' + id)
+			.then(r => r.json())
+			.then(data => {
+				if (data.success) {
+					deletedCategories = deletedCategories.filter(c => c.id != id);
+					showToast('Đã xóa vĩnh viễn!', 'success');
+					renderCategories();
+				} else {
+					showToast('Không thể xóa! Còn sách liên kết.', 'danger');
+				}
+			});
+	});
 }
 
 // ===================== TÁC GIẢ =====================
@@ -541,50 +577,53 @@ function resetAuthorForm() {
 }
 
 function deleteAuthor(id) {
-	if (!confirm('Xác nhận ẩn tác giả này?')) return;
-	fetch(CTX + '/admin/authors?action=delete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				const auth = authors.find(a => a.id == id);
-				authors = authors.filter(a => a.id != id);
-				deletedAuthors.push(auth);
-				showToast('Đã ẩn tác giả!', 'success');
-				renderAuthors();
-			} else {
-				showToast('Không thể xóa! Tác giả còn sách liên kết.', 'danger');
-			}
-		});
+	showConfirm('Ẩn tác giả này? Tác giả sẽ không hiển thị khi thêm sách mới.', 'Ẩn tác giả', 'Xác nhận ẩn', function() {
+		fetch(CTX + '/admin/authors?action=delete&id=' + id)
+			.then(r => r.json())
+			.then(data => {
+				if (data.success) {
+					const auth = authors.find(a => a.id == id);
+					authors = authors.filter(a => a.id != id);
+					deletedAuthors.push(auth);
+					showToast('Đã ẩn tác giả!', 'success');
+					renderAuthors();
+				} else {
+					showToast('Không thể xóa! Tác giả còn sách liên kết.', 'danger');
+				}
+			});
+	});
 }
 
 function restoreAuthor(id) {
-	if (!confirm('Khôi phục tác giả này?')) return;
-	fetch(CTX + '/admin/authors?action=restore&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				const auth = deletedAuthors.find(a => a.id == id);
-				deletedAuthors = deletedAuthors.filter(a => a.id != id);
-				authors.push(auth);
-				showToast('Đã khôi phục tác giả!', 'success');
-				renderAuthors();
-			}
-		});
+	showConfirm('Khôi phục tác giả này về danh sách hiển thị?', 'Khôi phục tác giả', 'Khôi phục', function() {
+		fetch(CTX + '/admin/authors?action=restore&id=' + id)
+			.then(r => r.json())
+			.then(data => {
+				if (data.success) {
+					const auth = deletedAuthors.find(a => a.id == id);
+					deletedAuthors = deletedAuthors.filter(a => a.id != id);
+					authors.push(auth);
+					showToast('Đã khôi phục tác giả!', 'success');
+					renderAuthors();
+				}
+			});
+	});
 }
 
 function hardDeleteAuthor(id) {
-	if (!confirm('Xóa vĩnh viễn tác giả?')) return;
-	fetch(CTX + '/admin/authors?action=hardDelete&id=' + id)
-		.then(r => r.json())
-		.then(data => {
-			if (data.success) {
-				deletedAuthors = deletedAuthors.filter(a => a.id != id);
-				showToast('Đã xóa vĩnh viễn!', 'success');
-				renderAuthors();
-			} else {
-				showToast('Không thể xóa! Còn sách liên kết.', 'danger');
-			}
-		});
+	showConfirm('⚠️ Xóa vĩnh viễn tác giả này? Hành động không thể hoàn tác!', 'Xóa vĩnh viễn', 'Xóa vĩnh viễn', function() {
+		fetch(CTX + '/admin/authors?action=hardDelete&id=' + id)
+			.then(r => r.json())
+			.then(data => {
+				if (data.success) {
+					deletedAuthors = deletedAuthors.filter(a => a.id != id);
+					showToast('Đã xóa vĩnh viễn!', 'success');
+					renderAuthors();
+				} else {
+					showToast('Không thể xóa! Còn sách liên kết.', 'danger');
+				}
+			});
+	});
 }
 
 // ===================== USERS =====================
@@ -754,11 +793,11 @@ function handlePromotionSubmit(event) {
 }
 
 function deletePromo(id) {
-	if (confirm("Bạn có chắc muốn hủy chương trình đồng giá này?")) {
+	showConfirm('Bạn muốn dừng chương trình đồng giá này? Giá sách sẽ trở về bình thường.', 'Hủy chương trình', 'Xác nhận hủy', function() {
 		promotions = promotions.filter(function(p) { return p.id != id; });
 		showToast("Đã dừng chương trình!", "success");
 		renderPromotions();
-	}
+	});
 }
 
 // ===================== MESSAGES =====================

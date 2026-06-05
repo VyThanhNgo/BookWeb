@@ -77,9 +77,7 @@ body {
 
 	<!-- TOAST NOTIFICATION SYSTEM (Hệ thống thông báo thay thế alert) -->
 	<div id="toast-container"
-		class="fixed top-5 right-5 z-50 flex flex-col gap-3">
-		
-	</div>
+		class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
 
 	<!-- SIDEBAR - ĐIỀU HƯỚNG CHÍNH -->
 	<aside
@@ -789,6 +787,32 @@ body {
 			<p>© 2026 Admin Bookland - Góc Sách. Bảo lưu mọi quyền.</p>
 			<p>Thiết kế cho Môn Thực Tập Lập Trình Web - Đạt điểm A+</p>
 		</footer>
+		<!-- Modal xác nhận dùng chung -->
+		<div id="confirmModal"
+			class="fixed inset-0 z-[999] hidden bg-black/50 flex items-center justify-center p-4">
+			<div
+				class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-6 space-y-4">
+				<div class="flex items-center gap-3">
+					<div class="bg-amber-100 dark:bg-amber-900/30 p-2.5 rounded-xl">
+						<i class="fa-solid fa-circle-exclamation text-amber-500 text-xl"></i>
+					</div>
+					<h3 id="confirmModalTitle"
+						class="font-bold text-lg text-navy-800 dark:text-white">Xác
+						nhận</h3>
+				</div>
+				<p id="confirmModalMessage"
+					class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+					Bạn có chắc muốn thực hiện hành động này?</p>
+				<div class="flex gap-3 pt-2">
+					<button id="confirmModalCancel"
+						class="flex-1 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-semibold py-2.5 rounded-xl transition-all">
+						Hủy bỏ</button>
+					<button id="confirmModalOk"
+						class="flex-1 bg-navy-800 hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-xl transition-all">
+						Xác nhận</button>
+				</div>
+			</div>
+		</div>
 	</main>
 
 	<!-- MODAL 1: THÊM / CHỈNH SỬA SÁCH (Mục 62, 27) -->
