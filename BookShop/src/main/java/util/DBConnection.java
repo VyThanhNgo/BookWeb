@@ -10,9 +10,11 @@ public class DBConnection {
 
     // ========== Cấu hình kết nối ==========
    
-	private static final String URL = "jdbc:mysql://192.168.1.40:3306/bookstore";
+	//private static final String URL = "jdbc:mysql://192.168.1.40:3306/bookstore";
+	private static final String URL = "jdbc:mysql://localhost:3306/bookstore";
 	private static final String USER = "root";
-    private static final String PASSWORD = "12345";
+    private static final String PASSWORD = "1234";
+    //private static final String PASSWORD = "12345";
 
  
 //    private static final String URL =

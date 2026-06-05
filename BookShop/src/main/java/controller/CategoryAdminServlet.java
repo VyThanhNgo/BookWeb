@@ -1,5 +1,4 @@
 package controller;
-
 import dao.BookDAO;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -8,6 +7,11 @@ import java.io.IOException;
 
 @WebServlet("/admin/categories")
 public class CategoryAdminServlet extends HttpServlet {
+
+    private void json(HttpServletResponse res, boolean success, String message) throws IOException {
+        res.setContentType("application/json; charset=UTF-8");
+        res.getWriter().write("{\"success\":" + success + ",\"message\":\"" + message + "\"}");
+    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -18,25 +22,23 @@ public class CategoryAdminServlet extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             if (dao.canDeleteCategory(id)) {
                 dao.deleteCategory(id);
-                response.sendRedirect(request.getContextPath() + "/admin?success=deleted");
+                json(response, true, "deleted");
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin?error=has_books");
+                json(response, false, "has_books");
             }
         } else if ("restore".equals(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
             dao.restoreCategory(id);
-            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
+            json(response, true, "updated");
 
         } else if ("hardDelete".equals(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            //kiểm tra còn sách liên kết không (kể cả sách đã ẩn)
             if (dao.canHardDeleteCategory(id)) {
                 dao.hardDeleteCategory(id);
-                response.sendRedirect(request.getContextPath() + "/admin?success=deleted");
+                json(response, true, "deleted");
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin?error=has_books");
+                json(response, false, "has_books");
             }
-
         } else {
             response.sendRedirect(request.getContextPath() + "/admin");
         }
@@ -51,20 +53,21 @@ public class CategoryAdminServlet extends HttpServlet {
 
         if ("add".equals(action)) {
             if (dao.isCategoryNameExists(name, -1)) {
-                response.sendRedirect(request.getContextPath() + "/admin?error=duplicate");
+                json(response, false, "duplicate");
                 return;
             }
-            dao.addCategory(name);
-            response.sendRedirect(request.getContextPath() + "/admin?success=added");
+            int newId = dao.addCategory(name);
+            response.setContentType("application/json; charset=UTF-8");
+            response.getWriter().write("{\"success\":true,\"message\":\"added\",\"id\":" + newId + ",\"name\":\"" + name + "\"}");
 
         } else if ("edit".equals(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (dao.isCategoryNameExists(name, id)) {
-                response.sendRedirect(request.getContextPath() + "/admin?error=duplicate");
+                json(response, false, "duplicate");
                 return;
             }
             dao.updateCategory(id, name);
-            response.sendRedirect(request.getContextPath() + "/admin?success=updated");
+            json(response, true, "updated");
         }
     }
 }
