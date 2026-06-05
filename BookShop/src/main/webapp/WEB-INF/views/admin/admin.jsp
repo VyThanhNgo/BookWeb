@@ -1108,7 +1108,7 @@ body {
                 cover:        "${b.coverType}",
                 image:        "${b.image}",
                 year:         ${b.publishYear},
-                desc:         "",
+                desc:         "${fn:escapeXml(b.description)}",
                 detail_images: []
             }
             <c:if test="${!s.last}">,</c:if>
@@ -1133,7 +1133,7 @@ body {
                 cover:       "${b.coverType}",
                 image:       "${b.image}",
                 year:        ${b.publishYear},
-                desc:        "",
+                desc:        "${fn:escapeXml(b.description)}",
                 detail_images:[]
             }
             <c:if test="${!s.last}">,</c:if>

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     searchInput.addEventListener('input', function() {
         var keyword = this.value.trim();
-        if (keyword.length < 2) {
+        if (!keyword) {
             resultsWrapper.style.display = 'none';
             return;
         }

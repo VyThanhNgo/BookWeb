@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 
 import dao.UserDAO;
+import dao.WishlistDAO;
 import model.User;
 
 @WebServlet("/login")
@@ -66,6 +67,9 @@ public class LoginServlet extends HttpServlet {
 			session.setAttribute("userRole", user.getRole());
 			session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
+			WishlistDAO wishlistDAO = new WishlistDAO();
+			session.setAttribute("wishlistCount", wishlistDAO.countWishlist(user.getId()));
+			
 			// Redirect to home or intended page — validate to prevent Open Redirect
 			String redirectUrl = request.getParameter("redirect");
 			String contextPath = request.getContextPath();
