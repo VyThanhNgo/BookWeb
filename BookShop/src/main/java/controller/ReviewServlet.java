@@ -51,6 +51,7 @@ public class ReviewServlet extends HttpServlet {
         }
 
         int bookId = Integer.parseInt(request.getParameter("bookId"));
+        int orderDetailId = Integer.parseInt(request.getParameter("orderDetailId"));
         int rating = Integer.parseInt(request.getParameter("rating"));
         String comment = request.getParameter("comment");
 
@@ -77,7 +78,8 @@ public class ReviewServlet extends HttpServlet {
         //  Tạo đối tượng Review
         Review rev = new Review();
         rev.setBookId(bookId);
-        rev.setUserId(user.getId()); 
+        rev.setUserId(user.getId());
+        rev.setOrderDetailId(orderDetailId);
         rev.setRating(rating);
         rev.setComment(comment);
 

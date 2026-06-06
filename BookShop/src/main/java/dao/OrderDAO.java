@@ -345,7 +345,7 @@ public class OrderDAO {
 				+ "JOIN order_details od ON o.order_id = od.order_id " + "JOIN books b ON od.book_id = b.book_id "
 				+ "WHERE o.user_id = ? AND o.status = 'COMPLETED' "
 				+ "  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) " + "  AND NOT EXISTS ( "
-				+ "    SELECT 1 FROM reviews r " + "    WHERE r.user_id = ? AND r.book_id = od.book_id " + "  ) "
+				+ "    SELECT 1 FROM reviews r " + "    WHERE r.user_id = ? AND r.order_detail_id = od.id " + "  ) "
 				+ "ORDER BY o.created_at DESC, od.id ASC";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, userId);

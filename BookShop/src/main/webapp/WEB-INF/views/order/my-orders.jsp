@@ -624,7 +624,7 @@ to {
 													</div>
 												</div>
 												<button class="btn-primary-custom"
-													onclick="openReviewModal('${bk.bookTitle}', 'card-detail-${bk.detailId}', ${bk.bookId}, 'order-group-${og.orderId}')">
+													onclick="openReviewModal('${bk.bookTitle}', 'card-detail-${bk.detailId}', ${bk.bookId}, 'order-group-${og.orderId}', ${bk.detailId})">
 													Đánh giá</button>
 											</div>
 										</c:forEach>
@@ -711,6 +711,8 @@ to {
 				enctype="multipart/form-data" class="comment-form">
 
 				<input type="hidden" name="bookId" id="modalBookId" value="">
+				<input type="hidden" name="orderDetailId" id="modalOrderDetailId"
+					value="">
 
 				<!-- Phần chọn số sao dạng thẻ Select của bạn -->
 				<div class="comment-form-rating">
@@ -764,12 +766,13 @@ function switchTab(tabId, clickedEl) {
 
 let currentGroupId = null;
 
-function openReviewModal(bookTitle, cardId, bookId, groupId) {
+function openReviewModal(bookTitle, cardId, bookId, groupId, detailId) {
     currentTargetCardId = cardId;
     currentGroupId = groupId;
     document.getElementById('modalBookTitle').innerText = "Đánh giá: " + bookTitle;
     document.getElementById('reviewForm').reset();
     document.getElementById('modalBookId').value = bookId;
+    document.getElementById('modalOrderDetailId').value = detailId;
     document.getElementById('reviewModal').classList.add('open');
 }
 
