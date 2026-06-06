@@ -290,61 +290,7 @@
 												style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 16px;"></div>
 										</div>
 
-										<c:if test="${not empty sessionScope.loggedInUser}">
-											<div class="comment-respond" id="respond">
-												<h4 class="comment-reply-title" id="reply-title">Viết
-													đánh giá của bạn</h4>
-
-												<form action="${ctx}/add-review" method="post"
-													enctype="multipart/form-data" class="comment-form">
-													<input type="hidden" name="bookId" value="${book.id}">
-
-													<%-- Thông báo lỗi upload ảnh --%>
-													<c:if test="${param.error == 'invalid_file'}">
-														<div class="alert alert-danger"
-															style="margin-bottom: 12px;">
-															<i class="fa-solid fa-triangle-exclamation"></i> Ảnh
-															không hợp lệ! Chỉ chấp nhận JPG, PNG, GIF, WEBP. File có
-															thể đã bị đổi tên để qua mặt hệ thống.
-														</div>
-													</c:if>
-
-													<div class="comment-form-rating">
-														<label>Số sao: </label> <select name="rating"
-															class="form-control" style="width: 120px;">
-															<option value="5">⭐⭐⭐⭐⭐ (5 sao)</option>
-															<option value="4">⭐⭐⭐⭐ (4 sao)</option>
-															<option value="3">⭐⭐⭐ (3 sao)</option>
-															<option value="2">⭐⭐ (2 sao)</option>
-															<option value="1">⭐ (1 sao)</option>
-														</select>
-													</div>
-
-													<div class="form-group mb-3">
-														<label>Hình ảnh thực tế (Bạn có thể chọn nhiều
-															ảnh):</label> <input type="file" name="reviewPhotos"
-															id="reviewPhotos" class="form-control" multiple
-															accept="image/*">
-														<div id="file-error"
-															style="display: none; color: #dc3545; margin-top: 6px; font-size: 13px;">
-															<i class="fa-solid fa-triangle-exclamation"></i> <span
-																id="file-error-msg"></span>
-														</div>
-													</div>
-
-													<div class="comment-form-comment">
-														<textarea name="comment"
-															placeholder="Bạn thấy cuốn sách này thế nào? Chia sẻ cảm nhận của bạn nhé..."
-															class="form-control" rows="4" required></textarea>
-													</div>
-
-													<div class="form-submit mt-2">
-														<button type="button" class="btn btn-primary btnhover"
-															onclick="submitReview(event)">Gửi Đánh Giá</button>
-													</div>
-												</form>
-											</div>
-										</c:if>
+										
 									</div>
 								</div>
 							</div>

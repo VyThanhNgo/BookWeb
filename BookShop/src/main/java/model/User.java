@@ -12,6 +12,7 @@ public class User {
 	private String address;
 	private String role; 
 	private boolean isActive; 
+	private String avatar;
 	private Timestamp createdAt;
 
 	public User() {
@@ -96,6 +97,14 @@ public class User {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+	
+	public String getAvatar() {
+	    return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+	    this.avatar = avatar;
 	}
 
 	public String getRole() {

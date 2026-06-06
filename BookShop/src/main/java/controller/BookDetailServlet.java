@@ -82,6 +82,8 @@ public class BookDetailServlet extends HttpServlet {
         }
         request.setAttribute("isInWishlist", isInWishlist);
         
+     
+        
         request.getRequestDispatcher("/WEB-INF/views/book/book-detail.jsp")
                .forward(request, response);
     }
