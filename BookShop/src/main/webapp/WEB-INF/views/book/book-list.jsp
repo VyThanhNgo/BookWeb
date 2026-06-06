@@ -292,10 +292,10 @@
 								<div>
 									<button type="submit"
 										class="btn btn-secondary btnhover mt-4 d-block w-100">
-										Refine Search</button>
+										Lọc Kết Quả</button>
 									<a href="${pageContext.request.contextPath}/books"
 										class="btn btn-outline-secondary btnhover mt-3 d-block">
-										Reset Filter </a>
+										Xóa Bộ Lọc </a>
 								</div>
 							</div>
 						</div>

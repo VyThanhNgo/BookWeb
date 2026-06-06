@@ -703,10 +703,13 @@ function changeQty(bookId, delta) {
                 '<div class="comment-author vcard">'
                 + '<img src="' + avatar + '" alt="" class="avatar">'
                 + '<cite class="fn">' + escapeHtml(r.userName) + '</cite>'
+                + (r.createdAt ? '<span style="display:block;font-size:11px;color:#aaa;font-weight:400;margin-top:2px;">'
+                	    + '<i class="fa-regular fa-clock" style="margin-right:3px;"></i>'
+                	    + r.createdAt + '</span>' : '')
                 + '<span class="says">đánh giá:</span>'
                 + '<div class="dz-rating">' + stars + '</div>'
                 + '</div>'
-                + '<div class="comment-meta"><a href="javascript:void(0);">' + r.createdAt + '</a></div>'
+                + '<div class="comment-meta"><a href="javascript:void(0);">' + (r.createdAt || '') + '</a></div>'
                 + '<p>' + escapeHtml(r.comment) + '</p>'
                 + imgsHtml;
 
