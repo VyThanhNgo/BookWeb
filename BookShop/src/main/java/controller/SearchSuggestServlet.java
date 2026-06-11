@@ -31,7 +31,7 @@ public class SearchSuggestServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         // Nếu từ khóa quá ngắn thì không cần tìm
-        if (keyword == null || keyword.trim().length() < 2) {
+        if (keyword == null || keyword.trim().isEmpty()) {
             response.getWriter().write("[]");
             return;
         }

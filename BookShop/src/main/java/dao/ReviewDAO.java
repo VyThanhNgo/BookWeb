@@ -15,12 +15,13 @@ public class ReviewDAO {
             conn.setAutoCommit(false); // Dùng Transaction để đảm bảo lưu đủ cả review và ảnh
 
             // Lưu vào bảng reviews
-            String sqlReview = "INSERT INTO reviews (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)";
+            String sqlReview = "INSERT INTO reviews (book_id, user_id, rating, comment, order_detail_id) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlReview, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, review.getBookId());
                 ps.setInt(2, review.getUserId());
                 ps.setInt(3, review.getRating());
                 ps.setString(4, review.getComment());
+                ps.setInt(5, review.getOrderDetailId());
                 ps.executeUpdate();
 
                 // Lấy ID của review vừa tạo
@@ -167,4 +168,6 @@ public class ReviewDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
+    
+  
 }

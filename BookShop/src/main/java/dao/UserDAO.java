@@ -23,6 +23,7 @@ public class 	UserDAO {
 		user.setAddress(rs.getString("address"));
 		user.setRole(rs.getString("role"));
 		user.setActive(rs.getBoolean("is_active"));
+		user.setAvatar(rs.getString("avatar"));
 		user.setCreatedAt(rs.getTimestamp("created_at"));
 		return user;
 	}

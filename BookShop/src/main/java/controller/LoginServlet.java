@@ -16,6 +16,7 @@ import dao.CartDAO;
 import dao.UserDAO;
 import model.Cart;
 import model.CartItem;
+import dao.WishlistDAO;
 import model.User;
 
 @WebServlet("/login")
@@ -83,6 +84,9 @@ public class LoginServlet extends HttpServlet {
 			// Lưu merged cart (bao gồm guest items) ngược lại vào DB
 			cartDAO.saveFullCart(user.getId(), sessionCart.getItems());
 
+			WishlistDAO wishlistDAO = new WishlistDAO();
+			session.setAttribute("wishlistCount", wishlistDAO.countWishlist(user.getId()));
+			
 			// Redirect to home or intended page — validate to prevent Open Redirect
 			String redirectUrl = request.getParameter("redirect");
 			String contextPath = request.getContextPath();

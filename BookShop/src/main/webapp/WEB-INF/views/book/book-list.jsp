@@ -53,7 +53,8 @@
 													<label class="form-label small text-muted mb-1">Đến
 														(₫)</label> <input type="number" id="manualMax"
 														class="form-control form-control-sm"
-														placeholder="${dbMaxPrice.intValue()}" style="min-width: 100px;"
+														placeholder="${dbMaxPrice.intValue()}"
+														style="min-width: 100px;"
 														value="${maxPrice != null && maxPrice < dbMaxPrice ? maxPrice.intValue() : ''}">
 												</div>
 											</div>
@@ -291,10 +292,10 @@
 								<div>
 									<button type="submit"
 										class="btn btn-secondary btnhover mt-4 d-block w-100">
-										Refine Search</button>
+										Lọc Kết Quả</button>
 									<a href="${pageContext.request.contextPath}/books"
 										class="btn btn-outline-secondary btnhover mt-3 d-block">
-										Reset Filter </a>
+										Xóa Bộ Lọc </a>
 								</div>
 							</div>
 						</div>
@@ -406,78 +407,79 @@
 								</div>
 							</div>
 						</div>
-						<div class="filter-tags m-b20"
-							style="display: flex; flex-wrap: wrap; gap: 8px;">
-
-							<c:if test="${not empty param.keyword}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Từ khóa: <strong>${param.keyword}</strong> <a
-									href="javascript:void(0);" onclick="removeFilter('keyword','')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:if>
-
-							<c:if
-								test="${(minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice < dbMaxPrice)}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Giá: <strong><fmt:formatNumber value="${minPrice}"
-											pattern="#,###" />₫ — <fmt:formatNumber value="${maxPrice}"
-											pattern="#,###" />₫</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('price','')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:if>
-
-							<c:forEach var="catId" items="${paramValues.categoryId}">
-								<c:forEach var="c" items="${categories}">
-									<c:if test="${c.id == catId}">
-										<span
-											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-											Danh mục: <strong>${c.name}</strong> <a
-											href="javascript:void(0);"
-											onclick="removeFilter('categoryId','${catId}')"
-											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-										</span>
-									</c:if>
-								</c:forEach>
-							</c:forEach>
-
-							<c:forEach var="yr" items="${selectedYears}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Năm: <strong>${yr}</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('publishYear','${yr}')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:forEach>
-
-							<c:forEach var="aId" items="${selectedAuthorIds}">
-								<c:forEach var="auth" items="${authors}">
-									<c:if test="${auth.id == aId}">
-										<span
-											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-											Tác giả: <strong>${auth.name}</strong> <a
-											href="javascript:void(0);"
-											onclick="removeFilter('authorId','${aId}')"
-											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-										</span>
-									</c:if>
-								</c:forEach>
-							</c:forEach>
-
-							<c:forEach var="pub" items="${selectedPublishers}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									NXB: <strong>${pub}</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('publisher','${pub}')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:forEach>
-
-						</div>
 					</div>
+					<div class="filter-tags m-b20"
+						style="display: flex; flex-wrap: wrap; gap: 8px;">
+
+						<c:if test="${not empty param.keyword}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Từ khóa: <strong>${param.keyword}</strong> <a
+								href="javascript:void(0);" onclick="removeFilter('keyword','')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:if>
+
+						<c:if
+							test="${(minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice < dbMaxPrice)}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Giá: <strong><fmt:formatNumber value="${minPrice}"
+										pattern="#,###" />₫ — <fmt:formatNumber value="${maxPrice}"
+										pattern="#,###" />₫</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('price','')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:if>
+
+						<c:forEach var="catId" items="${paramValues.categoryId}">
+							<c:forEach var="c" items="${categories}">
+								<c:if test="${c.id == catId}">
+									<span
+										style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+										Danh mục: <strong>${c.name}</strong> <a
+										href="javascript:void(0);"
+										onclick="removeFilter('categoryId','${catId}')"
+										style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+									</span>
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+
+						<c:forEach var="yr" items="${selectedYears}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Năm: <strong>${yr}</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('publishYear','${yr}')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:forEach>
+
+						<c:forEach var="aId" items="${selectedAuthorIds}">
+							<c:forEach var="auth" items="${authors}">
+								<c:if test="${auth.id == aId}">
+									<span
+										style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+										Tác giả: <strong>${auth.name}</strong> <a
+										href="javascript:void(0);"
+										onclick="removeFilter('authorId','${aId}')"
+										style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+									</span>
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+
+						<c:forEach var="pub" items="${selectedPublishers}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								NXB: <strong>${pub}</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('publisher','${pub}')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:forEach>
+
+					</div>
+
 
 
 					<div class="row book-grid-row">
@@ -511,10 +513,13 @@
 										</c:if>
 									</div>
 
+
 									<div class="bookmark-btn style-2">
-										<input class="form-check-input" type="checkbox"
-											id="fav-${b.id}"> <label class="form-check-label"
-											for="fav-${b.id}"> <i class="flaticon-heart"></i>
+										<input class="form-check-input wishlist-toggle"
+											type="checkbox" id="fav-${b.id}" data-book-id="${b.id}"
+											<c:if test="${not empty wishlistIds and wishlistIds.contains(b.id)}">checked</c:if>>
+										<label class="form-check-label" for="fav-${b.id}"> <i
+											class="flaticon-heart"></i>
 										</label>
 									</div>
 
@@ -618,16 +623,19 @@
 										href="${pageContext.request.contextPath}/books?page=${currentPage + 1}&keyword=${param.keyword}&minPrice=${param.minPrice}&maxPrice=${param.maxPrice}&sort=${param.sort}<c:forEach var='id' items='${paramValues.categoryId}'>&categoryId=${id}</c:forEach><c:forEach var='yr' items='${paramValues.publishYear}'>&publishYear=${yr}</c:forEach><c:forEach var='aId' items='${paramValues.authorId}'>&authorId=${aId}</c:forEach><c:forEach var='pub' items='${paramValues.publisher}'>&publisher=${pub}</c:forEach>">
 											&#10095; </a>
 									</li>
-									
+
 									<%-- Đi đến trang --%>
-<li class="page-item" style="display:flex; align-items:center; gap:6px; margin-left:8px;">
-    <span style="font-size:13px; color:#555; white-space:nowrap;">Đi đến trang</span>
-    <input id="goto-page-input" type="number" min="1" max="${totalPages}"
-        style="width:55px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; font-size:13px;"
-        placeholder="...">
-    <button onclick="goToPageBookList()" 
-        style="padding:4px 10px; border:1px solid #ddd; border-radius:4px; background:#fff; cursor:pointer; font-size:13px;">→</button>
-</li>
+									<li class="page-item"
+										style="display: flex; align-items: center; gap: 6px; margin-left: 8px;">
+										<span
+										style="font-size: 13px; color: #555; white-space: nowrap;">Đi
+											đến trang</span> <input id="goto-page-input" type="number" min="1"
+										max="${totalPages}"
+										style="width: 55px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+										placeholder="...">
+										<button onclick="goToPageBookList()"
+											style="padding: 4px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px;">→</button>
+									</li>
 								</ul>
 							</nav>
 						</div>
@@ -843,13 +851,14 @@
 }
 
 /* Ẩn mũi tên spin của input number */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button
+	{
+	-webkit-appearance: none;
+	margin: 0;
 }
+
 input[type=number] {
-    -moz-appearance: textfield;
+	-moz-appearance: textfield;
 }
 </style>
 
@@ -877,73 +886,63 @@ input[type=number] {
 </script>
 
 <script>
-	document.addEventListener('DOMContentLoaded', function () {
-		const ctx = '${pageContext.request.contextPath}';
+// ===== HÀM GLOBAL DÙNG CHUNG =====
+function showToast(message, color) {
+    let toast = document.getElementById('cart-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'cart-toast';
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 16px';
+        toast.style.borderRadius = '8px';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
+        toast.style.fontWeight = '600';
+        toast.style.fontSize = '14px';
+        document.body.appendChild(toast);
+    }
+    toast.style.background = color || '#28a745';
+    toast.textContent = message;
+    toast.style.display = 'block';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () {
+        toast.style.display = 'none';
+    }, 2000);
+}
+</script>
 
-		document.querySelectorAll('.add-to-cart-btn').forEach(function (btn) {
-			btn.addEventListener('click', function (e) {
-				e.preventDefault();
+<script>
+// ===== ADD TO CART =====
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = '${pageContext.request.contextPath}';
 
-				const id = this.dataset.id;
-
-				fetch(ctx + '/cart', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-						'X-Requested-With': 'XMLHttpRequest'
-					},
-					body: 'action=add&id=' + encodeURIComponent(id) + '&quantity=1'
-				})
-						.then(function (res) {
-							return res.json();
-						})
-						.then(function (data) {
-							if (!data || !data.success) return;
-
-							const badge = document.getElementById('cart-badge');
-							if (badge) {
-								badge.textContent = data.totalItems;
-							}
-
-							if (typeof updateMiniCartUI === 'function') {
-								updateMiniCartUI(data);
-							}
-
-							showToast('Đã thêm vào giỏ hàng');
-						})
-						.catch(function (err) {
-							console.error('Add to cart error:', err);
-						});
-			});
-		});
-
-		function showToast(message) {
-			let toast = document.getElementById('cart-toast');
-
-			if (!toast) {
-				toast = document.createElement('div');
-				toast.id = 'cart-toast';
-				toast.style.position = 'fixed';
-				toast.style.top = '20px';
-				toast.style.right = '20px';
-				toast.style.zIndex = '9999';
-				toast.style.background = '#28a745';
-				toast.style.color = '#fff';
-				toast.style.padding = '10px 16px';
-				toast.style.borderRadius = '8px';
-				toast.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
-				document.body.appendChild(toast);
-			}
-
-			toast.textContent = message;
-			toast.style.display = 'block';
-
-			clearTimeout(toast._timer);
-			toast._timer = setTimeout(function () {
-				toast.style.display = 'none';
-			}, 1500);
-		}
-	});
+    document.querySelectorAll('.add-to-cart-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const id = this.dataset.id;
+            fetch(ctx + '/cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'action=add&id=' + encodeURIComponent(id) + '&quantity=1'
+            })
+            .then(res => res.json())
+            .then(function (data) {
+                if (!data || !data.success) return;
+                const badge = document.getElementById('cart-badge');
+                if (badge) badge.textContent = data.totalItems;
+                if (typeof updateMiniCartUI === 'function') updateMiniCartUI(data);
+                showToast('Đã thêm vào giỏ hàng', '#28a745');
+            })
+            .catch(err => console.error('Add to cart error:', err));
+        });
+    });
+});
 </script>
 
 
@@ -994,5 +993,54 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<script>
+// ===== WISHLIST =====
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = '${pageContext.request.contextPath}';
+
+    // Dùng click trên LABEL thay vì change trên checkbox
+    // để tránh bị theme heartBlast và browser reset conflict
+    document.querySelectorAll('.bookmark-btn .form-check-label').forEach(function(label) {
+        label.addEventListener('click', function(e) {
+            e.preventDefault(); // Chặn browser tự toggle checkbox
+            e.stopPropagation();
+
+            const cb = document.getElementById(this.getAttribute('for'));
+            if (!cb || !cb.classList.contains('wishlist-toggle')) return;
+
+            const bookId = cb.dataset.bookId;
+
+            fetch(ctx + '/wishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'bookId=' + bookId
+            })
+            .then(function(res) {
+                if (res.status === 401) {
+                    window.location.href = ctx + '/login';
+                    return null;
+                }
+                return res.json();
+            })
+            .then(function(data) {
+                if (!data) return;
+                if (data.status === 'added') {
+                    cb.checked = true;  // Tự set thay vì để browser set
+                    showToast('❤️ Đã thêm vào yêu thích!', '#e53935');
+                } else {
+                    cb.checked = false;
+                    showToast('🤍 Đã xóa khỏi yêu thích', '#888');
+                }
+                if (typeof updateWishlistBadge === 'function') updateWishlistBadge(data.wishlistCount);
+            })
+            .catch(function() {
+                // Không thay đổi state nếu lỗi
+            });
+        });
+    });
+});
+</script>
+
 
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

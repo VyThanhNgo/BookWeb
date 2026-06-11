@@ -11,8 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dao.BookDAO;
+import dao.WishlistDAO;
 import model.Book;
 import model.Category;
+import model.User;
 
 @WebServlet("/books")
 public class BookServlet extends HttpServlet {
@@ -118,6 +120,15 @@ public class BookServlet extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalBooks", totalBooks);
+        
+        User loggedInUser = (User) request.getSession().getAttribute("loggedInUser");
+        List<Integer> wishlistIds = new ArrayList<>();
+        if (loggedInUser != null) {
+            WishlistDAO wishlistDAO = new WishlistDAO();
+            wishlistIds = wishlistDAO.getWishlistBookIds(loggedInUser.getId());
+        }
+        request.setAttribute("wishlistIds", wishlistIds);
+        
         request.getRequestDispatcher("/WEB-INF/views/book/book-list.jsp").forward(request, response);
     }
 }

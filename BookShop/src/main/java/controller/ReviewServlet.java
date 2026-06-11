@@ -22,6 +22,7 @@ import com.cloudinary.utils.ObjectUtils;
 import dao.ReviewDAO;
 import model.Review;
 import model.User;
+import util.FileUploadValidator;
 
 @WebServlet("/add-review")
 @MultipartConfig(
@@ -50,14 +51,23 @@ public class ReviewServlet extends HttpServlet {
         }
 
         int bookId = Integer.parseInt(request.getParameter("bookId"));
+        int orderDetailId = Integer.parseInt(request.getParameter("orderDetailId"));
         int rating = Integer.parseInt(request.getParameter("rating"));
         String comment = request.getParameter("comment");
 
+     
+        
         //  Xử lý upload nhiều ảnh lên Cloudinary
         List<String> imageUrls = new ArrayList<>();
         for (Part part : request.getParts()) {
-            // reviewPhotos là tên name của input file trong trang jsp
             if ("reviewPhotos".equals(part.getName()) && part.getSize() > 0) {
+                // Validate từng ảnh trước khi upload
+                String validationError = FileUploadValidator.validate(part);
+                if (validationError != null) {
+                    response.sendRedirect(request.getContextPath() 
+                        + "/books/detail?id=" + bookId + "&error=invalid_file");
+                    return;
+                }
                 String url = uploadToCloudinary(part);
                 if (url != null) {
                     imageUrls.add(url);
@@ -68,15 +78,17 @@ public class ReviewServlet extends HttpServlet {
         //  Tạo đối tượng Review
         Review rev = new Review();
         rev.setBookId(bookId);
-        rev.setUserId(user.getId()); 
+        rev.setUserId(user.getId());
+        rev.setOrderDetailId(orderDetailId);
         rev.setRating(rating);
         rev.setComment(comment);
 
        
         new ReviewDAO().addReview(rev, imageUrls);
         
-        response.sendRedirect(request.getContextPath() + "/books/detail?id=" + bookId);
-    }
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write("ok");
+        }
 
     // Hàm phụ trợ upload 
     private String uploadToCloudinary(Part part) throws IOException {
