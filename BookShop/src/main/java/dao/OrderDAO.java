@@ -12,7 +12,9 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class OrderDAO {
@@ -474,5 +476,110 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return logs;
+    }
+
+    /**
+     * Lấy danh sách sách trong đơn COMPLETED (trong vòng 30 ngày) mà user chưa review.
+     * Gom theo từng đơn hàng, mỗi đơn chứa list sách chưa review.
+     */
+    public List<Map<String, Object>> getUnreviewedBooks(int userId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT o.order_id, o.order_code, o.created_at AS order_date, "
+                + "DATEDIFF(DATE_ADD(o.created_at, INTERVAL 30 DAY), NOW()) AS days_left, "
+                + "od.id AS detail_id, od.book_id, od.book_title, b.image "
+                + "FROM orders o "
+                + "JOIN order_details od ON o.order_id = od.order_id "
+                + "JOIN books b ON od.book_id = b.book_id "
+                + "WHERE o.user_id = ? AND o.status = 'COMPLETED' "
+                + "  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) "
+                + "  AND NOT EXISTS ( "
+                + "    SELECT 1 FROM reviews r "
+                + "    WHERE r.user_id = ? AND r.order_detail_id = od.id "
+                + "  ) "
+                + "ORDER BY o.created_at DESC, od.id ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                Map<Integer, Map<String, Object>> orderMap = new java.util.LinkedHashMap<>();
+                while (rs.next()) {
+                    int orderId = rs.getInt("order_id");
+                    if (!orderMap.containsKey(orderId)) {
+                        Map<String, Object> order = new HashMap<>();
+                        order.put("orderId", orderId);
+                        order.put("orderCode", rs.getString("order_code"));
+                        order.put("orderDate", rs.getTimestamp("order_date"));
+                        order.put("daysLeft", rs.getInt("days_left"));
+                        order.put("books", new ArrayList<Map<String, Object>>());
+                        orderMap.put(orderId, order);
+                    }
+                    Map<String, Object> book = new HashMap<>();
+                    book.put("detailId", rs.getInt("detail_id"));
+                    book.put("bookId", rs.getInt("book_id"));
+                    book.put("bookTitle", rs.getString("book_title"));
+                    book.put("image", rs.getString("image"));
+                    ((List<Map<String, Object>>) orderMap.get(orderId).get("books")).add(book);
+                }
+                list.addAll(orderMap.values());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách sách user đã review (kèm ảnh review).
+     */
+    public List<Map<String, Object>> getReviewedBooks(int userId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT r.review_id, r.rating, r.comment, r.created_at, "
+                + "b.book_id, b.image AS book_image, od.book_title "
+                + "FROM reviews r "
+                + "JOIN order_details od ON od.book_id = r.book_id "
+                + "JOIN orders o ON o.order_id = od.order_id AND o.user_id = ? "
+                + "JOIN books b ON b.book_id = r.book_id "
+                + "WHERE r.user_id = ? "
+                + "GROUP BY r.review_id, r.rating, r.comment, r.created_at, b.book_id, b.image, od.book_title "
+                + "ORDER BY r.created_at DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> item = new HashMap<>();
+                    int reviewId = rs.getInt("review_id");
+                    item.put("reviewId", reviewId);
+                    item.put("bookId", rs.getInt("book_id"));
+                    item.put("bookTitle", rs.getString("book_title"));
+                    item.put("image", rs.getString("book_image"));
+                    item.put("rating", rs.getInt("rating"));
+                    item.put("comment", rs.getString("comment"));
+                    item.put("createdAt", rs.getTimestamp("created_at"));
+                    item.put("reviewImages", getReviewImages(conn, reviewId));
+                    list.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /** Lấy danh sách URL ảnh đính kèm của một review. */
+    private List<String> getReviewImages(Connection conn, int reviewId) {
+        List<String> imgs = new ArrayList<>();
+        String sql = "SELECT image_url FROM review_images WHERE review_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reviewId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) imgs.add(rs.getString("image_url"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imgs;
     }
 }
