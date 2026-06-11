@@ -292,10 +292,10 @@
 								<div>
 									<button type="submit"
 										class="btn btn-secondary btnhover mt-4 d-block w-100">
-										Refine Search</button>
+										Lọc Kết Quả</button>
 									<a href="${pageContext.request.contextPath}/books"
 										class="btn btn-outline-secondary btnhover mt-3 d-block">
-										Reset Filter </a>
+										Xóa Bộ Lọc </a>
 								</div>
 							</div>
 						</div>
@@ -407,78 +407,79 @@
 								</div>
 							</div>
 						</div>
-						<div class="filter-tags m-b20"
-							style="display: flex; flex-wrap: wrap; gap: 8px;">
-
-							<c:if test="${not empty param.keyword}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Từ khóa: <strong>${param.keyword}</strong> <a
-									href="javascript:void(0);" onclick="removeFilter('keyword','')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:if>
-
-							<c:if
-								test="${(minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice < dbMaxPrice)}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Giá: <strong><fmt:formatNumber value="${minPrice}"
-											pattern="#,###" />₫ — <fmt:formatNumber value="${maxPrice}"
-											pattern="#,###" />₫</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('price','')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:if>
-
-							<c:forEach var="catId" items="${paramValues.categoryId}">
-								<c:forEach var="c" items="${categories}">
-									<c:if test="${c.id == catId}">
-										<span
-											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-											Danh mục: <strong>${c.name}</strong> <a
-											href="javascript:void(0);"
-											onclick="removeFilter('categoryId','${catId}')"
-											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-										</span>
-									</c:if>
-								</c:forEach>
-							</c:forEach>
-
-							<c:forEach var="yr" items="${selectedYears}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									Năm: <strong>${yr}</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('publishYear','${yr}')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:forEach>
-
-							<c:forEach var="aId" items="${selectedAuthorIds}">
-								<c:forEach var="auth" items="${authors}">
-									<c:if test="${auth.id == aId}">
-										<span
-											style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-											Tác giả: <strong>${auth.name}</strong> <a
-											href="javascript:void(0);"
-											onclick="removeFilter('authorId','${aId}')"
-											style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-										</span>
-									</c:if>
-								</c:forEach>
-							</c:forEach>
-
-							<c:forEach var="pub" items="${selectedPublishers}">
-								<span
-									style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
-									NXB: <strong>${pub}</strong> <a href="javascript:void(0);"
-									onclick="removeFilter('publisher','${pub}')"
-									style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
-								</span>
-							</c:forEach>
-
-						</div>
 					</div>
+					<div class="filter-tags m-b20"
+						style="display: flex; flex-wrap: wrap; gap: 8px;">
+
+						<c:if test="${not empty param.keyword}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Từ khóa: <strong>${param.keyword}</strong> <a
+								href="javascript:void(0);" onclick="removeFilter('keyword','')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:if>
+
+						<c:if
+							test="${(minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice < dbMaxPrice)}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Giá: <strong><fmt:formatNumber value="${minPrice}"
+										pattern="#,###" />₫ — <fmt:formatNumber value="${maxPrice}"
+										pattern="#,###" />₫</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('price','')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:if>
+
+						<c:forEach var="catId" items="${paramValues.categoryId}">
+							<c:forEach var="c" items="${categories}">
+								<c:if test="${c.id == catId}">
+									<span
+										style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+										Danh mục: <strong>${c.name}</strong> <a
+										href="javascript:void(0);"
+										onclick="removeFilter('categoryId','${catId}')"
+										style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+									</span>
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+
+						<c:forEach var="yr" items="${selectedYears}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								Năm: <strong>${yr}</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('publishYear','${yr}')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:forEach>
+
+						<c:forEach var="aId" items="${selectedAuthorIds}">
+							<c:forEach var="auth" items="${authors}">
+								<c:if test="${auth.id == aId}">
+									<span
+										style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+										Tác giả: <strong>${auth.name}</strong> <a
+										href="javascript:void(0);"
+										onclick="removeFilter('authorId','${aId}')"
+										style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+									</span>
+								</c:if>
+							</c:forEach>
+						</c:forEach>
+
+						<c:forEach var="pub" items="${selectedPublishers}">
+							<span
+								style="display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; border: 1px solid #c7d7f5; color: #2d4fa0; border-radius: 20px; padding: 4px 12px; font-size: 13px;">
+								NXB: <strong>${pub}</strong> <a href="javascript:void(0);"
+								onclick="removeFilter('publisher','${pub}')"
+								style="color: #2d4fa0; font-weight: bold; text-decoration: none;">×</a>
+							</span>
+						</c:forEach>
+
+					</div>
+
 
 
 					<div class="row book-grid-row">
@@ -1040,4 +1041,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 <%@ include file="/WEB-INF/views/base/footer.jsp"%>

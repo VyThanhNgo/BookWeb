@@ -51,9 +51,12 @@ public class ReviewServlet extends HttpServlet {
         }
 
         int bookId = Integer.parseInt(request.getParameter("bookId"));
+        int orderDetailId = Integer.parseInt(request.getParameter("orderDetailId"));
         int rating = Integer.parseInt(request.getParameter("rating"));
         String comment = request.getParameter("comment");
 
+     
+        
         //  Xử lý upload nhiều ảnh lên Cloudinary
         List<String> imageUrls = new ArrayList<>();
         for (Part part : request.getParts()) {
@@ -75,15 +78,17 @@ public class ReviewServlet extends HttpServlet {
         //  Tạo đối tượng Review
         Review rev = new Review();
         rev.setBookId(bookId);
-        rev.setUserId(user.getId()); 
+        rev.setUserId(user.getId());
+        rev.setOrderDetailId(orderDetailId);
         rev.setRating(rating);
         rev.setComment(comment);
 
        
         new ReviewDAO().addReview(rev, imageUrls);
         
-        response.sendRedirect(request.getContextPath() + "/books/detail?id=" + bookId);
-    }
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write("ok");
+        }
 
     // Hàm phụ trợ upload 
     private String uploadToCloudinary(Part part) throws IOException {
