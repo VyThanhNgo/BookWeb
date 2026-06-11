@@ -33,6 +33,7 @@ public class MyOrdersServlet extends HttpServlet {
                 if (detail != null && detail.getUserId() == user.getId()) {
                     request.setAttribute("orderDetail", detail);
                     request.setAttribute("orderItems", orderDAO.getOrderItems(orderId));
+                    request.setAttribute("statusLogs", orderDAO.getStatusLogs(orderId));
                 }
             } catch (NumberFormatException ignored) {}
         }
@@ -44,6 +45,8 @@ public class MyOrdersServlet extends HttpServlet {
         request.setAttribute("reviewedBooks",   reviewedBooks);
         
         request.setAttribute("orders", orders);
+        request.setAttribute("unreviewedBooks", orderDAO.getUnreviewedBooks(user.getId()));
+        request.setAttribute("reviewedBooks", orderDAO.getReviewedBooks(user.getId()));
         request.setAttribute("pageTitle", "Đơn hàng của tôi");
         request.getRequestDispatcher("/WEB-INF/views/order/my-orders.jsp").forward(request, response);
     }
