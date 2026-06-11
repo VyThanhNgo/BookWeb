@@ -2,8 +2,10 @@ package controller;
 
 import dao.BookDAO;
 import dao.ReviewDAO;
+import dao.WishlistDAO;
 import model.Book;
 import model.Review;
+import model.User;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -71,6 +73,17 @@ public class BookDetailServlet extends HttpServlet {
         request.setAttribute("relatedBooks", relatedBooks);
         request.setAttribute("pageTitle", book.getTitle());
 
+     //kiểm tra wishlist
+        User loggedInUser = (User) request.getSession().getAttribute("loggedInUser");
+        boolean isInWishlist = false;
+        if (loggedInUser != null) {
+            WishlistDAO wishlistDAO = new WishlistDAO();
+            isInWishlist = wishlistDAO.isInWishlist(loggedInUser.getId(), id);
+        }
+        request.setAttribute("isInWishlist", isInWishlist);
+        
+     
+        
         request.getRequestDispatcher("/WEB-INF/views/book/book-detail.jsp")
                .forward(request, response);
     }

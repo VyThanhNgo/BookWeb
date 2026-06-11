@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 <!-- Footer -->
 	<footer class="site-footer style-1">
@@ -10,41 +10,18 @@
 				<div class="category-toggle">
 					<a href="javascript:void(0);" class="toggle-btn">Books categories</a>
 					<div class="toggle-items row book-grid-row">
-						<div class="footer-col-book">
-							<ul>
-								<li><a href="books-grid-view.html">Architecture</a></li>
-								<li><a href="books-grid-view.html">Art</a></li>
-								<li><a href="books-grid-view.html">Action</a></li>
-								<li><a href="books-grid-view.html">Biography</a></li>
-								<li><a href="books-grid-view.html">Body, Mind &amp; Spirit</a></li>
-								<li><a href="books-grid-view.html">Business &amp; Economics</a></li>
-								<li><a href="books-grid-view.html">Children Fiction</a></li>
-								<li><a href="books-grid-view.html">Children Non-Fiction</a></li>
-								<li><a href="books-grid-view.html">Comics &amp; Graphics</a></li>
-								<li><a href="books-grid-view.html">Cooking</a></li>
-								<li><a href="books-grid-view.html">Crafts &amp; Hobbies</a></li>
-								<li><a href="books-grid-view.html">Design</a></li>
-								<li><a href="books-grid-view.html">Drama</a></li>
-								<li><a href="books-grid-view.html">Education</a></li>
-								<li><a href="books-grid-view.html">Family &amp; Relationships</a></li>
-								<li><a href="books-grid-view.html">Fiction</a></li>
-								<li><a href="books-grid-view.html">Foreign Language</a></li>
-								<li><a href="books-grid-view.html">Games</a></li>
-								<li><a href="books-grid-view.html">Gardening</a></li>
-								<li><a href="books-grid-view.html">Health &amp; Fitness</a></li>
-								<li><a href="books-grid-view.html">History</a></li>
-								<li><a href="books-grid-view.html">House &amp; Home</a></li>
-								<li><a href="books-grid-view.html">Humor</a></li>
-								<li><a href="books-grid-view.html">Literary Collections</a></li>
-								<li><a href="books-grid-view.html">Mathematics</a></li>
-								<li><a href="books-grid-view.html">Medical</a></li>
-								<li><a href="books-grid-view.html">Nature</a></li>
-								<li><a href="books-grid-view.html">Performing Arts</a></li>
-								<li><a href="books-grid-view.html">Pets</a></li>
-								<li><a href="books-grid-view.html">Show others</a></li>
-							</ul>
-						</div>
-					</div>
+    <div class="footer-col-book">
+        <ul>
+            <c:forEach var="cat" items="${applicationScope.categories}">
+                <li>
+                    <a href="${pageContext.request.contextPath}/books?categoryId=${cat.id}">
+                        ${cat.name}
+                    </a>
+                </li>
+            </c:forEach>
+        </ul>
+    </div>
+</div>
 				</div>
 			</div>
 		</div>
@@ -183,29 +160,41 @@
 <script>
 setTimeout(function() {
     var slider = document.getElementById('slider-tooltips');
-    if(slider) {
-        if(slider.noUiSlider) slider.noUiSlider.destroy();
-        
-        // Lấy giá trị cũ từ URL nếu có
-        var urlParams = new URLSearchParams(window.location.search);
-        var minVal = urlParams.get('minPrice') || 0;
-        var maxVal = urlParams.get('maxPrice') || 250000;
-        
-        noUiSlider.create(slider, {
-            start: [minVal, maxVal],
-            connect: true,
-            range: { 'min': 0, 'max': 250000 },
-            tooltips: true,
-            format: {
-                to: function(v) { return Math.round(v); },
-                from: function(v) { return Number(v); }
-            }
-        });
-        slider.noUiSlider.on('update', function(values) {
-            document.getElementById('minPriceInput').value = values[0];
-            document.getElementById('maxPriceInput').value = values[1];
-        });
-    }
+    if (!slider) return;
+    if (slider.noUiSlider) slider.noUiSlider.destroy();
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var dbMax = parseFloat('${dbMaxPrice}') || 1000000;  // lấy từ backend
+    var minVal = parseFloat(urlParams.get('minPrice')) || 0;
+    var maxVal = parseFloat(urlParams.get('maxPrice')) || dbMax;
+
+    noUiSlider.create(slider, {
+        start: [minVal, maxVal],
+        connect: true,
+        range: { 'min': 0, 'max': dbMax },
+        tooltips: true,
+        format: {
+            to: function(v) { return Math.round(v); },
+            from: function(v) { return Number(v); }
+        }
+    });
+    slider.noUiSlider.on('update', function(values) {
+        document.getElementById('minPriceInput').value = values[0];
+        document.getElementById('maxPriceInput').value = values[1];
+        document.getElementById('manualMin').value = values[0];
+        document.getElementById('manualMax').value = values[1];
+    });
+    
+    document.getElementById('manualMin').addEventListener('change', function() {
+        var val = parseFloat(this.value);
+        if (!isNaN(val)) slider.noUiSlider.set([val, null]);
+    });
+
+    document.getElementById('manualMax').addEventListener('change', function() {
+        var val = parseFloat(this.value);
+        if (!isNaN(val)) slider.noUiSlider.set([null, val]);
+    });
+    
 }, 100);
 </script>
 </body>
