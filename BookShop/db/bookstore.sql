@@ -195,7 +195,11 @@ CREATE TABLE `orders` (
   `shipping_fee` double DEFAULT NULL,
   `discount_amount` double DEFAULT NULL,
   `total_amount` double DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_at`   timestamp NOT NULL DEFAULT current_timestamp(),
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `shipped_at`   timestamp NULL DEFAULT NULL,
+  `delivered_at` timestamp NULL DEFAULT NULL,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`order_id`),
   KEY `fk_orders_user` (`user_id`),
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
@@ -210,6 +214,29 @@ LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
 INSERT INTO `orders` VALUES (1,NULL,'ORD-AABA0FF0','Nhi','nhituyet20102005@gmail.com','0386032441','902','','','','','BANK_TRANSFER','PENDING',765000,0,0,765000,'2026-04-02 06:40:09'),(2,NULL,'ORD-3AD97713','Nhi','phamtrantuananh.18082003@gmail.com','0386032441','902 khu phố 1','90736','3695','202','','BANK_TRANSFER','PENDING',885000,0,0,885000,'2026-04-02 07:22:22'),(3,NULL,'ORD-79EA3016','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','902 khu phố 1','90736','3695','202','','COD','PENDING',1540000,0,0,1540000,'2026-04-02 07:24:13'),(4,NULL,'ORD-97D82A2C','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','902 khu phố 1',NULL,NULL,NULL,'','COD','PENDING',960000,21001,0,981001,'2026-04-02 07:51:21'),(5,NULL,'ORD-FC468684','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','36',NULL,NULL,NULL,'','COD','PENDING',940000,78997,0,1018997,'2026-04-02 07:58:26'),(6,NULL,'ORD-2D39429C','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','34','Xã Tống Phan','Huyện Phù Cừ','Hưng Yên','','COD','PENDING',1415000,91071,0,1506071,'2026-04-02 08:22:49'),(7,NULL,'ORD-B62531B6','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','23','Xã Biển Bạch Đông','Huyện Thới Bình','Cà Mau','','COD','PENDING',970000,51502,0,1021502,'2026-04-02 13:57:55'),(8,NULL,'ORD-87BC00FC','Nhi Phạm Tuyết','23130223@st.hcmuaf.edu.vn','0386032441','95 tân lập','Xã Viên An','Huyện Ngọc Hiển','Cà Mau','','COD','PENDING',800000,46503,0,846503,'2026-04-02 14:14:18'),(9,NULL,'ORD-875171DA','Tuấn any phạm','phamtrantuananh.18082003@gmail.com','0386032441','902','Xã Công Sơn','Huyện Cao Lộc','Lạng Sơn','','COD','PENDING',245000,34000,0,279000,'2026-04-02 14:49:18'),(10,NULL,'ORD-49FAD73E','user123','user123@gmail.com','0386032441','36','Xã Tống Phan','Huyện Phù Cừ','Hưng Yên','','COD','PENDING',685000,58999,0,743999,'2026-04-12 15:34:25'),(11,3,'ORD-128EDACC','nhi','nhi@gmail.com','0386032441','100','Thị trấn Điện Biên Đông','Huyện Điện Biên Đông','Điện Biên','','COD','PENDING',405000,49000,0,454000,'2026-05-29 16:14:07'),(12,3,'ORD-04805102','nhi','nhi@gmail.com','0386032441','45','Xã Cán Cấu','Huyện Si Ma Cai','Lào Cai','','COD','PENDING',955000,78997,0,1033997,'2026-05-31 04:55:33'),(13,4,'ORD-497A0EAF','nhi','nhituyet@gmail.com','0386032441','100','Phường Lái Hiếu','Thành phố Ngã Bảy','Hậu Giang','','COD','COMPLETED',320000,36501,0,356501,'2026-06-02 11:45:39');
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `order_status_logs`
+--
+
+DROP TABLE IF EXISTS `order_status_logs`;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `order_status_logs` (
+  `id`         int(11)      NOT NULL AUTO_INCREMENT,
+  `order_id`   int(11)      NOT NULL,
+  `old_status` varchar(30)  DEFAULT NULL,
+  `new_status` varchar(30)  NOT NULL,
+  `changed_by` varchar(100) DEFAULT 'system',
+  `changed_at` timestamp    NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_osl_order_id` (`order_id`),
+  CONSTRAINT `fk_osl_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+LOCK TABLES `order_status_logs` WRITE;
+/*!40000 ALTER TABLE `order_status_logs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `order_status_logs` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -333,6 +360,30 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'quynh','$2a$12$X9fvlDurTNIqwSHWnjtFe.XSaFrU6fhmohnEZv58QfcqDtjhJV.2m','shodakima@gmail.com','huong quynh','','',NULL,1,'user','2026-04-19 20:32:11'),(2,'user123','$2a$12$QC1k8ssztxUn7axnHNhn7.yit9YdSIFiYBufHjj82c7d78zAbXK6C','user123@gmail.com','user123','','',NULL,1,'user','2026-04-20 15:24:40'),(3,'nhi','$2a$12$/CBjC0jpju.JZrh3o0EUKeVLVxRsBv7BP10/f9YkR3zdFuSqRP93q','nhi@gmail.com','Nhi',NULL,NULL,NULL,1,'admin','2026-05-29 23:10:03'),(4,'nhituyet','$2a$12$x.aPUeF/oLBqMgVAGpe.2.zes2HWPDEyynTt4oesUt6el/XMjPXQ2','nhituyet@gmail.com','Phạm Tuyết Nhi','','',NULL,1,'user','2026-06-02 18:37:48');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `cart_items`
+--
+
+DROP TABLE IF EXISTS `cart_items`;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `cart_items` (
+  `id`         int(11)   NOT NULL AUTO_INCREMENT,
+  `user_id`    int(11)   NOT NULL,
+  `book_id`    int(11)   NOT NULL,
+  `quantity`   int(11)   NOT NULL DEFAULT 1,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_book` (`user_id`, `book_id`),
+  CONSTRAINT `fk_ci_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ci_book` FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+LOCK TABLES `cart_items` WRITE;
+/*!40000 ALTER TABLE `cart_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cart_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

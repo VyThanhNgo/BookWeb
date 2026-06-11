@@ -32,6 +32,7 @@ public class MyOrdersServlet extends HttpServlet {
                 if (detail != null && detail.getUserId() == user.getId()) {
                     request.setAttribute("orderDetail", detail);
                     request.setAttribute("orderItems", orderDAO.getOrderItems(orderId));
+                    request.setAttribute("statusLogs", orderDAO.getStatusLogs(orderId));
                 }
             } catch (NumberFormatException ignored) {}
         }

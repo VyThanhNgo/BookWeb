@@ -88,7 +88,12 @@ public class AdminOrderServlet extends HttpServlet {
         try {
             int orderId = Integer.parseInt(orderIdStr);
             OrderDAO orderDAO = new OrderDAO();
-            boolean ok = orderDAO.updateOrderStatus(orderId, status);
+            boolean ok;
+            if ("CANCELLED".equals(status)) {
+                ok = orderDAO.cancelOrder(orderId, "admin");
+            } else {
+                ok = orderDAO.updateOrderStatus(orderId, status, "admin");
+            }
             response.getWriter().write("{\"success\":" + ok + "}");
         } catch (Exception e) {
             response.getWriter().write("{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");

@@ -4,6 +4,7 @@ import util.DBConnection;
 import model.CartItem;
 import model.Order;
 import model.OrderItem;
+import model.OrderStatusLog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -148,7 +149,35 @@ public class OrderDAO {
         o.setDiscountAmount(rs.getDouble("discount_amount"));
         o.setTotalAmount(rs.getDouble("total_amount"));
         o.setCreatedAt(rs.getTimestamp("created_at"));
+        o.setConfirmedAt(rs.getTimestamp("confirmed_at"));
+        o.setShippedAt(rs.getTimestamp("shipped_at"));
+        o.setDeliveredAt(rs.getTimestamp("delivered_at"));
+        o.setCancelledAt(rs.getTimestamp("cancelled_at"));
         return o;
+    }
+
+    // ── Helper nội bộ: ghi log thay đổi trạng thái (dùng chung connection đang mở) ──
+    private void insertStatusLog(Connection conn, int orderId,
+                                 String oldStatus, String newStatus, String changedBy) throws Exception {
+        PreparedStatement ps = conn.prepareStatement(
+            "INSERT INTO order_status_logs (order_id, old_status, new_status, changed_by) VALUES (?, ?, ?, ?)");
+        ps.setInt(1, orderId);
+        ps.setString(2, oldStatus);
+        ps.setString(3, newStatus);
+        ps.setString(4, changedBy != null ? changedBy : "system");
+        ps.executeUpdate();
+        ps.close();
+    }
+
+    // ── Helper: xác định cột timestamp ứng với status ──
+    private String timestampClause(String status) {
+        switch (status) {
+            case "CONFIRMED":  return ", confirmed_at = NOW()";
+            case "SHIPPING":   return ", shipped_at = NOW()";
+            case "COMPLETED":  return ", delivered_at = NOW()";
+            case "CANCELLED":  return ", cancelled_at = NOW()";
+            default:           return "";
+        }
     }
 
     public List<Order> getOrdersByUserId(int userId) {
@@ -216,17 +245,107 @@ public class OrderDAO {
         return list;
     }
 
-    public boolean updateOrderStatus(int orderId, String status) {
-        String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, orderId);
-            return ps.executeUpdate() > 0;
+    /** Cập nhật trạng thái đơn, đồng thời ghi timestamp tracking và audit log. */
+    public boolean updateOrderStatus(int orderId, String status, String changedBy) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            // Lấy trạng thái cũ để ghi log
+            PreparedStatement checkPs = conn.prepareStatement(
+                "SELECT status FROM orders WHERE order_id = ?");
+            checkPs.setInt(1, orderId);
+            ResultSet rs = checkPs.executeQuery();
+            String oldStatus = rs.next() ? rs.getString("status") : null;
+            checkPs.close();
+
+            PreparedStatement updatePs = conn.prepareStatement(
+                "UPDATE orders SET status = ?" + timestampClause(status) + " WHERE order_id = ?");
+            updatePs.setString(1, status);
+            updatePs.setInt(2, orderId);
+            int affected = updatePs.executeUpdate();
+            updatePs.close();
+
+            if (affected == 0) { conn.rollback(); return false; }
+
+            insertStatusLog(conn, orderId, oldStatus, status, changedBy);
+            conn.commit();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
+            return false;
+        } finally {
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (Exception ignored) {}
         }
-        return false;
+    }
+
+    /** Overload giữ backward-compat với các caller không truyền changedBy. */
+    public boolean updateOrderStatus(int orderId, String status) {
+        return updateOrderStatus(orderId, status, "system");
+    }
+
+    /**
+     * Huỷ đơn hàng: hoàn tồn kho + set CANCELLED + ghi audit log.
+     * Không cho phép huỷ đơn đã COMPLETED hoặc đã CANCELLED.
+     */
+    public boolean cancelOrder(int orderId, String changedBy) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            PreparedStatement checkPs = conn.prepareStatement(
+                "SELECT status FROM orders WHERE order_id = ?");
+            checkPs.setInt(1, orderId);
+            ResultSet checkRs = checkPs.executeQuery();
+            if (!checkRs.next()) { conn.rollback(); return false; }
+            String currentStatus = checkRs.getString("status");
+            checkPs.close();
+
+            if ("COMPLETED".equals(currentStatus) || "CANCELLED".equals(currentStatus)) {
+                conn.rollback(); return false;
+            }
+
+            // Hoàn lại tồn kho
+            PreparedStatement detailPs = conn.prepareStatement(
+                "SELECT book_id, quantity FROM order_details WHERE order_id = ?");
+            detailPs.setInt(1, orderId);
+            ResultSet detailRs = detailPs.executeQuery();
+            PreparedStatement stockPs = conn.prepareStatement(
+                "UPDATE books SET stock = stock + ? WHERE book_id = ?");
+            while (detailRs.next()) {
+                stockPs.setInt(1, detailRs.getInt("quantity"));
+                stockPs.setInt(2, detailRs.getInt("book_id"));
+                stockPs.addBatch();
+            }
+            stockPs.executeBatch();
+            detailPs.close();
+            stockPs.close();
+
+            // Cập nhật status + timestamp
+            PreparedStatement updatePs = conn.prepareStatement(
+                "UPDATE orders SET status = 'CANCELLED', cancelled_at = NOW() WHERE order_id = ?");
+            updatePs.setInt(1, orderId);
+            updatePs.executeUpdate();
+            updatePs.close();
+
+            insertStatusLog(conn, orderId, currentStatus, "CANCELLED", changedBy);
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
+            return false;
+        } finally {
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (Exception ignored) {}
+        }
+    }
+
+    /** Overload backward-compat. */
+    public boolean cancelOrder(int orderId) {
+        return cancelOrder(orderId, "system");
     }
 
     public double getTotalRevenue() {
@@ -288,22 +407,39 @@ public class OrderDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
+            // Lấy orderId + oldStatus để ghi log
+            PreparedStatement getPs = conn.prepareStatement(
+                "SELECT order_id, status FROM orders WHERE order_code = ?");
+            getPs.setString(1, orderCode);
+            ResultSet getRs = getPs.executeQuery();
+            int orderId = 0;
+            String oldStatus = null;
+            if (getRs.next()) {
+                orderId   = getRs.getInt("order_id");
+                oldStatus = getRs.getString("status");
+            }
+            getPs.close();
+
             PreparedStatement ps1 = conn.prepareStatement(
-                    "UPDATE orders SET status = ? WHERE order_code = ?");
+                "UPDATE orders SET status = ?" + timestampClause(orderStatus) + " WHERE order_code = ?");
             ps1.setString(1, orderStatus);
             ps1.setString(2, orderCode);
             ps1.executeUpdate();
             ps1.close();
 
             PreparedStatement ps2 = conn.prepareStatement(
-                    "INSERT INTO payments (order_id, method, status, paid_at) " +
-                    "SELECT order_id, payment_method, ?, ? FROM orders WHERE order_code = ?");
+                "INSERT INTO payments (order_id, method, status, paid_at) " +
+                "SELECT order_id, payment_method, ?, ? FROM orders WHERE order_code = ?");
             ps2.setString(1, paymentStatus);
             ps2.setTimestamp(2, "SUCCESS".equals(paymentStatus)
                     ? new java.sql.Timestamp(System.currentTimeMillis()) : null);
             ps2.setString(3, orderCode);
             ps2.executeUpdate();
             ps2.close();
+
+            if (orderId > 0) {
+                insertStatusLog(conn, orderId, oldStatus, orderStatus, "payment_gateway");
+            }
 
             conn.commit();
             return true;
@@ -312,9 +448,31 @@ public class OrderDAO {
             try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
             return false;
         } finally {
-            try {
-                if (conn != null) { conn.setAutoCommit(true); conn.close(); }
-            } catch (Exception ignored) {}
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (Exception ignored) {}
         }
+    }
+
+    /** Lấy toàn bộ lịch sử thay đổi trạng thái của một đơn hàng. */
+    public List<OrderStatusLog> getStatusLogs(int orderId) {
+        List<OrderStatusLog> logs = new ArrayList<>();
+        String sql = "SELECT * FROM order_status_logs WHERE order_id = ? ORDER BY changed_at ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                OrderStatusLog log = new OrderStatusLog();
+                log.setId(rs.getInt("id"));
+                log.setOrderId(rs.getInt("order_id"));
+                log.setOldStatus(rs.getString("old_status"));
+                log.setNewStatus(rs.getString("new_status"));
+                log.setChangedBy(rs.getString("changed_by"));
+                log.setChangedAt(rs.getTimestamp("changed_at"));
+                logs.add(log);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return logs;
     }
 }
