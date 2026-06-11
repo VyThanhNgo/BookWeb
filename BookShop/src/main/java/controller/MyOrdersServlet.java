@@ -38,15 +38,12 @@ public class MyOrdersServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
         }
 
-     //dữ liệu tab đánh giá
         List<Map<String, Object>> unreviewedBooks = orderDAO.getUnreviewedBooks(user.getId());
         List<Map<String, Object>> reviewedBooks   = orderDAO.getReviewedBooks(user.getId());
-        request.setAttribute("unreviewedBooks", unreviewedBooks);
-        request.setAttribute("reviewedBooks",   reviewedBooks);
-        
+
         request.setAttribute("orders", orders);
-        request.setAttribute("unreviewedBooks", orderDAO.getUnreviewedBooks(user.getId()));
-        request.setAttribute("reviewedBooks", orderDAO.getReviewedBooks(user.getId()));
+        request.setAttribute("unreviewedBooks", unreviewedBooks);
+        request.setAttribute("reviewedBooks", reviewedBooks);
         request.setAttribute("pageTitle", "Đơn hàng của tôi");
         request.getRequestDispatcher("/WEB-INF/views/order/my-orders.jsp").forward(request, response);
     }
