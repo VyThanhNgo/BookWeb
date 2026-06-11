@@ -25,6 +25,10 @@ public class Order {
     private String couponCode;
 
     private Timestamp createdAt;
+    private Timestamp confirmedAt;
+    private Timestamp shippedAt;
+    private Timestamp deliveredAt;
+    private Timestamp cancelledAt;
 
     public Order() {
     }
@@ -189,11 +193,18 @@ public class Order {
         sb.append(value.trim());
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
+    public Timestamp getConfirmedAt() { return confirmedAt; }
+    public void setConfirmedAt(Timestamp confirmedAt) { this.confirmedAt = confirmedAt; }
+
+    public Timestamp getShippedAt() { return shippedAt; }
+    public void setShippedAt(Timestamp shippedAt) { this.shippedAt = shippedAt; }
+
+    public Timestamp getDeliveredAt() { return deliveredAt; }
+    public void setDeliveredAt(Timestamp deliveredAt) { this.deliveredAt = deliveredAt; }
+
+    public Timestamp getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(Timestamp cancelledAt) { this.cancelledAt = cancelledAt; }
 }

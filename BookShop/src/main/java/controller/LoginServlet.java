@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,7 +12,10 @@ import javax.servlet.http.HttpSession;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import dao.CartDAO;
 import dao.UserDAO;
+import model.Cart;
+import model.CartItem;
 import dao.WishlistDAO;
 import model.User;
 
@@ -66,6 +70,19 @@ public class LoginServlet extends HttpServlet {
 			session.setAttribute("username", user.getUsername());
 			session.setAttribute("userRole", user.getRole());
 			session.setMaxInactiveInterval(30 * 60); // 30 minutes
+
+			// Merge giỏ hàng: DB cart + session cart (guest items) → session
+			CartDAO cartDAO = new CartDAO();
+			Cart sessionCart = (Cart) session.getAttribute("cart");
+			if (sessionCart == null) sessionCart = new Cart();
+
+			List<CartItem> dbItems = cartDAO.loadItems(user.getId());
+			for (CartItem dbItem : dbItems) {
+				sessionCart.addItem(dbItem); // addItem merge quantity nếu trùng bookId
+			}
+			session.setAttribute("cart", sessionCart);
+			// Lưu merged cart (bao gồm guest items) ngược lại vào DB
+			cartDAO.saveFullCart(user.getId(), sessionCart.getItems());
 
 			WishlistDAO wishlistDAO = new WishlistDAO();
 			session.setAttribute("wishlistCount", wishlistDAO.countWishlist(user.getId()));
