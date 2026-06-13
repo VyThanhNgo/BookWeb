@@ -8,23 +8,30 @@ import java.sql.SQLException;
 
 public class DBConnection {
 
-    // ========== Cấu hình kết nối ==========
+    // cấu hình kết nối 
    
+	// cấu hình kết nối máy ảo
 //	private static final String URL = "jdbc:mysql://192.168.1.40:3306/bookstore";
 //	private static final String USER = "root";
 //    private static final String PASSWORD = "12345";
 
-    private static final String URL =
-            "jdbc:mysql://localhost:3306/bookstore";
+	//quynh
+	private static final String URL = "jdbc:mysql://localhost:3306/bookstore";
     private static final String USER = "root";
-    private static final String PASSWORD = "";
+    private static final String PASSWORD = "1234";
+	
+	//nhi
+//    private static final String URL =
+//            "jdbc:mysql://localhost:3306/bookstore";
+//    private static final String USER = "root";
+//    private static final String PASSWORD = "";
 
-    // ========== HikariCP Connection Pool ==========
+    //HikariCP Connection Pool 
     private static HikariDataSource dataSource;
 
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(URL + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8");
+        config.setJdbcUrl(URL + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8");
         config.setUsername(USER);
         config.setPassword(PASSWORD);
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");

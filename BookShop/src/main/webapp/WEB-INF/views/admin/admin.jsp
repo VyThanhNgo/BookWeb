@@ -77,7 +77,7 @@ body {
 
 	<!-- TOAST NOTIFICATION SYSTEM (Hệ thống thông báo thay thế alert) -->
 	<div id="toast-container"
-		class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+		class="fixed top-5 right-5 z-[99999] flex flex-col gap-3"></div>
 
 	<!-- SIDEBAR - ĐIỀU HƯỚNG CHÍNH -->
 	<aside
