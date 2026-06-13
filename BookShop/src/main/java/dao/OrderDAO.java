@@ -99,8 +99,16 @@ public class OrderDAO {
             }
 
             detailPs.executeBatch();
-            stockPs.executeBatch();
+            int[] stockResults = stockPs.executeBatch();
             stockPs.close();
+
+            for (int r : stockResults) {
+                if (r == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
             conn.commit();
 
             order.setOrderId(orderId);
