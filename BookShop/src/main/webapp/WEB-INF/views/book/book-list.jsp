@@ -202,7 +202,7 @@
 										<button class="accordion-button" id="headingOne_inner"
 											type="button" data-bs-toggle="collapse"
 											data-bs-target="#collapseOne_inner" aria-expanded="true"
-											aria-controls="collapseOne_inner">Best Sales (105)</button>
+											aria-controls="collapseOne_inner">Bán chạy (105)</button>
 										<div id="collapseOne_inner"
 											class="accordion-collapse collapse show accordion-body"
 											aria-labelledby="headingOne_inner"
@@ -225,8 +225,7 @@
 											id="headingThree_inner" type="button"
 											data-bs-toggle="collapse"
 											data-bs-target="#collapseThree_inner" aria-expanded="false"
-											aria-controls="collapseThree_inner">Newest Books
-											(32)</button>
+											aria-controls="collapseThree_inner">Sách mới (32)</button>
 										<div id="collapseThree_inner"
 											class="accordion-collapse collapse accordion-body"
 											aria-labelledby="headingThree_inner"
@@ -249,7 +248,7 @@
 											id="headingFive_inner" type="button"
 											data-bs-toggle="collapse"
 											data-bs-target="#collapseFive_inner" aria-expanded="false"
-											aria-controls="collapseFive_inner">Watch History
+											aria-controls="collapseFive_inner">Đã xem gần đây
 											(21)</button>
 										<div id="collapseFive_inner"
 											class="accordion-collapse collapse accordion-body"
@@ -270,7 +269,7 @@
 										<button class="accordion-button collapsed"
 											id="headingSix_inner" type="button" data-bs-toggle="collapse"
 											data-bs-target="#collapseSix_inner" aria-expanded="false"
-											aria-controls="collapseSix_inner">Best Books (44)</button>
+											aria-controls="collapseSix_inner">Sách nổi bật (44)</button>
 										<div id="collapseSix_inner"
 											class="accordion-collapse collapse accordion-body"
 											aria-labelledby="headingSix_inner"
@@ -655,23 +654,33 @@
 					style="transition-duration: 0ms; transform: translate3d(0px, 0px, 0px); transition-delay: 0ms;">
 					<div class="swiper-slide swiper-slide-active" role="group"
 						aria-label="1 / 5" style="width: 292.5px;">
-						<img src="images/client/client1.svg" alt="client">
+						<img
+							src="${pageContext.request.contextPath}/assets/images/publishers/kim_dong_40.png"
+							alt="NXB Kim Đồng">
 					</div>
 					<div class="swiper-slide swiper-slide-next" role="group"
 						aria-label="2 / 5" style="width: 292.5px;">
-						<img src="images/client/client2.svg" alt="client">
+						<img
+							src="${pageContext.request.contextPath}/assets/images/publishers/nxb_tre_40.png"
+							alt="NXB Trẻ">
 					</div>
 					<div class="swiper-slide" role="group" aria-label="3 / 5"
 						style="width: 292.5px;">
-						<img src="images/client/client3.svg" alt="client">
+						<img
+							src="${pageContext.request.contextPath}/assets/images/publishers/nxb_van_hoc_40.png"
+							alt="NXB Văn Học">
 					</div>
 					<div class="swiper-slide" role="group" aria-label="4 / 5"
 						style="width: 292.5px;">
-						<img src="images/client/client4.svg" alt="client">
+						<img
+							src="${pageContext.request.contextPath}/assets/images/publishers/nxb_giao_duc_40.png"
+							alt="NXB Giáo Dục">
 					</div>
 					<div class="swiper-slide" role="group" aria-label="5 / 5"
 						style="width: 292.5px;">
-						<img src="images/client/client5.svg" alt="client">
+						<img
+							src="${pageContext.request.contextPath}/assets/images/publishers/simon_schuster_40.png"
+							alt="Simon & Schuster" style="display: block; margin: auto;">
 					</div>
 				</div>
 				<span class="swiper-notification" aria-live="assertive"
@@ -690,7 +699,7 @@
 						</div>
 						<div class="icon-content">
 							<h2 class="dz-title counter m-b0">125,663</h2>
-							<p class="font-20">Happy Customers</p>
+							<p class="font-20">Khách hàng hài lòng</p>
 						</div>
 					</div>
 				</div>
@@ -701,7 +710,7 @@
 						</div>
 						<div class="icon-content">
 							<h2 class="dz-title counter m-b0">50,672</h2>
-							<p class="font-20">Book Collections</p>
+							<p class="font-20">Đầu sách</p>
 						</div>
 					</div>
 				</div>
@@ -712,7 +721,7 @@
 						</div>
 						<div class="icon-content">
 							<h2 class="dz-title counter m-b0">1,562</h2>
-							<p class="font-20">Our Stores</p>
+							<p class="font-20">Cửa hàng</p>
 						</div>
 					</div>
 				</div>
@@ -723,7 +732,7 @@
 						</div>
 						<div class="icon-content">
 							<h2 class="dz-title counter m-b0">457</h2>
-							<p class="font-20">Famous Writers</p>
+							<p class="font-20">Tác giả nổi tiếng</p>
 						</div>
 					</div>
 				</div>
@@ -739,8 +748,8 @@
 					class="row style-1 justify-content-xl-between justify-content-lg-center align-items-center text-xl-start text-center">
 					<div class="col-xl-7 col-lg-12">
 						<div class="section-head mb-0">
-							<h2 class="title text-white my-lg-3 mt-0">Subscribe our
-								newsletter for newest books updates</h2>
+							<h2 class="title text-white my-lg-3 mt-0">Đăng ký để không
+								bỏ lỡ các sách mới nhất</h2>
 						</div>
 					</div>
 					<div class="col-xl-5 col-lg-6">
@@ -751,11 +760,11 @@
 								<div class="input-group mb-0">
 									<input name="dzEmail" required="required" type="email"
 										class="form-control bg-transparent text-white"
-										placeholder="Your Email Address">
+										placeholder="Email Của Bạn">
 									<div class="input-group-addon">
 										<button name="submit" value="Submit" type="submit"
 											class="btn btn-primary btnhover">
-											<span>SUBSCRIBE</span> <i class="fa-solid fa-paper-plane"></i>
+											<span>ĐĂNG KÝ</span> <i class="fa-solid fa-paper-plane"></i>
 										</button>
 									</div>
 								</div>
