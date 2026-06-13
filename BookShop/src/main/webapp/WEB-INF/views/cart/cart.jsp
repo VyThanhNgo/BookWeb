@@ -434,6 +434,31 @@
             }
         }
 
+        var qtyTimers = {};
+
+        function saveQtyToServer(bookId, qty) {
+            clearTimeout(qtyTimers[bookId]);
+            qtyTimers[bookId] = setTimeout(function () {
+                var formData = new FormData();
+                formData.append('action', 'syncOne');
+                formData.append('bookId', bookId);
+                formData.append('quantity', qty);
+
+                fetch(ctx + '/cart', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data && data.success) {
+                        updateBadge(data.totalItems);
+                    }
+                })
+                .catch(function (err) { console.error('Sync qty error:', err); });
+            }, 400);
+        }
+
         document.querySelectorAll('.qty-btn.minus').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var input = document.getElementById(this.getAttribute('data-target'));
@@ -441,6 +466,8 @@
                 if (value > 1) {
                     input.value = value - 1;
                     recalcCartUI();
+                    var bookId = this.closest('.cart-row').getAttribute('data-book-id');
+                    saveQtyToServer(bookId, value - 1);
                 }
             });
         });
@@ -451,6 +478,8 @@
                 var value = parseInt(input.value || '1', 10);
                 input.value = value + 1;
                 recalcCartUI();
+                var bookId = this.closest('.cart-row').getAttribute('data-book-id');
+                saveQtyToServer(bookId, value + 1);
             });
         });
 
@@ -460,6 +489,8 @@
                 if (isNaN(value) || value < 1) value = 1;
                 this.value = value;
                 recalcCartUI();
+                var bookId = this.closest('.cart-row').getAttribute('data-book-id');
+                saveQtyToServer(bookId, value);
             });
         });
 
