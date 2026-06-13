@@ -143,6 +143,27 @@ public class CartServlet extends HttpServlet {
                 return;
             }
 
+            else if ("syncOne".equals(action)) {
+                int bookId   = Integer.parseInt(request.getParameter("bookId"));
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
+                if (quantity < 1) quantity = 1;
+
+                BookDAO dao = new BookDAO();
+                Book book = dao.getBookById(bookId);
+                if (book != null && book.getStock() > 0 && quantity > book.getStock()) {
+                    quantity = book.getStock();
+                }
+
+                cart.updateItem(bookId, quantity);
+                if (user != null) cartDAO.syncItem(user.getId(), bookId, quantity);
+
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":true,\"quantity\":" + quantity
+                        + ",\"totalItems\":" + cart.getTotalItems()
+                        + ",\"totalPrice\":" + cart.getTotalPrice() + "}");
+                return;
+            }
+
             else if ("update".equals(action)) {
                 for (CartItem item : cart.getItems()) {
                     String qtyStr = request.getParameter("quantity_" + item.getBookId());

@@ -1,5 +1,6 @@
 package controller;
 
+import dao.CartDAO;
 import dao.OrderDAO;
 import model.Cart;
 import model.CartItem;
@@ -191,9 +192,11 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Đơn hàng đã lưu vào DB — xóa giỏ hàng ngay
         List<OrderItem> placedItems = mapOrderItems(cart.getItems());
         cart.clear();
+        if (userId > 0) {
+            new CartDAO().clearCart(userId);
+        }
 
         // Điều hướng theo phương thức thanh toán
         if ("VNPAY".equals(paymentMethod)) {
