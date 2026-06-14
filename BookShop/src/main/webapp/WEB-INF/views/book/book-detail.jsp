@@ -160,15 +160,22 @@
 
 										<!-- Dòng 3: 2 nút -->
 										<div style="display: flex; gap: 12px; align-items: center;">
-											<button type="submit" name="action" value="add"
-												class="btn btn-outline-primary btnhover btnhover2"
-												style="padding: 10px 24px;">
-												<i class="flaticon-shopping-cart-1 me-2"></i>Thêm Vào Giỏ
-												Hàng
-											</button>
-											<button type="submit" name="action" value="buy"
-												class="btn btn-primary btnhover btnhover2"
-												style="padding: 10px 24px;">Mua Ngay</button>
+											<c:choose>
+												<c:when test="${book.stock == 0}">
+													<button type="button" class="btn btn-secondary" disabled
+														style="padding: 10px 24px;">Hết hàng</button>
+												</c:when>
+												<c:otherwise>
+													<button type="submit" name="action" value="add"
+														class="btn btn-outline-primary btnhover btnhover2"
+														style="padding: 10px 24px;">
+														<i class="flaticon-shopping-cart-1 me-2"></i>Thêm Vào Giỏ Hàng
+													</button>
+													<button type="submit" name="action" value="buy"
+														class="btn btn-primary btnhover btnhover2"
+														style="padding: 10px 24px;">Mua Ngay</button>
+												</c:otherwise>
+											</c:choose>
 										</div>
 
 									</form>

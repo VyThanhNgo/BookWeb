@@ -103,7 +103,17 @@ public class CartServlet extends HttpServlet {
                 Book book = dao.getBookById(bookId);
 
                 if (book != null) {
-                    if (book.getStock() > 0 && quantity > book.getStock()) {
+                    if (book.getStock() <= 0) {
+                        String requestedWith = request.getHeader("X-Requested-With");
+                        if ("XMLHttpRequest".equals(requestedWith)) {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"success\":false,\"message\":\"Sản phẩm đã hết hàng\"}");
+                        } else {
+                            response.sendRedirect(ctx + "/books");
+                        }
+                        return;
+                    }
+                    if (quantity > book.getStock()) {
                         quantity = book.getStock();
                     }
                     cart.addItem(new CartItem(book.getId(), book.getTitle(),

@@ -27,6 +27,14 @@
     <section class="content-inner-1">
         <div class="container">
 
+            <c:if test="${not empty sessionScope.checkoutStockError}">
+                <div class="alert alert-warning alert-dismissible mt-3" role="alert">
+                    ${sessionScope.checkoutStockError}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <c:remove var="checkoutStockError" scope="session"/>
+            </c:if>
+
             <c:choose>
                 <c:when test="${cart != null && not empty cart.items}">
                     <form action="javascript:void(0);" method="post" id="cartForm">

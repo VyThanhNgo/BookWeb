@@ -560,8 +560,11 @@
 
 											<button type="button"
 												class="btn btn-secondary box-btn btnhover btnhover2 add-to-cart-btn"
-												data-id="${b.id}">
-												<i class="flaticon-shopping-cart-1 m-r10"></i> Add To Cart
+												data-id="${b.id}"
+												data-stock="${b.stock}"
+												${b.stock == 0 ? 'disabled' : ''}>
+												<i class="flaticon-shopping-cart-1 m-r10"></i>
+												${b.stock == 0 ? 'Hết hàng' : 'Add To Cart'}
 											</button>
 										</div>
 									</div>

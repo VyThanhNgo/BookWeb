@@ -1,7 +1,9 @@
 package controller;
 
+import dao.BookDAO;
 import dao.CartDAO;
 import dao.OrderDAO;
+import model.Book;
 import model.Cart;
 import model.CartItem;
 import model.Order;
@@ -53,6 +55,19 @@ public class OrderServlet extends HttpServlet {
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/cart");
             return;
+        }
+
+        BookDAO bookDAO = new BookDAO();
+        for (CartItem item : cart.getItems()) {
+            Book book = bookDAO.getBookById(item.getBookId());
+            if (book == null || book.getStock() < item.getQuantity()) {
+                String msg = (book == null)
+                        ? "Sản phẩm \"" + item.getTitle() + "\" không còn tồn tại."
+                        : "Sản phẩm \"" + item.getTitle() + "\" chỉ còn " + book.getStock() + " cuốn trong kho.";
+                session.setAttribute("checkoutStockError", msg);
+                response.sendRedirect(request.getContextPath() + "/cart");
+                return;
+            }
         }
 
         double subtotal = cart.getTotalPrice();
@@ -128,11 +143,11 @@ public class OrderServlet extends HttpServlet {
 
         String note = request.getParameter("note");
         String paymentMethod = request.getParameter("paymentMethod");
-        String shippingFeeStr = request.getParameter("shippingFee");
-
         String couponCode = request.getParameter("couponCode");
 
-        double shippingFee = parseDoubleOrZero(shippingFeeStr);
+        Integer sessionFee = (Integer) session.getAttribute("calculatedShippingFee");
+        double shippingFee = (sessionFee != null) ? sessionFee.doubleValue()
+                : parseDoubleOrZero(request.getParameter("shippingFee"));
         // discount luôn = 0 cho đến khi có logic validate coupon server-side
         double discount = 0;
 
