@@ -37,10 +37,13 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                         <h3 class="checkout-title">Thông tin giao hàng</h3>
 
                         <div class="form-grid">
-                            <input type="text" name="customerName" placeholder="Họ và tên *" required>
-                            <input type="text" name="phone" placeholder="Số điện thoại *" required>
+                            <input type="text" name="customerName" placeholder="Họ và tên *" required
+                                   value="${not empty old_customerName ? old_customerName : ''}">
+                            <input type="text" name="phone" placeholder="Số điện thoại *" required
+                                   value="${not empty old_phone ? old_phone : ''}">
 
-                            <input type="email" name="email" placeholder="Email">
+                            <input type="email" name="email" placeholder="Email"
+                                   value="${not empty old_email ? old_email : ''}">
                             <select id="provinceSelect" name="province" required>
                                 <option value="">Chọn Tỉnh/Thành phố</option>
                             </select>
@@ -71,9 +74,10 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                             <input type="hidden" id="discountValue" value="${discount}">
                             <input type="hidden" id="bankConfirmedInput" name="bankConfirmed" value="0">
 
-                            <input type="text" name="addressLine" placeholder="Địa chỉ cụ thể *" required class="full">
+                            <input type="text" name="addressLine" placeholder="Địa chỉ cụ thể *" required class="full"
+                                   value="${not empty old_addressLine ? old_addressLine : ''}">
 
-                            <textarea name="note" placeholder="Ghi chú đơn hàng"></textarea>
+                            <textarea name="note" placeholder="Ghi chú đơn hàng">${not empty old_note ? old_note : ''}</textarea>
                         </div>
                     </div>
 
@@ -797,7 +801,6 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
         const defaultRadio = document.querySelector('input[name="paymentMethod"]:checked');
         if (defaultRadio) onPaymentChange(defaultRadio);
 
-        // Intercept form submit for BANK_TRANSFER confirmation
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
             if (method === 'BANK_TRANSFER') {
@@ -805,7 +808,13 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                 if (confirmed !== '1') {
                     e.preventDefault();
                     showBankModal();
+                    return;
                 }
+            }
+            const btn = this.querySelector('button[type="submit"], button:not([type="button"])');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Đang xử lý...';
             }
         });
     });
@@ -850,6 +859,11 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
     function confirmBankTransfer() {
         document.getElementById('bankConfirmedInput').value = '1';
         closeBankModal();
+        const btn = document.querySelector('#orderForm button:not([type="button"])');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Đang xử lý...';
+        }
         document.getElementById('orderForm').submit();
     }
 </script>

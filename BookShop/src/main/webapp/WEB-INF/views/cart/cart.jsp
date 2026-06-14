@@ -43,12 +43,12 @@
                             <table class="table check-tbl cart-table">
                                 <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Product name</th>
-                                    <th>Unit Price</th>
-                                    <th>Quantity</th>
-                                    <th>Total</th>
-                                    <th>Close</th>
+                                    <th>Ảnh</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                    <th>Xóa</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -105,12 +105,12 @@
                         <div class="row cart-actions-wrap">
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <a href="${ctx}/cart?action=clear" class="btn btn-outline-danger js-clear-cart">
-                                    Clear Cart
+                                    Xóa giỏ hàng
                                 </a>
                             </div>
                             <div class="col-md-6 text-md-end">
                                 <a href="${ctx}/books" class="btn btn-secondary btnhover">
-                                    Continue Shopping
+                                    Tiếp tục mua sắm
                                 </a>
                             </div>
                         </div>
@@ -173,7 +173,7 @@
                                 </table>
 
                                 <a href="${ctx}/order" class="btn btn-primary btnhover w-100">
-                                    Proceed To Checkout
+                                    Tiến hành thanh toán
                                 </a>
                             </div>
                         </div>
