@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @WebServlet("/order")
 public class OrderServlet extends HttpServlet {
@@ -151,17 +152,31 @@ public class OrderServlet extends HttpServlet {
         // discount luôn = 0 cho đến khi có logic validate coupon server-side
         double discount = 0;
 
+        String validationError = null;
         if (isBlank(customerName) || isBlank(phone) || isBlank(addressLine) || isBlank(paymentMethod)) {
+            validationError = "Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và chọn phương thức thanh toán.";
+        } else if (!Pattern.matches("^(0[3-9][0-9]{8})$", phone.trim())) {
+            validationError = "Số điện thoại không hợp lệ (phải là số di động Việt Nam 10 chữ số, bắt đầu bằng 03-09).";
+        } else if (!isBlank(email) && !Pattern.matches("^[\\w._%+\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$", email.trim())) {
+            validationError = "Địa chỉ email không hợp lệ.";
+        }
+
+        if (validationError != null) {
             double subtotal = cart.getTotalPrice();
             double total = subtotal + shippingFee - discount;
 
             request.setAttribute("pageTitle", "Thanh toán");
-            request.setAttribute("error", "Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và chọn phương thức thanh toán.");
+            request.setAttribute("error", validationError);
             request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
             request.setAttribute("subtotal", subtotal);
             request.setAttribute("shippingFee", shippingFee);
             request.setAttribute("discount", discount);
             request.setAttribute("total", total);
+            request.setAttribute("old_customerName", customerName);
+            request.setAttribute("old_phone", phone);
+            request.setAttribute("old_email", email);
+            request.setAttribute("old_addressLine", addressLine);
+            request.setAttribute("old_note", note);
 
             request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
             return;
