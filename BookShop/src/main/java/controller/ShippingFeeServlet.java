@@ -102,6 +102,8 @@ public class ShippingFeeServlet extends HttpServlet {
 
             int total = subtotal + shippingFee - discount;
 
+            session.setAttribute("calculatedShippingFee", shippingFee);
+
             String result = "{"
                     + "\"success\":true,"
                     + "\"shippingFee\":" + shippingFee + ","
