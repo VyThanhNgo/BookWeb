@@ -84,6 +84,12 @@ public class AuthorAdminServlet extends HttpServlet {
 
 		if ("add".equals(action)) {
 			String name = req.getParameter("name");
+			if (name == null || name.trim().isEmpty()) {
+			    json(res, false, "empty_name");
+			    return;
+			}
+			name = name.trim();
+			
 			String imageUrl = null;
 			Part filePart = req.getPart("image");
 			if (filePart != null && filePart.getSize() > 0) {
@@ -102,6 +108,12 @@ public class AuthorAdminServlet extends HttpServlet {
 		} else if ("edit".equals(action)) {
 			int id = Integer.parseInt(req.getParameter("id"));
 			String name = req.getParameter("name");
+			if (name == null || name.trim().isEmpty()) {
+			    json(res, false, "empty_name");
+			    return;
+			}
+			name = name.trim();
+			
 			String imageUrl = req.getParameter("oldImage");
 			Part filePart = req.getPart("image");
 			if (filePart != null && filePart.getSize() > 0) {

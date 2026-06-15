@@ -50,6 +50,10 @@ public class CategoryAdminServlet extends HttpServlet {
         BookDAO dao = new BookDAO();
         String action = request.getParameter("action");
         String name   = request.getParameter("name").trim();
+        if (name.isEmpty()) {
+            json(response, false, "empty_name");
+            return;
+        }
 
         if ("add".equals(action)) {
             if (dao.isCategoryNameExists(name, -1)) {

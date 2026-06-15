@@ -541,13 +541,13 @@ public class OrderDAO {
     public List<Map<String, Object>> getUnreviewedBooks(int userId) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT o.order_id, o.order_code, o.created_at AS order_date, "
-                + "DATEDIFF(DATE_ADD(o.created_at, INTERVAL 30 DAY), NOW()) AS days_left, "
+                + "DATEDIFF(DATE_ADD(o.delivered_at, INTERVAL 30 DAY), NOW()) AS days_left, "
                 + "od.id AS detail_id, od.book_id, od.book_title, b.image "
                 + "FROM orders o "
                 + "JOIN order_details od ON o.order_id = od.order_id "
                 + "JOIN books b ON od.book_id = b.book_id "
                 + "WHERE o.user_id = ? AND o.status = 'COMPLETED' "
-                + "  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) "
+                + "  AND o.delivered_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) "
                 + "  AND NOT EXISTS ( "
                 + "    SELECT 1 FROM reviews r "
                 + "    WHERE r.user_id = ? AND r.order_detail_id = od.id "

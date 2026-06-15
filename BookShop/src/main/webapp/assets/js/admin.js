@@ -440,6 +440,7 @@ function handleCategorySubmit(event) {
     .then(data => {
         const msgs = {
             added:     ['Thêm danh mục thành công!', 'success'],
+			empty_name: ['Tên danh mục không được để trống!', 'danger'],
             updated:   ['Cập nhật thành công!', 'success'],
             duplicate: ['Tên danh mục đã tồn tại!', 'danger']
         };
@@ -1135,6 +1136,7 @@ function submitAuthorForm() {
 	        .then(data => {
 	            const msgs = {
 	                added:   ['Thêm tác giả thành công!', 'success'],
+					empty_name: ['Tên tác giả không được để trống!', 'danger'],
 	                updated: ['Cập nhật tác giả thành công!', 'success']
 	            };
 	            const [msg, type] = msgs[data.message] || ['Thao tác hoàn tất', 'success'];
@@ -1174,11 +1176,12 @@ function submitAuthorForm() {
 			fetch(CTX + '/admin/authors', { method: 'POST', body: formData })
 			    .then(r => r.json())
 			    .then(data => {
-			        const msgs = {
-			            added:        ['Thêm tác giả thành công!', 'success'],
-			            updated:      ['Cập nhật tác giả thành công!', 'success'],
-			            invalid_file: ['File không hợp lệ!', 'danger']
-			        };
+					const msgs = {
+					    added:        ['Thêm tác giả thành công!', 'success'],
+					    updated:      ['Cập nhật tác giả thành công!', 'success'],
+					    invalid_file: ['File không hợp lệ!', 'danger'],
+					    empty_name:   ['Tên tác giả không được để trống!', 'danger']
+					};
 			        const [msg, type] = msgs[data.message] || ['Thao tác hoàn tất', 'success'];
 			        showToast(msg, type);
 			        if (data.success) {
@@ -1252,6 +1255,9 @@ function submitBookForm() {
 				            added:         ['Thêm sách thành công!', 'success'],
 				            updated:       ['Cập nhật sách thành công!', 'success'],
 				            invalid_file:  ['File không hợp lệ!', 'danger'],
+							empty_title:          ['Tên sách không được để trống!', 'danger'],
+							invalid_origin_price: ['Giá gốc không được thấp hơn giá bán!', 'danger'],
+							invalid_year:         ['Năm xuất bản không hợp lệ!', 'danger'],
 				            invalid_value: ['Giá hoặc tồn kho không hợp lệ!', 'danger']
 				        };
 				        const [msg, type] = msgs[data.message] || ['Thao tác hoàn tất', 'success'];
