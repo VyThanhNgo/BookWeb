@@ -132,6 +132,7 @@ public class AdminUserDetailServlet extends HttpServlet {
 
 		} else {
 			response.sendRedirect(request.getContextPath() + "/admin/user-detail?id=" + userId + "&error=Unknown action");
+	
 		}
 	}
 }
