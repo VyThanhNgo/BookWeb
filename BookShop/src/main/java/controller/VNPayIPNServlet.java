@@ -23,7 +23,11 @@ public class VNPayIPNServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        String orderCode    = request.getParameter("vnp_TxnRef");
+        // vnp_TxnRef có thể là "ORD-XXXX" hoặc "ORD-XXXX_timestamp" (thanh toán lại)
+        String txnRef       = request.getParameter("vnp_TxnRef");
+        String orderCode    = (txnRef != null && txnRef.contains("_"))
+                ? txnRef.substring(0, txnRef.lastIndexOf("_"))
+                : txnRef;
         String responseCode = request.getParameter("vnp_ResponseCode");
         String amount       = request.getParameter("vnp_Amount");
 
@@ -42,8 +46,8 @@ public class VNPayIPNServlet extends HttpServlet {
                 return;
             }
 
-            // Kiểm tra số tiền khớp
-            long expectedAmount = (long)(order.getTotalAmount() * 100);
+            // Kiểm tra số tiền khớp — tính giống VNPayPaymentServlet: ((long)total) * 100
+            long expectedAmount = (long) order.getTotalAmount() * 100;
             if (!String.valueOf(expectedAmount).equals(amount)) {
                 out.print("{\"RspCode\":\"04\",\"Message\":\"Invalid Amount\"}");
                 return;

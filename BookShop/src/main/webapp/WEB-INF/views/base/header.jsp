@@ -639,11 +639,13 @@
 					const ctx = '${pageContext.request.contextPath}';
 					const list = document.getElementById('mini-cart-list');
 
-					fetch(ctx + '/cart?action=remove&id=' + encodeURIComponent(bookId), {
-						method: 'GET',
+					fetch(ctx + '/cart', {
+						method: 'POST',
 						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
 							'X-Requested-With': 'XMLHttpRequest'
-						}
+						},
+						body: 'action=remove&id=' + encodeURIComponent(bookId)
 					})
 							.then(res => res.json())
 							.then(data => {

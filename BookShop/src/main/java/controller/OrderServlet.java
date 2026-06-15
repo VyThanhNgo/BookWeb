@@ -2,10 +2,12 @@ package controller;
 
 import dao.BookDAO;
 import dao.CartDAO;
+import dao.CouponDAO;
 import dao.OrderDAO;
 import model.Book;
 import model.Cart;
 import model.CartItem;
+import model.Coupon;
 import model.Order;
 import model.OrderItem;
 import model.User;
@@ -149,8 +151,15 @@ public class OrderServlet extends HttpServlet {
         Integer sessionFee = (Integer) session.getAttribute("calculatedShippingFee");
         double shippingFee = (sessionFee != null) ? sessionFee.doubleValue()
                 : parseDoubleOrZero(request.getParameter("shippingFee"));
-        // discount luôn = 0 cho đến khi có logic validate coupon server-side
+        double subtotalForCoupon = cart.getTotalPrice();
         double discount = 0;
+        if (!isBlank(couponCode)) {
+            CouponDAO couponDAO = new CouponDAO();
+            Coupon coupon = couponDAO.findByCode(couponCode.trim());
+            discount = couponDAO.computeDiscount(coupon, subtotalForCoupon);
+        }
+        // Làm tròn về số nguyên VND để tránh số tiền lẻ (gây lệch amount khi đối soát VNPay/MoMo)
+        discount = Math.round(discount);
 
         String validationError = null;
         if (isBlank(customerName) || isBlank(phone) || isBlank(addressLine) || isBlank(paymentMethod)) {
@@ -220,6 +229,14 @@ public class OrderServlet extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
             return;
+        }
+
+        // Chỉ tính lượt coupon ngay với phương thức nhận hàng/chuyển khoản (đơn đã chốt).
+        // Với VNPAY/MOMO, lượt coupon được tính khi thanh toán thành công (trong updateOrderPayment),
+        // tránh trừ oan lượt khi khách bỏ ngang hoặc thanh toán thất bại.
+        if (!isBlank(couponCode) && discount > 0
+                && ("COD".equals(paymentMethod) || "BANK_TRANSFER".equals(paymentMethod))) {
+            new CouponDAO().incrementUsed(couponCode.trim());
         }
 
         List<OrderItem> placedItems = mapOrderItems(cart.getItems());

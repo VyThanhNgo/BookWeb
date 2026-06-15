@@ -39,8 +39,14 @@ public class MomoReturnServlet extends HttpServlet {
 
         boolean paymentSuccess = signatureOk && "0".equals(resultCode);
 
+        // Trạng thái hiện tại để tránh cập nhật trùng khi người dùng F5 trang kết quả
+        Order existing = dao.getOrderByCode(orderId);
+        String currentStatus = (existing != null) ? existing.getStatus() : null;
+
         if (paymentSuccess) {
-            dao.updateOrderPayment(orderId, "CONFIRMED", "SUCCESS");
+            if (!"CONFIRMED".equals(currentStatus)) {
+                dao.updateOrderPayment(orderId, "CONFIRMED", "SUCCESS");
+            }
 
             Order order = dao.getOrderByCode(orderId);
             List<OrderItem> items = order != null ? dao.getOrderItems(order.getOrderId()) : null;
@@ -56,7 +62,10 @@ public class MomoReturnServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/order/order-success.jsp")
                    .forward(request, response);
         } else {
-            dao.updateOrderPayment(orderId, "PAYMENT_FAILED", "FAILED");
+            // Không hạ cấp đơn đã CONFIRMED; không ghi lại nếu đã PAYMENT_FAILED
+            if (!"CONFIRMED".equals(currentStatus) && !"PAYMENT_FAILED".equals(currentStatus)) {
+                dao.updateOrderPayment(orderId, "PAYMENT_FAILED", "FAILED");
+            }
 
             request.setAttribute("orderCode", orderId);
             request.setAttribute("errorMessage", getMomoErrorMessage(resultCode));
