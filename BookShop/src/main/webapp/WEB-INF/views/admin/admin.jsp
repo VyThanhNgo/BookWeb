@@ -838,6 +838,7 @@ body {
 						</tbody>
 					</table>
 				</div>
+					<div id="order-pagination" class="flex flex-wrap items-center justify-center gap-2 mt-4"></div>
 			</div>
 
 			<!-- Modal chi tiết đơn hàng -->

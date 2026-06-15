@@ -35,11 +35,20 @@ public class CartServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession();
-        getOrCreateCart(session);
+        Cart cart = getOrCreateCart(session);
 
         // doGet chỉ hiển thị giỏ hàng. Các hành động thay đổi trạng thái
         // (remove/clear) đã chuyển sang doPost để tránh thay đổi dữ liệu qua GET.
         BookDAO dao = new BookDAO();
+
+        // Tồn kho hiện tại của từng sách trong giỏ (để hiển thị trạng thái + giới hạn số lượng)
+        java.util.Map<Integer, Integer> stockMap = new java.util.HashMap<>();
+        for (CartItem item : cart.getItems()) {
+            Book book = dao.getBookById(item.getBookId());
+            stockMap.put(item.getBookId(), book != null ? book.getStock() : 0);
+        }
+        request.setAttribute("stockMap", stockMap);
+
         request.setAttribute("categories", dao.getAllCategories());
         request.setAttribute("pageTitle", "Giỏ hàng");
         request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);

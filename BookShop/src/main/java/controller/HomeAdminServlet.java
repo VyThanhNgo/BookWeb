@@ -55,6 +55,29 @@ public class HomeAdminServlet extends HttpServlet {
         request.setAttribute("usersToday",    userDAO.getUsersToday());
         request.setAttribute("totalBooks",    books.size());
 
+        // Chart: doanh thu 6 tháng gần nhất
+        double[] rev = orderDAO.getRevenueByMonth(6);
+        StringBuilder revJson = new StringBuilder("[");
+        for (int i = 0; i < rev.length; i++) {
+            if (i > 0) revJson.append(",");
+            revJson.append(Math.round(rev[i] / 1000.0));
+        }
+        revJson.append("]");
+        request.setAttribute("monthlyRevenueJson", revJson.toString());
+
+        // Chart: top 5 sách bán chạy
+        List<Book> bestSellers = bookDAO.getBestSellers(5);
+        StringBuilder bsJson = new StringBuilder("[");
+        for (int i = 0; i < bestSellers.size(); i++) {
+            Book b = bestSellers.get(i);
+            if (i > 0) bsJson.append(",");
+            bsJson.append("{\"title\":\"")
+                  .append(b.getTitle().replace("\"", "\\\""))
+                  .append("\",\"sold\":").append(b.getSoldQuantity()).append("}");
+        }
+        bsJson.append("]");
+        request.setAttribute("bestSellersJson", bsJson.toString());
+
         request.getRequestDispatcher("/WEB-INF/views/admin/admin.jsp").forward(request, response);
     }
 }
