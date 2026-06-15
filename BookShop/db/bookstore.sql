@@ -195,12 +195,14 @@ CREATE TABLE `orders` (
   `shipping_fee` double DEFAULT NULL,
   `discount_amount` double DEFAULT NULL,
   `total_amount` double DEFAULT NULL,
+  `coupon_code` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at`   timestamp NOT NULL DEFAULT current_timestamp(),
   `confirmed_at` timestamp NULL DEFAULT NULL,
   `shipped_at`   timestamp NULL DEFAULT NULL,
   `delivered_at` timestamp NULL DEFAULT NULL,
   `cancelled_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`order_id`),
+  UNIQUE KEY `uq_orders_order_code` (`order_code`),
   KEY `fk_orders_user` (`user_id`),
   CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -422,5 +424,32 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+--
+-- Table structure for table `coupons`
+--
+
+DROP TABLE IF EXISTS `coupons`;
+CREATE TABLE `coupons` (
+  `coupon_id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `discount_type` enum('PERCENT','FIXED') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'PERCENT',
+  `discount_value` decimal(10,2) NOT NULL,
+  `min_order_amount` decimal(10,2) DEFAULT '0.00',
+  `max_discount` decimal(10,2) DEFAULT NULL,
+  `usage_limit` int DEFAULT NULL,
+  `used_count` int DEFAULT '0',
+  `expires_at` datetime DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`coupon_id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+LOCK TABLES `coupons` WRITE;
+INSERT INTO `coupons` VALUES
+(1,'GOCSACH10','PERCENT',10.00,100000.00,50000.00,100,0,NULL,1),
+(2,'GIAM50K','FIXED',50000.00,200000.00,NULL,50,0,NULL,1),
+(3,'WELCOME20','PERCENT',20.00,50000.00,100000.00,200,0,NULL,1);
+UNLOCK TABLES;
 
 -- Dump completed on 2026-06-06 21:38:44

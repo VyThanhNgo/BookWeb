@@ -1,4 +1,4 @@
-git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
@@ -190,6 +190,20 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
 
                                 </div>
                             </c:forEach>
+                        </div>
+
+                        <!-- COUPON -->
+                        <div class="coupon-box" style="margin-bottom:12px;">
+                            <div style="display:flex;gap:8px;">
+                                <input type="text" id="couponInput" placeholder="Nhập mã giảm giá"
+                                    style="flex:1;border:1px solid #ddd;border-radius:8px;padding:8px 12px;font-size:14px;"
+                                    value="${not empty old_couponCode ? old_couponCode : ''}">
+                                <button type="button" onclick="applyCoupon()"
+                                    style="background:#1a3352;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;white-space:nowrap;">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            <p id="couponMsg" style="font-size:13px;margin-top:6px;"></p>
                         </div>
 
                         <!-- TOTAL -->
@@ -854,6 +868,39 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
 
     function handleOverlayClick(e) {
         if (e.target.id === 'bankTransferModal') closeBankModal();
+    }
+
+    function applyCoupon() {
+        const code = (document.getElementById('couponInput').value || '').trim();
+        const msg  = document.getElementById('couponMsg');
+        if (!code) { msg.style.color = '#c00'; msg.textContent = 'Vui lòng nhập mã giảm giá.'; return; }
+
+        const subtotal = Number(document.getElementById('subtotalValue').value || 0);
+        fetch(ctx + '/coupon/apply?code=' + encodeURIComponent(code) + '&subtotal=' + subtotal, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('couponCodeInput').value = code;
+                document.getElementById('discountAmountInput').value = data.discount;
+                document.getElementById('discountValue').value = data.discount;
+                document.getElementById('discountText').textContent = formatMoney(data.discount);
+                const shipping = Number(document.getElementById('shippingFeeInput').value || 0);
+                document.getElementById('grandTotalText').textContent = formatMoney(subtotal + shipping - data.discount);
+                msg.style.color = '#1a7a1a';
+            } else {
+                document.getElementById('couponCodeInput').value = '';
+                document.getElementById('discountAmountInput').value = 0;
+                document.getElementById('discountValue').value = 0;
+                document.getElementById('discountText').textContent = formatMoney(0);
+                const shipping = Number(document.getElementById('shippingFeeInput').value || 0);
+                document.getElementById('grandTotalText').textContent = formatMoney(subtotal + shipping);
+                msg.style.color = '#c00';
+            }
+            msg.textContent = data.message;
+        })
+        .catch(function() { msg.style.color = '#c00'; msg.textContent = 'Lỗi kết nối, thử lại.'; });
     }
 
     function confirmBankTransfer() {

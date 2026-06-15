@@ -125,10 +125,12 @@ function switchTab(tabId) {
 		reviews: "Kiểm Duyệt Bình Luận",
 		inventory: "Quản Trị Tồn Kho",
 		promotions: "Cấu Hình Đồng Giá",
+		coupons: "Quản Lý Mã Giảm Giá",
 		orders: "Theo Dõi Trạng Thái Đơn Hàng",
 		messages: "Ý Kiến & Liên Hệ"
 	};
 	document.getElementById('current-title').innerText = titles[tabId];
+	if (tabId === 'coupons') loadCoupons();
 
 	const renders = {
 		dashboard: renderDashboard, books: renderBooks,
@@ -819,25 +821,24 @@ window.addEventListener('load', function() {
 
 	switchTab('dashboard');
 
-	const ctx = document.getElementById('salesChart').getContext('2d');
-	new Chart(ctx, {
+	const salesCtx = document.getElementById('salesChart').getContext('2d');
+	const now = new Date();
+	const monthLabels = [];
+	for (let i = 5; i >= 0; i--) {
+		const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+		monthLabels.push('T' + (d.getMonth() + 1) + '/' + d.getFullYear().toString().slice(2));
+	}
+	new Chart(salesCtx, {
 		type: 'line',
 		data: {
-			labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+			labels: monthLabels,
 			datasets: [
 				{
-					label: 'Doanh Thu (triệu đồng)',
-					data: [12, 19, 3, 11],
+					label: 'Doanh Thu (nghìn đồng)',
+					data: typeof monthlyRevenueData !== 'undefined' ? monthlyRevenueData : [0,0,0,0,0,0],
 					borderColor: '#1a3352',
 					backgroundColor: 'rgba(26, 51, 82, 0.1)',
 					fill: true,
-					tension: 0.4
-				},
-				{
-					label: 'Lượt đăng ký mới x10',
-					data: [5, 8, 12, 10],
-					borderColor: '#22c55e',
-					backgroundColor: 'transparent',
 					tension: 0.4
 				}
 			]
@@ -850,8 +851,148 @@ window.addEventListener('load', function() {
 	});
 });
 
-function updateOrderStatus(orderId, status) {
-	const url = document.querySelector('meta[name="ctx"]') ? document.querySelector('meta[name="ctx"]').content + '/admin/orders' : '/BookShop_war/admin/orders';
+// ===================== COUPON =====================
+function loadCoupons() {
+	fetch(CTX + '/admin/coupons', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+		.then(function(r) { return r.json(); })
+		.then(function(list) { renderCoupons(list); })
+		.catch(function() { document.getElementById('coupon-table-body').innerHTML = '<tr><td colspan="9" class="px-4 py-4 text-center text-red-400">Lỗi tải dữ liệu</td></tr>'; });
+}
+
+function renderCoupons(list) {
+	const fmt = function(v) { return Number(v || 0).toLocaleString('vi-VN'); };
+	if (!list.length) {
+		document.getElementById('coupon-table-body').innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-slate-400">Chưa có mã giảm giá nào.</td></tr>';
+		return;
+	}
+	document.getElementById('coupon-table-body').innerHTML = list.map(function(c) {
+		const typeLabel = c.type === 'PERCENT' ? c.value + '%' : fmt(c.value) + 'đ';
+		const maxLabel  = c.maxDiscount ? ' (tối đa ' + fmt(c.maxDiscount) + 'đ)' : '';
+		const limitLabel = c.usageLimit ? c.usedCount + '/' + c.usageLimit : c.usedCount + '/∞';
+		const expLabel  = c.expiresAt ? c.expiresAt.replace('T', ' ') : '—';
+		const badge = c.active
+			? '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">Đang bật</span>'
+			: '<span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">Đã tắt</span>';
+		return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-900 text-sm">'
+			+ '<td class="px-4 py-3 font-bold font-mono text-navy-800 dark:text-white">' + c.code + '</td>'
+			+ '<td class="px-4 py-3">' + typeLabel + maxLabel + '</td>'
+			+ '<td class="px-4 py-3">' + (c.type === 'PERCENT' ? c.value + '%' : fmt(c.value) + 'đ') + '</td>'
+			+ '<td class="px-4 py-3">' + fmt(c.minOrder) + 'đ</td>'
+			+ '<td class="px-4 py-3 text-center">' + limitLabel + '</td>'
+			+ '<td class="px-4 py-3 text-center">' + c.usedCount + '</td>'
+			+ '<td class="px-4 py-3 text-xs text-slate-400">' + expLabel + '</td>'
+			+ '<td class="px-4 py-3">' + badge + '</td>'
+			+ '<td class="px-4 py-3 flex gap-2">'
+			+   '<button onclick="toggleCoupon(' + c.id + ')" class="text-xs px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">' + (c.active ? 'Tắt' : 'Bật') + '</button>'
+			+   '<button onclick="openCouponModal(' + JSON.stringify(c) + ')" class="text-xs px-3 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50">Sửa</button>'
+			+   '<button onclick="deleteCoupon(' + c.id + ',\'' + c.code + '\')" class="text-xs px-3 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Xóa</button>'
+			+ '</td>'
+			+ '</tr>';
+	}).join('');
+}
+
+function openCouponModal(c) {
+	document.getElementById('coupon-modal-err').classList.add('hidden');
+	document.getElementById('coupon-id').value     = c ? c.id : '';
+	document.getElementById('coupon-code').value   = c ? c.code : '';
+	document.getElementById('coupon-type').value   = c ? c.type : 'PERCENT';
+	document.getElementById('coupon-value').value  = c ? c.value : '';
+	document.getElementById('coupon-min').value    = c ? c.minOrder : '';
+	document.getElementById('coupon-max').value    = c ? (c.maxDiscount || '') : '';
+	document.getElementById('coupon-limit').value  = c ? (c.usageLimit || '') : '';
+	document.getElementById('coupon-expires').value = c ? (c.expiresAt ? c.expiresAt.slice(0,16) : '') : '';
+	document.getElementById('coupon-modal-title').textContent = c ? 'Sửa mã giảm giá' : 'Thêm mã giảm giá';
+	document.getElementById('coupon-modal').classList.remove('hidden');
+}
+
+function closeCouponModal() {
+	document.getElementById('coupon-modal').classList.add('hidden');
+}
+
+function saveCoupon() {
+	const id    = document.getElementById('coupon-id').value;
+	const code  = document.getElementById('coupon-code').value.trim().toUpperCase();
+	const value = document.getElementById('coupon-value').value;
+	const err   = document.getElementById('coupon-modal-err');
+
+	if (!code || !value) {
+		err.textContent = 'Vui lòng nhập mã và giá trị giảm.';
+		err.classList.remove('hidden');
+		return;
+	}
+
+	const body = new URLSearchParams({
+		action:         id ? 'update' : 'create',
+		id:             id || '',
+		code:           code,
+		discountType:   document.getElementById('coupon-type').value,
+		discountValue:  value,
+		minOrderAmount: document.getElementById('coupon-min').value || 0,
+		maxDiscount:    document.getElementById('coupon-max').value,
+		usageLimit:     document.getElementById('coupon-limit').value,
+		expiresAt:      document.getElementById('coupon-expires').value
+	});
+
+	fetch(CTX + '/admin/coupons', { method: 'POST', body: body })
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			if (data.success) {
+				closeCouponModal();
+				loadCoupons();
+				showToast(id ? 'Cập nhật thành công!' : 'Thêm mã thành công!', 'success');
+			} else {
+				err.textContent = data.message || 'Lỗi, thử lại.';
+				err.classList.remove('hidden');
+			}
+		});
+}
+
+function toggleCoupon(id) {
+	fetch(CTX + '/admin/coupons', { method: 'POST', body: new URLSearchParams({ action: 'toggle', id: id }) })
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			if (data.success) { loadCoupons(); showToast('Đã cập nhật trạng thái!', 'success'); }
+		});
+}
+
+function deleteCoupon(id, code) {
+	showConfirm('Xóa mã "' + code + '"? Hành động không thể hoàn tác.', 'Xóa mã giảm giá', 'Xóa vĩnh viễn', function() {
+		fetch(CTX + '/admin/coupons', { method: 'POST', body: new URLSearchParams({ action: 'delete', id: id }) })
+			.then(function(r) { return r.json(); })
+			.then(function(data) {
+				if (data.success) { loadCoupons(); showToast('Đã xóa mã!', 'success'); }
+			});
+	});
+}
+
+function filterOrders() {
+	const q = (document.getElementById('order-search').value || '').toLowerCase().trim();
+	const s = (document.getElementById('order-filter-status').value || '');
+	document.querySelectorAll('tr.order-row').forEach(function(row) {
+		const matchQ = !q || row.dataset.code.includes(q) || row.dataset.name.includes(q) || row.dataset.phone.includes(q);
+		const matchS = !s || row.dataset.status === s;
+		row.style.display = (matchQ && matchS) ? '' : 'none';
+	});
+}
+
+function updateOrderStatus(orderId, status, selectEl) {
+	const ORDER = ['PENDING', 'CONFIRMED', 'SHIPPING', 'COMPLETED'];
+	const currentStatus = selectEl ? selectEl.getAttribute('data-current') : null;
+	if (currentStatus && currentStatus !== 'CANCELLED') {
+		const curIdx = ORDER.indexOf(currentStatus);
+		const newIdx = ORDER.indexOf(status);
+		if (newIdx !== -1 && curIdx !== -1 && newIdx < curIdx && status !== 'CANCELLED') {
+			showToast('Không thể chuyển ngược trạng thái đơn hàng!', 'danger');
+			if (selectEl) selectEl.value = currentStatus;
+			return;
+		}
+		if (currentStatus === 'COMPLETED' && status !== 'COMPLETED') {
+			showToast('Đơn đã hoàn thành, không thể thay đổi!', 'danger');
+			if (selectEl) selectEl.value = currentStatus;
+			return;
+		}
+	}
+	const url = (document.body.getAttribute('data-context-path') || '') + '/admin/orders';
 	fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -859,8 +1000,13 @@ function updateOrderStatus(orderId, status) {
 	})
 		.then(r => r.json())
 		.then(data => {
-			if (data.success) showToast('Cập nhật trạng thái thành công!', 'success');
-			else showToast('Cập nhật thất bại!', 'danger');
+			if (data.success) {
+				if (selectEl) selectEl.setAttribute('data-current', status);
+				showToast('Cập nhật trạng thái thành công!', 'success');
+			} else {
+				showToast('Cập nhật thất bại!', 'danger');
+				if (selectEl) selectEl.value = currentStatus;
+			}
 		})
 		.catch(() => showToast('Lỗi kết nối!', 'danger'));
 }
@@ -883,8 +1029,8 @@ function viewOrderDetail(orderId) {
 			if (title) title.textContent = 'Đơn hàng #' + o.orderCode;
 
 			const fmt = v => Number(v || 0).toLocaleString('vi-VN');
-			const statusColor = { PENDING: '#92400e', PROCESSING: '#1e40af', SHIPPING: '#0369a1', COMPLETED: '#065f46', CANCELLED: '#991b1b' };
-			const statusBg = { PENDING: '#fff3cd', PROCESSING: '#dbeafe', SHIPPING: '#e0f2fe', COMPLETED: '#d1fae5', CANCELLED: '#fee2e2' };
+			const statusColor = { PENDING: '#92400e', CONFIRMED: '#1e40af', SHIPPING: '#0369a1', COMPLETED: '#065f46', PAYMENT_FAILED: '#991b1b', CANCELLED: '#991b1b' };
+			const statusBg = { PENDING: '#fff3cd', CONFIRMED: '#dbeafe', SHIPPING: '#e0f2fe', COMPLETED: '#d1fae5', PAYMENT_FAILED: '#fee2e2', CANCELLED: '#fee2e2' };
 
 			let itemsHtml = data.items.map(it =>
 				`<tr style="border-bottom:1px solid #eee;">

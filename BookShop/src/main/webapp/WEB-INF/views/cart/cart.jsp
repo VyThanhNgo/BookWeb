@@ -91,7 +91,7 @@
     </span> đ
                                         </td>
                                         <td class="product-item-close">
-                                            <a href="${ctx}/cart?action=remove&id=${item.bookId}"
+                                            <a href="${ctx}/cart"
                                                class="remove-btn js-remove-cart-item"
                                                data-id="${item.bookId}">
                                                 <i class="fas fa-times"></i>
@@ -104,7 +104,7 @@
 
                         <div class="row cart-actions-wrap">
                             <div class="col-md-6 mb-3 mb-md-0">
-                                <a href="${ctx}/cart?action=clear" class="btn btn-outline-danger js-clear-cart">
+                                <a href="${ctx}/cart" class="btn btn-outline-danger js-clear-cart">
                                     Xóa giỏ hàng
                                 </a>
                             </div>
@@ -117,61 +117,34 @@
                     </form>
 
                     <div class="row mt-5">
-                        <div class="col-xl-6 col-lg-6">
-                            <div class="shop-form">
-                                <h4 class="widget-title">Calculate Shipping</h4>
-
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <input type="text" class="form-control" placeholder="Credit Card Type">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" placeholder="Credit Card Number">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" placeholder="Card Verification Number">
-                                    </div>
-                                    <div class="col-md-12 mb-3">
-                                        <input type="text" class="form-control" placeholder="Coupon Code">
-                                    </div>
-                                </div>
-
-                                <button type="button" class="btn btn-primary btnhover">
-                                    Apply Coupon
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-6 col-lg-6">
+                        <div class="col-xl-6 col-lg-6 offset-xl-6 offset-lg-6">
                             <div class="cart-detail">
-                                <h4 class="widget-title">Cart Subtotal</h4>
+                                <h4 class="widget-title">Tổng giỏ hàng</h4>
                                 <table>
                                     <tbody>
                                     <tr>
-                                        <td>Order Subtotal</td>
+                                        <td>Tạm tính</td>
                                         <td class="price">
     <span id="cart-subtotal" data-value="${cart.totalPrice}">
         <fmt:formatNumber value="${cart.totalPrice}" pattern="#,###"/>
     </span> đ
-                                        </td>                                    </tr>
-                                    <tr>
-                                        <td>Shipping</td>
-                                        <td class="price">0 đ</td>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td>Coupon</td>
-                                        <td class="price">0 đ</td>
+                                        <td>Phí vận chuyển</td>
+                                        <td class="price">Tính khi thanh toán</td>
                                     </tr>
                                     <tr>
-                                        <td>Total</td>
+                                        <td>Tổng cộng</td>
                                         <td class="price total-price">
     <span id="cart-total" data-value="${cart.totalPrice}">
         <fmt:formatNumber value="${cart.totalPrice}" pattern="#,###"/>
     </span> đ
-                                        </td>                                    </tr>
+                                        </td>
+                                    </tr>
                                     </tbody>
                                 </table>
-
+                                <p style="font-size:12px;color:#888;margin:8px 0;">Mã giảm giá áp dụng ở trang thanh toán.</p>
                                 <a href="${ctx}/order" class="btn btn-primary btnhover w-100">
                                     Tiến hành thanh toán
                                 </a>
@@ -507,13 +480,14 @@
                 e.preventDefault();
 
                 const bookId = this.getAttribute('data-id');
-                const url = ctx + '/cart?action=remove&id=' + encodeURIComponent(bookId);
 
-                fetch(url, {
-                    method: 'GET',
+                fetch(ctx + '/cart', {
+                    method: 'POST',
                     headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: 'action=remove&id=' + encodeURIComponent(bookId)
                 })
                     .then(function (res) {
                         return res.json();
@@ -539,11 +513,13 @@
             clearBtn.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                fetch(this.href, {
-                    method: 'GET',
+                fetch(ctx + '/cart', {
+                    method: 'POST',
                     headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: 'action=clear'
                 })
                     .then(function (res) {
                         return res.json();

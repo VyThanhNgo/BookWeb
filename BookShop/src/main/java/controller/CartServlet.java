@@ -35,45 +35,10 @@ public class CartServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession();
-        Cart cart = getOrCreateCart(session);
-        User user = getLoggedInUser(session);
+        getOrCreateCart(session);
 
-        String action = request.getParameter("action");
-        String ctx = request.getContextPath();
-        String requestedWith = request.getHeader("X-Requested-With");
-
-        if ("remove".equals(action)) {
-            try {
-                int bookId = Integer.parseInt(request.getParameter("id"));
-                cart.removeItem(bookId);
-                if (user != null) new CartDAO().removeItem(user.getId(), bookId);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if ("XMLHttpRequest".equals(requestedWith)) {
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"success\":true,\"totalItems\":"
-                        + cart.getTotalItems() + ",\"totalPrice\":" + cart.getTotalPrice() + "}");
-                return;
-            }
-            response.sendRedirect(ctx + "/cart");
-            return;
-        }
-
-        if ("clear".equals(action)) {
-            cart.clear();
-            if (user != null) new CartDAO().clearCart(user.getId());
-
-            if ("XMLHttpRequest".equals(requestedWith)) {
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"success\":true,\"totalItems\":0,\"totalPrice\":0}");
-                return;
-            }
-            response.sendRedirect(ctx + "/cart");
-            return;
-        }
-
+        // doGet chỉ hiển thị giỏ hàng. Các hành động thay đổi trạng thái
+        // (remove/clear) đã chuyển sang doPost để tránh thay đổi dữ liệu qua GET.
         BookDAO dao = new BookDAO();
         request.setAttribute("categories", dao.getAllCategories());
         request.setAttribute("pageTitle", "Giỏ hàng");
@@ -185,6 +150,34 @@ public class CartServlet extends HttpServlet {
                 }
                 // Sync toàn bộ trạng thái giỏ sau khi update (bao gồm cả item bị remove qty=0)
                 if (user != null) cartDAO.saveFullCart(user.getId(), cart.getItems());
+                response.sendRedirect(ctx + "/cart");
+                return;
+            }
+
+            else if ("remove".equals(action)) {
+                int bookId = Integer.parseInt(request.getParameter("id"));
+                cart.removeItem(bookId);
+                if (user != null) cartDAO.removeItem(user.getId(), bookId);
+
+                if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":true,\"totalItems\":"
+                            + cart.getTotalItems() + ",\"totalPrice\":" + cart.getTotalPrice() + "}");
+                    return;
+                }
+                response.sendRedirect(ctx + "/cart");
+                return;
+            }
+
+            else if ("clear".equals(action)) {
+                cart.clear();
+                if (user != null) cartDAO.clearCart(user.getId());
+
+                if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":true,\"totalItems\":0,\"totalPrice\":0}");
+                    return;
+                }
                 response.sendRedirect(ctx + "/cart");
                 return;
             }

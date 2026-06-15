@@ -137,6 +137,10 @@ body {
 				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
 				<i class="fa-solid fa-rectangle-ad text-lg"></i> Khuyến Mãi Đồng Giá
 			</button>
+			<button onclick="switchTab('coupons')" id="btn-coupons"
+				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
+				<i class="fa-solid fa-ticket text-lg"></i> Mã Giảm Giá
+			</button>
 			<button onclick="switchTab('orders')" id="btn-orders"
 				class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 border-l-4 border-transparent">
 				<i class="fa-solid fa-box text-lg"></i> Quản Lý Đơn Hàng
@@ -666,6 +670,98 @@ body {
 			</div>
 		</section>
 
+		<!-- ================= PANEL: MÃ GIẢM GIÁ ================= -->
+		<section id="panel-coupons" class="tab-panel hidden space-y-6">
+			<div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="font-bold text-lg heading-font text-navy-800 dark:text-white">Quản Lý Mã Giảm Giá</h3>
+					<button onclick="openCouponModal()"
+						class="bg-navy-800 hover:opacity-90 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all">
+						<i class="fa-solid fa-plus mr-1"></i> Thêm mã
+					</button>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="w-full text-left text-sm border-collapse">
+						<thead>
+							<tr class="bg-slate-100 dark:bg-slate-800 text-xs uppercase text-slate-500">
+								<th class="px-4 py-3 rounded-l-lg">Mã</th>
+								<th class="px-4 py-3">Loại</th>
+								<th class="px-4 py-3">Giá trị</th>
+								<th class="px-4 py-3">Đơn tối thiểu</th>
+								<th class="px-4 py-3">Giới hạn</th>
+								<th class="px-4 py-3">Đã dùng</th>
+								<th class="px-4 py-3">Hết hạn</th>
+								<th class="px-4 py-3">Trạng thái</th>
+								<th class="px-4 py-3 rounded-r-lg">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody id="coupon-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+							<tr><td colspan="9" class="px-4 py-6 text-center text-slate-400">Đang tải...</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<!-- Modal thêm/sửa coupon -->
+		<div id="coupon-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+			<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg">
+				<div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
+					<h3 id="coupon-modal-title" class="font-bold text-lg text-navy-800 dark:text-white">Thêm mã giảm giá</h3>
+					<button onclick="closeCouponModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+				</div>
+				<div class="p-6 space-y-4">
+					<input type="hidden" id="coupon-id">
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã *</label>
+							<input id="coupon-code" type="text" placeholder="VD: SALE20"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 uppercase">
+						</div>
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Loại *</label>
+							<select id="coupon-type" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+								<option value="PERCENT">Phần trăm (%)</option>
+								<option value="FIXED">Số tiền cố định (đ)</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Giá trị *</label>
+							<input id="coupon-value" type="number" min="1" placeholder="VD: 10"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+						</div>
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Đơn tối thiểu (đ)</label>
+							<input id="coupon-min" type="number" min="0" placeholder="0"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+						</div>
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Giảm tối đa (đ)</label>
+							<input id="coupon-max" type="number" min="0" placeholder="Không giới hạn"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+						</div>
+						<div>
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Giới hạn dùng</label>
+							<input id="coupon-limit" type="number" min="1" placeholder="Không giới hạn"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+						</div>
+						<div class="col-span-2">
+							<label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày hết hạn</label>
+							<input id="coupon-expires" type="datetime-local"
+								class="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800">
+						</div>
+					</div>
+					<p id="coupon-modal-err" class="text-red-500 text-sm hidden"></p>
+				</div>
+				<div class="flex justify-end gap-3 px-6 pb-6">
+					<button onclick="closeCouponModal()"
+						class="px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50">Hủy</button>
+					<button onclick="saveCoupon()"
+						class="px-5 py-2 rounded-xl bg-navy-800 text-white text-sm font-bold hover:opacity-90">Lưu</button>
+				</div>
+			</div>
+		</div>
+
 		<!-- ================= PANEL 9: HÒM THƯ LIÊN HỆ (Mục 22) ================= -->
 		<!-- ================= PANEL: QUẢN LÝ ĐƠN HÀNG ================= -->
 		<section id="panel-orders" class="tab-panel hidden space-y-6">
@@ -678,6 +774,20 @@ body {
 					Tổng: <strong>${totalOrders}</strong> đơn — Chờ xử lý: <strong
 						class="text-amber-500">${pendingOrders}</strong>
 				</p>
+				<div class="flex gap-3 mb-4 flex-wrap">
+					<input id="order-search" type="text" placeholder="Tìm mã đơn, khách hàng, SĐT..."
+						oninput="filterOrders()"
+						class="border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 flex-1 min-w-[200px]">
+					<select id="order-filter-status" onchange="filterOrders()"
+						class="border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800">
+						<option value="">Tất cả trạng thái</option>
+						<option value="PENDING">Chờ xử lý</option>
+						<option value="CONFIRMED">Đã xác nhận</option>
+						<option value="SHIPPING">Đang giao</option>
+						<option value="COMPLETED">Hoàn thành</option>
+						<option value="CANCELLED">Đã hủy</option>
+					</select>
+				</div>
 				<div class="overflow-x-auto">
 					<table class="w-full text-left text-sm border-collapse">
 						<thead>
@@ -693,8 +803,11 @@ body {
 						</thead>
 						<tbody>
 							<c:forEach var="order" items="${recentOrders}">
-								<tr
-									class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+								<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 order-row"
+									data-code="${fn:toLowerCase(order.orderCode)}"
+									data-name="${fn:toLowerCase(order.customerName)}"
+									data-phone="${order.phone}"
+									data-status="${order.status}">
 									<td class="px-4 py-3 font-semibold">${order.orderCode}</td>
 									<td class="px-4 py-3">${order.customerName}</td>
 									<td class="px-4 py-3">${order.phone}</td>
@@ -702,22 +815,14 @@ body {
 											value="${order.totalAmount}" pattern="#,###" />đ</td>
 									<td class="px-4 py-3 text-slate-400"><fmt:formatDate
 											value="${order.createdAt}" pattern="dd/MM/yy HH:mm" /></td>
-									<td class="px-4 py-3"><select
-										onchange="updateOrderStatus(${order.orderId}, this.value)"
-										class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800">
-											<option value="PENDING"
-												${order.status=='PENDING'?'selected':''}>Chờ xử lý</option>
-											<option value="PROCESSING"
-												${order.status=='PROCESSING'?'selected':''}>Đang xử
-												lý</option>
-											<option value="SHIPPING"
-												${order.status=='SHIPPING'?'selected':''}>Đang giao</option>
-											<option value="COMPLETED"
-												${order.status=='COMPLETED'?'selected':''}>Hoàn
-												thành</option>
-											<option value="CANCELLED"
-												${order.status=='CANCELLED'?'selected':''}>Đã hủy</option>
-									</select></td>
+									<td class="px-4 py-3"><select data-current="${order.status}" onchange="updateOrderStatus(${order.orderId}, this.value, this)" class="text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800">
+												<option value="PENDING" ${order.status=='PENDING'?'selected':''}>Chờ xử lý</option>
+												<option value="CONFIRMED" ${order.status=='CONFIRMED'?'selected':''}>Đã xác nhận</option>
+												<option value="SHIPPING" ${order.status=='SHIPPING'?'selected':''}>Đang giao</option>
+												<option value="COMPLETED" ${order.status=='COMPLETED'?'selected':''}>Hoàn thành</option>
+												<option value="PAYMENT_FAILED" ${order.status=='PAYMENT_FAILED'?'selected':''}>Thanh toán thất bại</option>
+												<option value="CANCELLED" ${order.status=='CANCELLED'?'selected':''}>Đã hủy</option>
+											</select></td>
 									<td class="px-4 py-3">
 										<button onclick="viewOrderDetail(${order.orderId})"
 											class="text-xs text-blue-600 hover:underline">Xem</button>
@@ -1071,6 +1176,8 @@ let deletedAuthors    = ${deletedAuthorsJson};
 <c:if test="${not empty param.success or not empty param.error}">
 window._adminNotify = { key: '${not empty param.success ? param.success : param.error}' };
 </c:if>
+const monthlyRevenueData = ${not empty monthlyRevenueJson ? monthlyRevenueJson : '[0,0,0,0,0,0]'};
+const bestSellersData    = ${not empty bestSellersJson ? bestSellersJson : '[]'};
 </script>
 
 	<!-- Toàn bộ logic JS nằm trong file riêng -->

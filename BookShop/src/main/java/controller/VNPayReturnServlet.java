@@ -45,8 +45,14 @@ public class VNPayReturnServlet extends HttpServlet {
 
         boolean paymentSuccess = signatureOk && "00".equals(responseCode);
 
+        // Trạng thái hiện tại để tránh cập nhật trùng khi người dùng F5 trang kết quả
+        Order existing = dao.getOrderByCode(orderCode);
+        String currentStatus = (existing != null) ? existing.getStatus() : null;
+
         if (paymentSuccess) {
-            dao.updateOrderPayment(orderCode, "CONFIRMED", "SUCCESS");
+            if (!"CONFIRMED".equals(currentStatus)) {
+                dao.updateOrderPayment(orderCode, "CONFIRMED", "SUCCESS");
+            }
 
             Order order = dao.getOrderByCode(orderCode);
             List<OrderItem> items = order != null ? dao.getOrderItems(order.getOrderId()) : null;
@@ -63,7 +69,10 @@ public class VNPayReturnServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/order/order-success.jsp")
                    .forward(request, response);
         } else {
-            dao.updateOrderPayment(orderCode, "PAYMENT_FAILED", "FAILED");
+            // Không hạ cấp đơn đã CONFIRMED; không ghi lại nếu đã PAYMENT_FAILED
+            if (!"CONFIRMED".equals(currentStatus) && !"PAYMENT_FAILED".equals(currentStatus)) {
+                dao.updateOrderPayment(orderCode, "PAYMENT_FAILED", "FAILED");
+            }
 
             String errorMsg = getVNPayErrorMessage(responseCode);
             request.setAttribute("orderCode", orderCode);
