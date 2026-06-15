@@ -57,6 +57,11 @@ public class VNPayReturnServlet extends HttpServlet {
             Order order = dao.getOrderByCode(orderCode);
             List<OrderItem> items = order != null ? dao.getOrderItems(order.getOrderId()) : null;
 
+            // Gửi email xác nhận chỉ ở lần xác nhận đầu tiên (tránh gửi lại khi F5)
+            if (!"CONFIRMED".equals(currentStatus)) {
+                util.MailUtil.sendOrderConfirmationAsync(order, items);
+            }
+
             // Xóa pending payment trong session
             HttpSession session = request.getSession();
             session.removeAttribute("pendingPaymentOrderCode");

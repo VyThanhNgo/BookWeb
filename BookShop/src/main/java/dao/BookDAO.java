@@ -327,7 +327,7 @@ public class BookDAO {
 		String sql = "SELECT b.*, c.category_id as cid, c.category_name as cname, a.author_name " + "FROM books b "
 		        + "LEFT JOIN categories c ON b.category_id = c.category_id "
 		        + "LEFT JOIN authors a ON b.author_id = a.author_id "
-		        + "WHERE b.is_deleted = 0 ORDER BY RAND() LIMIT ?";
+		        + "WHERE b.is_deleted = 0 ORDER BY b.sold_quantity DESC LIMIT ?";
 		try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, limit);
 			try (ResultSet rs = ps.executeQuery()) {

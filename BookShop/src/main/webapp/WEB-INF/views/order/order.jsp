@@ -728,6 +728,8 @@
 
             if (!toDistrictId || !toWardCode || !serviceId) return;
 
+            shippingFeeText.textContent = 'Đang tính...';
+
             const body = new URLSearchParams();
             body.append('toDistrictId', toDistrictId);
             body.append('toWardCode', toWardCode);
@@ -749,7 +751,7 @@
                 shippingFeeText.textContent = formatMoney(json.shippingFee);
                 grandTotalText.textContent = formatMoney(json.total);
             } else {
-                alert("Không tính được phí ship: " + json.message);
+                shippingFeeText.textContent = 'Không tính được phí';
                 console.error(json);
             }
         }
@@ -798,6 +800,14 @@
 
             await calculateShippingFee();
         });
+
+        // Định dạng lại số tiền hiển thị ban đầu (server render ra số thô như "740000.0")
+        (function formatInitialTotals() {
+            var s = document.getElementById('subtotalText');   if (s) s.textContent = formatMoney(subtotalValue);
+            var d = document.getElementById('discountText');   if (d) d.textContent = formatMoney(discountValue);
+            var f = document.getElementById('shippingFeeText'); if (f) f.textContent = formatMoney(Number(shippingFeeInput.value || 0));
+            var g = document.getElementById('grandTotalText');  if (g) g.textContent = formatMoney(Math.max(0, subtotalValue + Number(shippingFeeInput.value || 0) - discountValue));
+        })();
 
         loadProvinces();
     })();
@@ -876,6 +886,7 @@
         if (!code) { msg.style.color = '#c00'; msg.textContent = 'Vui lòng nhập mã giảm giá.'; return; }
 
         const subtotal = Number(document.getElementById('subtotalValue').value || 0);
+        msg.style.color = '#666'; msg.textContent = 'Đang áp dụng...';
         fetch(ctx + '/coupon/apply?code=' + encodeURIComponent(code) + '&subtotal=' + subtotal, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })

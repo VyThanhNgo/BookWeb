@@ -966,15 +966,62 @@ function deleteCoupon(id, code) {
 	});
 }
 
-function filterOrders() {
+var ORDERS_PER_PAGE = 10;
+var currentOrderPage = 1;
+
+function getFilteredOrderRows() {
 	const q = (document.getElementById('order-search').value || '').toLowerCase().trim();
 	const s = (document.getElementById('order-filter-status').value || '');
-	document.querySelectorAll('tr.order-row').forEach(function(row) {
+	return Array.prototype.slice.call(document.querySelectorAll('tr.order-row')).filter(function(row) {
 		const matchQ = !q || row.dataset.code.includes(q) || row.dataset.name.includes(q) || row.dataset.phone.includes(q);
 		const matchS = !s || row.dataset.status === s;
-		row.style.display = (matchQ && matchS) ? '' : 'none';
+		return matchQ && matchS;
 	});
 }
+
+function renderOrderView() {
+	const rows = getFilteredOrderRows();
+	const totalPages = Math.max(1, Math.ceil(rows.length / ORDERS_PER_PAGE));
+	if (currentOrderPage > totalPages) currentOrderPage = totalPages;
+	if (currentOrderPage < 1) currentOrderPage = 1;
+
+	document.querySelectorAll('tr.order-row').forEach(function(r) { r.style.display = 'none'; });
+	const start = (currentOrderPage - 1) * ORDERS_PER_PAGE;
+	rows.slice(start, start + ORDERS_PER_PAGE).forEach(function(r) { r.style.display = ''; });
+
+	renderOrderPagination(totalPages, rows.length);
+}
+
+function renderOrderPagination(totalPages, totalRows) {
+	const box = document.getElementById('order-pagination');
+	if (!box) return;
+	if (totalRows <= ORDERS_PER_PAGE) { box.innerHTML = ''; return; }
+
+	const btn = 'px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-100 dark:hover:bg-slate-800';
+	const active = 'px-3 py-1 rounded-lg bg-navy-800 text-white text-sm';
+	let html = '<button class="' + btn + '" ' + (currentOrderPage === 1 ? 'disabled' : '') + ' onclick="gotoOrderPage(' + (currentOrderPage - 1) + ')">&lsaquo;</button>';
+	for (let p = 1; p <= totalPages; p++) {
+		html += '<button class="' + (p === currentOrderPage ? active : btn) + '" onclick="gotoOrderPage(' + p + ')">' + p + '</button>';
+	}
+	html += '<button class="' + btn + '" ' + (currentOrderPage === totalPages ? 'disabled' : '') + ' onclick="gotoOrderPage(' + (currentOrderPage + 1) + ')">&rsaquo;</button>';
+	box.innerHTML = html;
+}
+
+function gotoOrderPage(p) {
+	currentOrderPage = p;
+	renderOrderView();
+}
+
+function filterOrders() {
+	currentOrderPage = 1;
+	renderOrderView();
+}
+
+(function initOrderPagination() {
+	function run() { if (document.getElementById('order-pagination')) renderOrderView(); }
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+	else run();
+})();
 
 function updateOrderStatus(orderId, status, selectEl) {
 	const ORDER = ['PENDING', 'CONFIRMED', 'SHIPPING', 'COMPLETED'];
