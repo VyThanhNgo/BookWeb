@@ -3,7 +3,7 @@
 
 <%-- Sửa đường dẫn để Servlet có thể tìm thấy Header đúng vị trí --%>
 <jsp:include page="/WEB-INF/views/base/header.jsp" />
-
+//jsp
 <div class="page-content">
     <section class="content-inner shop-account">
         <div class="container">
