@@ -4,7 +4,7 @@
 
 <!-- Include header -->
 <jsp:include page="../base/header.jsp" />
-//jsp
+
 <div class="page-content">
 	<section class="content-inner shop-account">
 		<div class="container">
