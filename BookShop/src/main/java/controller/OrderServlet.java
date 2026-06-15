@@ -47,6 +47,31 @@ public class OrderServlet extends HttpServlet {
         return items;
     }
 
+    // Tập bookId người dùng đã chọn để thanh toán (lưu trong session từ trang giỏ hàng)
+    @SuppressWarnings("unchecked")
+    private java.util.Set<Integer> getSelectedIds(HttpSession session) {
+        Object o = session.getAttribute("checkoutSelectedIds");
+        return (o instanceof java.util.Set) ? (java.util.Set<Integer>) o : null;
+    }
+
+    // Danh sách sản phẩm sẽ thanh toán = giỏ hàng đã lọc theo lựa chọn.
+    // Nếu không có lựa chọn (hoặc lọc ra rỗng) → dùng toàn bộ giỏ (tương thích cũ).
+    private List<CartItem> getCheckoutItems(Cart cart, java.util.Set<Integer> selected) {
+        List<CartItem> all = new ArrayList<>(cart.getItems());
+        if (selected == null || selected.isEmpty()) return all;
+        List<CartItem> picked = new ArrayList<>();
+        for (CartItem ci : all) {
+            if (selected.contains(ci.getBookId())) picked.add(ci);
+        }
+        return picked.isEmpty() ? all : picked;
+    }
+
+    private double sumItems(Collection<CartItem> items) {
+        double s = 0;
+        for (CartItem i : items) s += i.getTotal();
+        return s;
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -60,8 +85,21 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
+        // Lựa chọn sản phẩm để thanh toán (từ trang giỏ hàng) → lưu vào session
+        String selParam = request.getParameter("selectedIds");
+        if (selParam != null) {
+            java.util.Set<Integer> sel = new java.util.HashSet<>();
+            for (String s : selParam.split(",")) {
+                try { sel.add(Integer.parseInt(s.trim())); } catch (Exception ignored) {}
+            }
+            if (!sel.isEmpty()) session.setAttribute("checkoutSelectedIds", sel);
+            else session.removeAttribute("checkoutSelectedIds");
+        }
+
+        List<CartItem> items = getCheckoutItems(cart, getSelectedIds(session));
+
         BookDAO bookDAO = new BookDAO();
-        for (CartItem item : cart.getItems()) {
+        for (CartItem item : items) {
             Book book = bookDAO.getBookById(item.getBookId());
             if (book == null || book.getStock() < item.getQuantity()) {
                 String msg = (book == null)
@@ -73,13 +111,26 @@ public class OrderServlet extends HttpServlet {
             }
         }
 
-        double subtotal = cart.getTotalPrice();
+        double subtotal = sumItems(items);
         double shippingFee = 0;
         double discount = 0;
+
+        // Mã giảm giá áp từ trang giỏ hàng (nếu có) → áp sẵn vào trang thanh toán
+        String couponCode = request.getParameter("coupon");
+        if (couponCode != null && !couponCode.trim().isEmpty()) {
+            CouponDAO couponDAO = new CouponDAO();
+            Coupon coupon = couponDAO.findByCode(couponCode.trim());
+            discount = Math.round(couponDAO.computeDiscount(coupon, subtotal));
+            if (discount > 0) {
+                request.setAttribute("couponCode", couponCode.trim().toUpperCase());
+                request.setAttribute("old_couponCode", couponCode.trim().toUpperCase());
+            }
+        }
+
         double total = subtotal + shippingFee - discount;
 
         request.setAttribute("pageTitle", "Thanh toán");
-        request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+        request.setAttribute("orderItems", mapOrderItems(items));
         request.setAttribute("subtotal", subtotal);
         request.setAttribute("shippingFee", shippingFee);
         request.setAttribute("discount", discount);
@@ -101,14 +152,18 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
+        // Chỉ thanh toán những sản phẩm đã được chọn ở trang giỏ hàng
+        List<CartItem> items = getCheckoutItems(cart, getSelectedIds(session));
+        double itemsSubtotal = sumItems(items);
+
         String paymentMethodEarly = request.getParameter("paymentMethod");
 
         // ZaloPay chưa được tích hợp — chặn sớm trước khi tạo đơn
         if ("ZALOPAY".equals(paymentMethodEarly)) {
-            double subtotalE = cart.getTotalPrice();
+            double subtotalE = itemsSubtotal;
             request.setAttribute("pageTitle", "Thanh toán");
             request.setAttribute("error", "ZaloPay hiện chưa được hỗ trợ. Vui lòng chọn phương thức thanh toán khác.");
-            request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+            request.setAttribute("orderItems", mapOrderItems(items));
             request.setAttribute("subtotal", subtotalE);
             request.setAttribute("shippingFee", 0.0);
             request.setAttribute("discount", 0.0);
@@ -121,10 +176,10 @@ public class OrderServlet extends HttpServlet {
         if ("BANK_TRANSFER".equals(paymentMethodEarly)) {
             String bankConfirmed = request.getParameter("bankConfirmed");
             if (!"1".equals(bankConfirmed)) {
-                double subtotalE = cart.getTotalPrice();
+                double subtotalE = itemsSubtotal;
                 request.setAttribute("pageTitle", "Thanh toán");
                 request.setAttribute("error", "Vui lòng xác nhận đã chuyển khoản trước khi đặt hàng.");
-                request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+                request.setAttribute("orderItems", mapOrderItems(items));
                 request.setAttribute("subtotal", subtotalE);
                 request.setAttribute("shippingFee", 0.0);
                 request.setAttribute("discount", 0.0);
@@ -151,7 +206,7 @@ public class OrderServlet extends HttpServlet {
         Integer sessionFee = (Integer) session.getAttribute("calculatedShippingFee");
         double shippingFee = (sessionFee != null) ? sessionFee.doubleValue()
                 : parseDoubleOrZero(request.getParameter("shippingFee"));
-        double subtotalForCoupon = cart.getTotalPrice();
+        double subtotalForCoupon = itemsSubtotal;
         double discount = 0;
         if (!isBlank(couponCode)) {
             CouponDAO couponDAO = new CouponDAO();
@@ -171,12 +226,12 @@ public class OrderServlet extends HttpServlet {
         }
 
         if (validationError != null) {
-            double subtotal = cart.getTotalPrice();
+            double subtotal = itemsSubtotal;
             double total = subtotal + shippingFee - discount;
 
             request.setAttribute("pageTitle", "Thanh toán");
             request.setAttribute("error", validationError);
-            request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+            request.setAttribute("orderItems", mapOrderItems(items));
             request.setAttribute("subtotal", subtotal);
             request.setAttribute("shippingFee", shippingFee);
             request.setAttribute("discount", discount);
@@ -191,7 +246,7 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        double subtotal = cart.getTotalPrice();
+        double subtotal = itemsSubtotal;
         double total = subtotal + shippingFee - discount;
 
         User loggedInUser = (User) session.getAttribute("loggedInUser");
@@ -216,12 +271,12 @@ public class OrderServlet extends HttpServlet {
         order.setCouponCode(couponCode);
 
         OrderDAO orderDAO = new OrderDAO();
-        boolean success = orderDAO.createFullOrder(order, cart.getItems());
+        boolean success = orderDAO.createFullOrder(order, items);
 
         if (!success) {
             request.setAttribute("pageTitle", "Thanh toán");
             request.setAttribute("error", "Không thể tạo đơn hàng. Vui lòng thử lại.");
-            request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
+            request.setAttribute("orderItems", mapOrderItems(items));
             request.setAttribute("subtotal", subtotal);
             request.setAttribute("shippingFee", shippingFee);
             request.setAttribute("discount", discount);
@@ -239,11 +294,14 @@ public class OrderServlet extends HttpServlet {
             new CouponDAO().incrementUsed(couponCode.trim());
         }
 
-        List<OrderItem> placedItems = mapOrderItems(cart.getItems());
-        cart.clear();
-        if (userId > 0) {
-            new CartDAO().clearCart(userId);
+        List<OrderItem> placedItems = mapOrderItems(items);
+        // Chỉ xóa khỏi giỏ những sản phẩm đã đặt (giữ lại các sản phẩm không được chọn)
+        CartDAO cartDAO = new CartDAO();
+        for (CartItem it : items) {
+            cart.removeItem(it.getBookId());
+            if (userId > 0) cartDAO.removeItem(userId, it.getBookId());
         }
+        session.removeAttribute("checkoutSelectedIds");
 
         // Điều hướng theo phương thức thanh toán
         if ("VNPAY".equals(paymentMethod)) {
@@ -257,6 +315,9 @@ public class OrderServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/momo/pay");
             return;
         }
+
+        // COD / BANK_TRANSFER — đơn đã chốt → gửi email xác nhận (nền, no-op nếu chưa cấu hình SMTP)
+        util.MailUtil.sendOrderConfirmationAsync(order, placedItems);
 
         // COD / BANK_TRANSFER — hiển thị trang thành công ngay
         request.setAttribute("pageTitle", "Đặt hàng thành công");

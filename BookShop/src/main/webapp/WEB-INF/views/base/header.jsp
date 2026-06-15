@@ -176,7 +176,7 @@
 										<c:choose>
 											<c:when
 												test="${sessionScope.cart != null && not empty sessionScope.cart.items}">
-												<c:forEach var="ci" items="${sessionScope.cart.items}">
+												<c:forEach var="ci" items="${sessionScope.cart.items}" varStatus="st" end="4">
 													<li class="cart-item" data-id="${ci.bookId}">
 														<div class="media">
 															<div class="media-left">
@@ -204,9 +204,15 @@
 													</li>
 												</c:forEach>
 
+												<c:if test="${sessionScope.cart.items.size() > 5}">
+													<li class="cart-item text-center mini-cart-more">
+														<small class="text-secondary">+ ${sessionScope.cart.items.size() - 5} sản phẩm khác</small>
+													</li>
+												</c:if>
+
 												<li class="cart-item text-center mini-cart-total">
 													<h6 class="text-secondary mb-0">
-														Total =
+														Tổng =
 														<fmt:formatNumber value="${sessionScope.cart.totalPrice}"
 															pattern="#,###" />
 														đ
@@ -216,10 +222,10 @@
 												<li class="text-center d-flex cart-actions-mini"><a
 													href="${pageContext.request.contextPath}/cart"
 													class="btn btn-sm btn-primary me-2 btnhover w-100">
-														View Cart </a> <a
+														Xem giỏ </a> <a
 													href="${pageContext.request.contextPath}/order"
 													class="btn btn-sm btn-outline-primary btnhover w-100">
-														Checkout </a></li>
+														Thanh toán </a></li>
 											</c:when>
 
 											<c:otherwise>
@@ -229,10 +235,10 @@
 												<li class="text-center d-flex cart-actions-mini"><a
 													href="${pageContext.request.contextPath}/cart"
 													class="btn btn-sm btn-primary me-2 btnhover w-100">
-														View Cart </a> <a
+														Xem giỏ </a> <a
 													href="${pageContext.request.contextPath}/order"
 													class="btn btn-sm btn-outline-primary btnhover w-100">
-														Checkout </a></li>
+														Thanh toán </a></li>
 											</c:otherwise>
 										</c:choose>
 									</ul>
@@ -560,6 +566,27 @@
 					return Number(value || 0).toLocaleString('vi-VN');
 				}
 
+				// Giới hạn mini-cart hiển thị tối đa 5 sản phẩm + dòng "+N sản phẩm khác"
+				function enforceMiniCartLimit() {
+					const list = document.getElementById('mini-cart-list');
+					if (!list) return;
+					const items = list.querySelectorAll('.cart-item[data-id]');
+					items.forEach(function (it, i) { it.style.display = i < 5 ? '' : 'none'; });
+					let more = list.querySelector('.mini-cart-more');
+					const extra = items.length - 5;
+					if (extra > 0) {
+						if (!more) {
+							more = document.createElement('li');
+							more.className = 'cart-item text-center mini-cart-more';
+							const ref = list.querySelector('.mini-cart-total');
+							if (ref) list.insertBefore(more, ref); else list.appendChild(more);
+						}
+						more.innerHTML = '<small class="text-secondary">+ ' + extra + ' sản phẩm khác</small>';
+					} else if (more) {
+						more.remove();
+					}
+				}
+
 				function updateMiniCartUI(data) {
 					const list = document.getElementById('mini-cart-list');
 					const ctx = '${pageContext.request.contextPath}';
@@ -610,15 +637,16 @@
 						list.insertAdjacentElement('beforeend', totalRow);
 					}
 					totalRow.innerHTML =
-							'<h6 class="text-secondary mb-0">Total = ' + formatMoney(data.totalPrice) + ' đ</h6>';
+							'<h6 class="text-secondary mb-0">Tổng = ' + formatMoney(data.totalPrice) + ' đ</h6>';
 					let actionsRow = list.querySelector('.cart-actions-mini');
 					if (!actionsRow) {
 						const li = document.createElement('li');
 						li.className = 'text-center d-flex cart-actions-mini';
 						li.innerHTML =
-								'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 btnhover w-100">View Cart</a>' +
-								'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary btnhover w-100">Checkout</a>';						list.appendChild(li);
+								'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 btnhover w-100">Xem giỏ</a>' +
+								'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary btnhover w-100">Thanh toán</a>';						list.appendChild(li);
 					}
+					enforceMiniCartLimit();
 				}
 				
 				//WISHLIST
@@ -651,7 +679,7 @@
 							.then(data => {
 								if (data.success) {
 									const item = list.querySelector('.cart-item[data-id="' + bookId + '"]');
-									if (item) item.remove();
+									if (item) item.remove(); enforceMiniCartLimit();
 
 									const badge = document.getElementById('cart-badge');
 									if (badge) badge.textContent = data.totalItems;
@@ -659,7 +687,7 @@
 									const totalRow = list.querySelector('.mini-cart-total');
 									if (totalRow) {
 										totalRow.innerHTML =
-												'<h6 class="text-secondary mb-0">Total = ' +
+												'<h6 class="text-secondary mb-0">Tổng = ' +
 												Number(data.totalPrice).toLocaleString('vi-VN') +
 												' đ</h6>';
 									}
@@ -671,8 +699,8 @@
 												'<p class="mb-0">Giỏ hàng đang trống.</p>' +
 												'</li>' +
 												'<li class="text-center d-flex cart-actions-mini">' +
-												'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 w-100">View Cart</a>' +
-												'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary w-100">Checkout</a>' +
+												'<a href="' + ctx + '/cart" class="btn btn-sm btn-primary me-2 w-100">Xem giỏ</a>' +
+												'<a href="' + ctx + '/order" class="btn btn-sm btn-outline-primary w-100">Thanh toán</a>' +
 												'</li>';
 									}
 								}
