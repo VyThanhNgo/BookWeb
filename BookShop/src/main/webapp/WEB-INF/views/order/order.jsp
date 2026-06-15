@@ -1,4 +1,4 @@
-git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
@@ -37,10 +37,13 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                         <h3 class="checkout-title">Thông tin giao hàng</h3>
 
                         <div class="form-grid">
-                            <input type="text" name="customerName" placeholder="Họ và tên *" required>
-                            <input type="text" name="phone" placeholder="Số điện thoại *" required>
+                            <input type="text" name="customerName" placeholder="Họ và tên *" required
+                                   value="${not empty old_customerName ? old_customerName : ''}">
+                            <input type="text" name="phone" placeholder="Số điện thoại *" required
+                                   value="${not empty old_phone ? old_phone : ''}">
 
-                            <input type="email" name="email" placeholder="Email">
+                            <input type="email" name="email" placeholder="Email"
+                                   value="${not empty old_email ? old_email : ''}">
                             <select id="provinceSelect" name="province" required>
                                 <option value="">Chọn Tỉnh/Thành phố</option>
                             </select>
@@ -71,9 +74,10 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                             <input type="hidden" id="discountValue" value="${discount}">
                             <input type="hidden" id="bankConfirmedInput" name="bankConfirmed" value="0">
 
-                            <input type="text" name="addressLine" placeholder="Địa chỉ cụ thể *" required class="full">
+                            <input type="text" name="addressLine" placeholder="Địa chỉ cụ thể *" required class="full"
+                                   value="${not empty old_addressLine ? old_addressLine : ''}">
 
-                            <textarea name="note" placeholder="Ghi chú đơn hàng"></textarea>
+                            <textarea name="note" placeholder="Ghi chú đơn hàng">${not empty old_note ? old_note : ''}</textarea>
                         </div>
                     </div>
 
@@ -186,6 +190,20 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
 
                                 </div>
                             </c:forEach>
+                        </div>
+
+                        <!-- COUPON -->
+                        <div class="coupon-box" style="margin-bottom:12px;">
+                            <div style="display:flex;gap:8px;">
+                                <input type="text" id="couponInput" placeholder="Nhập mã giảm giá"
+                                    style="flex:1;border:1px solid #ddd;border-radius:8px;padding:8px 12px;font-size:14px;"
+                                    value="${not empty old_couponCode ? old_couponCode : ''}">
+                                <button type="button" onclick="applyCoupon()"
+                                    style="background:#1a3352;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;white-space:nowrap;">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            <p id="couponMsg" style="font-size:13px;margin-top:6px;"></p>
                         </div>
 
                         <!-- TOTAL -->
@@ -797,7 +815,6 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
         const defaultRadio = document.querySelector('input[name="paymentMethod"]:checked');
         if (defaultRadio) onPaymentChange(defaultRadio);
 
-        // Intercept form submit for BANK_TRANSFER confirmation
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
             if (method === 'BANK_TRANSFER') {
@@ -805,7 +822,13 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
                 if (confirmed !== '1') {
                     e.preventDefault();
                     showBankModal();
+                    return;
                 }
+            }
+            const btn = this.querySelector('button[type="submit"], button:not([type="button"])');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Đang xử lý...';
             }
         });
     });
@@ -847,9 +870,47 @@ git add src/main/webapp/WEB-INF/views/order/payment-failed.jsp<%@ page contentTy
         if (e.target.id === 'bankTransferModal') closeBankModal();
     }
 
+    function applyCoupon() {
+        const code = (document.getElementById('couponInput').value || '').trim();
+        const msg  = document.getElementById('couponMsg');
+        if (!code) { msg.style.color = '#c00'; msg.textContent = 'Vui lòng nhập mã giảm giá.'; return; }
+
+        const subtotal = Number(document.getElementById('subtotalValue').value || 0);
+        fetch(ctx + '/coupon/apply?code=' + encodeURIComponent(code) + '&subtotal=' + subtotal, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('couponCodeInput').value = code;
+                document.getElementById('discountAmountInput').value = data.discount;
+                document.getElementById('discountValue').value = data.discount;
+                document.getElementById('discountText').textContent = formatMoney(data.discount);
+                const shipping = Number(document.getElementById('shippingFeeInput').value || 0);
+                document.getElementById('grandTotalText').textContent = formatMoney(subtotal + shipping - data.discount);
+                msg.style.color = '#1a7a1a';
+            } else {
+                document.getElementById('couponCodeInput').value = '';
+                document.getElementById('discountAmountInput').value = 0;
+                document.getElementById('discountValue').value = 0;
+                document.getElementById('discountText').textContent = formatMoney(0);
+                const shipping = Number(document.getElementById('shippingFeeInput').value || 0);
+                document.getElementById('grandTotalText').textContent = formatMoney(subtotal + shipping);
+                msg.style.color = '#c00';
+            }
+            msg.textContent = data.message;
+        })
+        .catch(function() { msg.style.color = '#c00'; msg.textContent = 'Lỗi kết nối, thử lại.'; });
+    }
+
     function confirmBankTransfer() {
         document.getElementById('bankConfirmedInput').value = '1';
         closeBankModal();
+        const btn = document.querySelector('#orderForm button:not([type="button"])');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Đang xử lý...';
+        }
         document.getElementById('orderForm').submit();
     }
 </script>

@@ -27,8 +27,8 @@ public class OrderDAO {
 
         String insertOrderSql = "INSERT INTO orders (" +
                 "user_id, order_code, customer_name, email, phone, address_line, ward, district, province, note, " +
-                "payment_method, status, subtotal, shipping_fee, discount_amount, total_amount" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "payment_method, status, subtotal, shipping_fee, discount_amount, total_amount, coupon_code" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String insertDetailSql = "INSERT INTO order_details (" +
                 "order_id, book_id, book_title, quantity, unit_price, line_total" +
@@ -61,6 +61,9 @@ public class OrderDAO {
             orderPs.setDouble(14, order.getShippingFee());
             orderPs.setDouble(15, order.getDiscountAmount());
             orderPs.setDouble(16, order.getTotalAmount());
+            String couponCode = order.getCouponCode();
+            orderPs.setString(17, (couponCode != null && !couponCode.trim().isEmpty())
+                    ? couponCode.trim().toUpperCase() : null);
 
             int affected = orderPs.executeUpdate();
             if (affected == 0) {
@@ -158,6 +161,7 @@ public class OrderDAO {
         o.setShippingFee(rs.getDouble("shipping_fee"));
         o.setDiscountAmount(rs.getDouble("discount_amount"));
         o.setTotalAmount(rs.getDouble("total_amount"));
+        o.setCouponCode(rs.getString("coupon_code"));
         o.setCreatedAt(rs.getTimestamp("created_at"));
         o.setConfirmedAt(rs.getTimestamp("confirmed_at"));
         o.setShippedAt(rs.getTimestamp("shipped_at"));
@@ -307,11 +311,13 @@ public class OrderDAO {
             conn.setAutoCommit(false);
 
             PreparedStatement checkPs = conn.prepareStatement(
-                "SELECT status FROM orders WHERE order_id = ?");
+                "SELECT status, payment_method, coupon_code FROM orders WHERE order_id = ?");
             checkPs.setInt(1, orderId);
             ResultSet checkRs = checkPs.executeQuery();
             if (!checkRs.next()) { conn.rollback(); return false; }
             String currentStatus = checkRs.getString("status");
+            String method        = checkRs.getString("payment_method");
+            String couponCode    = checkRs.getString("coupon_code");
             checkPs.close();
 
             if ("COMPLETED".equals(currentStatus) || "CANCELLED".equals(currentStatus)) {
@@ -343,6 +349,15 @@ public class OrderDAO {
 
             insertStatusLog(conn, orderId, currentStatus, "CANCELLED", changedBy);
             conn.commit();
+
+            // Hoàn lượt coupon nếu coupon đã thực sự được tính cho đơn này:
+            //  - COD / BANK_TRANSFER: tính ngay khi tạo đơn
+            //  - VNPAY / MOMO: chỉ tính khi đã thanh toán thành công (CONFIRMED/SHIPPING)
+            if (couponCode != null && !couponCode.trim().isEmpty()) {
+                boolean couponCounted = "COD".equals(method) || "BANK_TRANSFER".equals(method)
+                        || "CONFIRMED".equals(currentStatus) || "SHIPPING".equals(currentStatus);
+                if (couponCounted) new CouponDAO().decrementUsed(couponCode);
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -359,7 +374,9 @@ public class OrderDAO {
     }
 
     public double getTotalRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'CANCELLED'";
+        // Doanh thu chỉ tính đơn hợp lệ đã/đang được xử lý — loại đơn chưa thanh toán & thất bại
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders " +
+                     "WHERE status NOT IN ('PENDING', 'PAYMENT_FAILED', 'CANCELLED')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -394,6 +411,27 @@ public class OrderDAO {
         return 0;
     }
 
+    public double[] getRevenueByMonth(int lastNMonths) {
+        double[] result = new double[lastNMonths];
+        String sql = "SELECT PERIOD_DIFF(DATE_FORMAT(NOW(),'%Y%m'), DATE_FORMAT(created_at,'%Y%m')) AS months_ago, " +
+                     "SUM(total_amount) AS revenue FROM orders " +
+                     "WHERE status NOT IN ('PENDING', 'PAYMENT_FAILED', 'CANCELLED') " +
+                     "AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH) GROUP BY months_ago";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, lastNMonths);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int idx = rs.getInt("months_ago");
+                if (idx >= 0 && idx < lastNMonths)
+                    result[lastNMonths - 1 - idx] = rs.getDouble("revenue");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public Order getOrderByCode(String orderCode) {
         String sql = "SELECT * FROM orders WHERE order_code = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -417,16 +455,18 @@ public class OrderDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Lấy orderId + oldStatus để ghi log
+            // Lấy orderId + oldStatus + coupon để ghi log và xử lý lượt coupon
             PreparedStatement getPs = conn.prepareStatement(
-                "SELECT order_id, status FROM orders WHERE order_code = ?");
+                "SELECT order_id, status, coupon_code FROM orders WHERE order_code = ?");
             getPs.setString(1, orderCode);
             ResultSet getRs = getPs.executeQuery();
             int orderId = 0;
             String oldStatus = null;
+            String couponCode = null;
             if (getRs.next()) {
-                orderId   = getRs.getInt("order_id");
-                oldStatus = getRs.getString("status");
+                orderId    = getRs.getInt("order_id");
+                oldStatus  = getRs.getString("status");
+                couponCode = getRs.getString("coupon_code");
             }
             getPs.close();
 
@@ -441,8 +481,8 @@ public class OrderDAO {
                 "INSERT INTO payments (order_id, method, status, paid_at) " +
                 "SELECT order_id, payment_method, ?, ? FROM orders WHERE order_code = ?");
             ps2.setString(1, paymentStatus);
-            ps2.setTimestamp(2, "SUCCESS".equals(paymentStatus)
-                    ? new java.sql.Timestamp(System.currentTimeMillis()) : null);
+            // Cột paid_at là NOT NULL → luôn ghi thời điểm xử lý (kể cả khi FAILED)
+            ps2.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
             ps2.setString(3, orderCode);
             ps2.executeUpdate();
             ps2.close();
@@ -452,6 +492,14 @@ public class OrderDAO {
             }
 
             conn.commit();
+
+            // Thanh toán online thành công lần đầu (oldStatus chưa CONFIRMED) → mới tính lượt coupon.
+            // Tránh tính trùng khi Return + IPN cùng chạy hoặc khi thanh toán lại.
+            if ("SUCCESS".equals(paymentStatus)
+                    && !"CONFIRMED".equals(oldStatus)
+                    && couponCode != null && !couponCode.trim().isEmpty()) {
+                new CouponDAO().incrementUsed(couponCode);
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();

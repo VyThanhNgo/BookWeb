@@ -2,10 +2,12 @@ package controller;
 
 import dao.BookDAO;
 import dao.CartDAO;
+import dao.CouponDAO;
 import dao.OrderDAO;
 import model.Book;
 import model.Cart;
 import model.CartItem;
+import model.Coupon;
 import model.Order;
 import model.OrderItem;
 import model.User;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @WebServlet("/order")
 public class OrderServlet extends HttpServlet {
@@ -148,20 +151,41 @@ public class OrderServlet extends HttpServlet {
         Integer sessionFee = (Integer) session.getAttribute("calculatedShippingFee");
         double shippingFee = (sessionFee != null) ? sessionFee.doubleValue()
                 : parseDoubleOrZero(request.getParameter("shippingFee"));
-        // discount luôn = 0 cho đến khi có logic validate coupon server-side
+        double subtotalForCoupon = cart.getTotalPrice();
         double discount = 0;
+        if (!isBlank(couponCode)) {
+            CouponDAO couponDAO = new CouponDAO();
+            Coupon coupon = couponDAO.findByCode(couponCode.trim());
+            discount = couponDAO.computeDiscount(coupon, subtotalForCoupon);
+        }
+        // Làm tròn về số nguyên VND để tránh số tiền lẻ (gây lệch amount khi đối soát VNPay/MoMo)
+        discount = Math.round(discount);
 
+        String validationError = null;
         if (isBlank(customerName) || isBlank(phone) || isBlank(addressLine) || isBlank(paymentMethod)) {
+            validationError = "Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và chọn phương thức thanh toán.";
+        } else if (!Pattern.matches("^(0[3-9][0-9]{8})$", phone.trim())) {
+            validationError = "Số điện thoại không hợp lệ (phải là số di động Việt Nam 10 chữ số, bắt đầu bằng 03-09).";
+        } else if (!isBlank(email) && !Pattern.matches("^[\\w._%+\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$", email.trim())) {
+            validationError = "Địa chỉ email không hợp lệ.";
+        }
+
+        if (validationError != null) {
             double subtotal = cart.getTotalPrice();
             double total = subtotal + shippingFee - discount;
 
             request.setAttribute("pageTitle", "Thanh toán");
-            request.setAttribute("error", "Vui lòng nhập đầy đủ họ tên, số điện thoại, địa chỉ và chọn phương thức thanh toán.");
+            request.setAttribute("error", validationError);
             request.setAttribute("orderItems", mapOrderItems(cart.getItems()));
             request.setAttribute("subtotal", subtotal);
             request.setAttribute("shippingFee", shippingFee);
             request.setAttribute("discount", discount);
             request.setAttribute("total", total);
+            request.setAttribute("old_customerName", customerName);
+            request.setAttribute("old_phone", phone);
+            request.setAttribute("old_email", email);
+            request.setAttribute("old_addressLine", addressLine);
+            request.setAttribute("old_note", note);
 
             request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
             return;
@@ -205,6 +229,14 @@ public class OrderServlet extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/views/order/order.jsp").forward(request, response);
             return;
+        }
+
+        // Chỉ tính lượt coupon ngay với phương thức nhận hàng/chuyển khoản (đơn đã chốt).
+        // Với VNPAY/MOMO, lượt coupon được tính khi thanh toán thành công (trong updateOrderPayment),
+        // tránh trừ oan lượt khi khách bỏ ngang hoặc thanh toán thất bại.
+        if (!isBlank(couponCode) && discount > 0
+                && ("COD".equals(paymentMethod) || "BANK_TRANSFER".equals(paymentMethod))) {
+            new CouponDAO().incrementUsed(couponCode.trim());
         }
 
         List<OrderItem> placedItems = mapOrderItems(cart.getItems());
