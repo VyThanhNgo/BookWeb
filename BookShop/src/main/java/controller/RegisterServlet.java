@@ -105,7 +105,7 @@ public class RegisterServlet extends HttpServlet {
 
 		// Insert into database
 		boolean success = userDAO.insertUser(newUser);
-
+		//1
 		if (success) {
 			request.setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
 			request.getRequestDispatcher("/WEB-INF/views/user/login.jsp").forward(request, response);
