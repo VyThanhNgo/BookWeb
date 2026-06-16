@@ -9,10 +9,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-/**
- * Xử lý yêu cầu thanh toán lại cho đơn hàng có trạng thái PAYMENT_FAILED.
- * Đặt lại trạng thái đơn → PENDING rồi redirect sang cổng thanh toán tương ứng.
- */
+// Xử lý khi người dùng bấm thanh toán lại cho đơn bị thất bại.
+// Đặt trạng thái đơn về PENDING rồi chuyển sang cổng thanh toán tương ứng.
 @WebServlet("/retry-payment")
 public class RetryPaymentServlet extends HttpServlet {
 

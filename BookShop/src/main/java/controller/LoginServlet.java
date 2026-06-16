@@ -71,17 +71,17 @@ public class LoginServlet extends HttpServlet {
 			session.setAttribute("userRole", user.getRole());
 			session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
-			// Merge giỏ hàng: DB cart + session cart (guest items) → session
+			// Gộp giỏ trong DB với giỏ session (đồ khách thêm khi chưa đăng nhập)
 			CartDAO cartDAO = new CartDAO();
 			Cart sessionCart = (Cart) session.getAttribute("cart");
 			if (sessionCart == null) sessionCart = new Cart();
 
 			List<CartItem> dbItems = cartDAO.loadItems(user.getId());
 			for (CartItem dbItem : dbItems) {
-				sessionCart.addItem(dbItem); // addItem merge quantity nếu trùng bookId
+				sessionCart.addItem(dbItem); // nếu trùng sách thì cộng dồn số lượng
 			}
 			session.setAttribute("cart", sessionCart);
-			// Lưu merged cart (bao gồm guest items) ngược lại vào DB
+			// Lưu giỏ đã gộp ngược lại vào DB
 			cartDAO.saveFullCart(user.getId(), sessionCart.getItems());
 
 			WishlistDAO wishlistDAO = new WishlistDAO();

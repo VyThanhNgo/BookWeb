@@ -10,10 +10,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-/**
- * Gọi MoMo API tạo link thanh toán và redirect người dùng đến MoMo.
- * Return URL và IPN URL được tính động từ request.
- */
+// Gọi MoMo API tạo link thanh toán rồi chuyển người dùng sang MoMo.
+// URL return và IPN tính động từ request.
 @WebServlet("/momo/pay")
 public class MomoPaymentServlet extends HttpServlet {
 

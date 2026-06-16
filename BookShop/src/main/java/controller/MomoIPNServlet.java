@@ -10,10 +10,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/**
- * MoMo gọi IPN (webhook) từ server của họ đến URL này để xác nhận thanh toán.
- * Trả về HTTP 204 khi xử lý thành công theo tài liệu MoMo v2.
- */
+// MoMo gọi tới đây (server gọi server) để báo kết quả thanh toán.
+// Trả về HTTP 204 khi xử lý xong theo tài liệu MoMo v2.
 @WebServlet("/momo/ipn")
 public class MomoIPNServlet extends HttpServlet {
 
