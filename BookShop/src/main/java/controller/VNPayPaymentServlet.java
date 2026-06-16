@@ -11,10 +11,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Nhận orderCode từ session, xây dựng URL VNPay và redirect người dùng đến cổng thanh toán.
- * Return URL được tính động từ request để hoạt động đúng trên mọi môi trường (local / server).
- */
+// Lấy mã đơn từ session, tạo URL VNPay rồi chuyển người dùng sang cổng thanh toán.
+// URL trả về (return) tính động từ request để chạy đúng cả ở máy local lẫn server.
 @WebServlet("/vnpay/pay")
 public class VNPayPaymentServlet extends HttpServlet {
 

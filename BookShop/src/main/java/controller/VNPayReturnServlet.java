@@ -11,10 +11,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * VNPay redirect người dùng về đây sau khi thanh toán.
- * Xác minh chữ ký, cập nhật trạng thái đơn hàng, hiển thị kết quả.
- */
+// VNPay chuyển người dùng về đây sau khi thanh toán.
+// Kiểm tra chữ ký, cập nhật trạng thái đơn rồi hiện kết quả.
 @WebServlet("/vnpay/return")
 public class VNPayReturnServlet extends HttpServlet {
 
@@ -23,8 +21,7 @@ public class VNPayReturnServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        // vnp_TxnRef có thể là "ORD-XXXX" (thanh toán lần đầu)
-        // hoặc "ORD-XXXX_timestamp" (thanh toán lại) — lấy phần orderCode
+        // Mã giao dịch có thể kèm timestamp khi thanh toán lại, cắt lấy phần mã đơn
         String txnRef    = request.getParameter("vnp_TxnRef");
         String orderCode = (txnRef != null && txnRef.contains("_"))
                 ? txnRef.substring(0, txnRef.lastIndexOf("_"))
@@ -34,7 +31,7 @@ public class VNPayReturnServlet extends HttpServlet {
 
         OrderDAO dao = new OrderDAO();
 
-        // --- Xác minh chữ ký ---
+        // Kiểm tra chữ ký xem dữ liệu có bị sửa không
         boolean signatureOk;
         try {
             signatureOk = VNPayUtil.verifyReturn(request);
@@ -45,7 +42,7 @@ public class VNPayReturnServlet extends HttpServlet {
 
         boolean paymentSuccess = signatureOk && "00".equals(responseCode);
 
-        // Trạng thái hiện tại để tránh cập nhật trùng khi người dùng F5 trang kết quả
+        // Lấy trạng thái hiện tại để khỏi cập nhật lại khi người dùng F5 trang
         Order existing = dao.getOrderByCode(orderCode);
         String currentStatus = (existing != null) ? existing.getStatus() : null;
 
@@ -57,12 +54,12 @@ public class VNPayReturnServlet extends HttpServlet {
             Order order = dao.getOrderByCode(orderCode);
             List<OrderItem> items = order != null ? dao.getOrderItems(order.getOrderId()) : null;
 
-            // Gửi email xác nhận chỉ ở lần xác nhận đầu tiên (tránh gửi lại khi F5)
+            // Chỉ gửi email ở lần xác nhận đầu tiên, tránh gửi lại khi F5
             if (!"CONFIRMED".equals(currentStatus)) {
                 util.MailUtil.sendOrderConfirmationAsync(order, items);
             }
 
-            // Xóa pending payment trong session
+            // Xoá thông tin chờ thanh toán trong session
             HttpSession session = request.getSession();
             session.removeAttribute("pendingPaymentOrderCode");
 
@@ -74,7 +71,7 @@ public class VNPayReturnServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/order/order-success.jsp")
                    .forward(request, response);
         } else {
-            // Không hạ cấp đơn đã CONFIRMED; không ghi lại nếu đã PAYMENT_FAILED
+            // Đơn đã xác nhận thì không hạ xuống thất bại; đã thất bại rồi thì thôi
             if (!"CONFIRMED".equals(currentStatus) && !"PAYMENT_FAILED".equals(currentStatus)) {
                 dao.updateOrderPayment(orderCode, "PAYMENT_FAILED", "FAILED");
             }

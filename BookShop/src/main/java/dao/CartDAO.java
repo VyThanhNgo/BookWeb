@@ -10,7 +10,7 @@ import java.util.List;
 
 public class CartDAO {
 
-    /** Thêm hoặc cập nhật một item trong giỏ DB (INSERT ... ON DUPLICATE KEY UPDATE). */
+    // Thêm 1 sách vào giỏ trong DB, nếu đã có thì cập nhật lại số lượng
     public void syncItem(int userId, int bookId, int quantity) {
         String sql = "INSERT INTO cart_items (user_id, book_id, quantity) VALUES (?, ?, ?) " +
                      "ON DUPLICATE KEY UPDATE quantity = ?";
@@ -26,7 +26,7 @@ public class CartDAO {
         }
     }
 
-    /** Xoá một item khỏi giỏ DB. */
+    // Xoá 1 sách khỏi giỏ trong DB
     public void removeItem(int userId, int bookId) {
         String sql = "DELETE FROM cart_items WHERE user_id = ? AND book_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -39,7 +39,7 @@ public class CartDAO {
         }
     }
 
-    /** Xoá toàn bộ giỏ DB của user. */
+    // Xoá hết giỏ hàng của user trong DB
     public void clearCart(int userId) {
         String sql = "DELETE FROM cart_items WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -51,7 +51,7 @@ public class CartDAO {
         }
     }
 
-    /** Load giỏ hàng từ DB, join với books để lấy đủ thông tin CartItem. */
+    // Lấy giỏ hàng của user từ DB (nối với bảng books để có tên, giá, ảnh)
     public List<CartItem> loadItems(int userId) {
         List<CartItem> items = new ArrayList<>();
         String sql = "SELECT ci.book_id, ci.quantity, b.title, b.price, b.image, b.stock " +
@@ -64,7 +64,7 @@ public class CartDAO {
             while (rs.next()) {
                 int qty   = rs.getInt("quantity");
                 int stock = rs.getInt("stock");
-                // Giới hạn số lượng theo tồn kho hiện tại (phòng trường hợp sách giảm stock sau khi thêm)
+                // Không cho số lượng vượt quá tồn kho hiện tại
                 if (stock > 0 && qty > stock) qty = stock;
                 items.add(new CartItem(
                     rs.getInt("book_id"),
@@ -80,7 +80,7 @@ public class CartDAO {
         return items;
     }
 
-    /** Lưu toàn bộ giỏ session vào DB (clear rồi insert lại). */
+    // Lưu cả giỏ hàng xuống DB (xoá hết cũ rồi thêm lại)
     public void saveFullCart(int userId, Collection<CartItem> items) {
         clearCart(userId);
         for (CartItem item : items) {

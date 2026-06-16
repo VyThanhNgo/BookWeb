@@ -11,10 +11,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * MoMo redirect người dùng về đây sau khi thanh toán.
- * Xác minh chữ ký, cập nhật trạng thái đơn hàng, hiển thị kết quả.
- */
+// MoMo chuyển người dùng về đây sau khi thanh toán.
+// Kiểm tra chữ ký, cập nhật trạng thái đơn rồi hiện kết quả.
 @WebServlet("/momo/return")
 public class MomoReturnServlet extends HttpServlet {
 
@@ -39,7 +37,7 @@ public class MomoReturnServlet extends HttpServlet {
 
         boolean paymentSuccess = signatureOk && "0".equals(resultCode);
 
-        // Trạng thái hiện tại để tránh cập nhật trùng khi người dùng F5 trang kết quả
+        // Lấy trạng thái hiện tại để khỏi cập nhật lại khi người dùng F5 trang
         Order existing = dao.getOrderByCode(orderId);
         String currentStatus = (existing != null) ? existing.getStatus() : null;
 
@@ -51,7 +49,7 @@ public class MomoReturnServlet extends HttpServlet {
             Order order = dao.getOrderByCode(orderId);
             List<OrderItem> items = order != null ? dao.getOrderItems(order.getOrderId()) : null;
 
-            // Gửi email xác nhận chỉ ở lần xác nhận đầu tiên (tránh gửi lại khi F5)
+            // Chỉ gửi email ở lần xác nhận đầu tiên, tránh gửi lại khi F5
             if (!"CONFIRMED".equals(currentStatus)) {
                 util.MailUtil.sendOrderConfirmationAsync(order, items);
             }
@@ -67,7 +65,7 @@ public class MomoReturnServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/order/order-success.jsp")
                    .forward(request, response);
         } else {
-            // Không hạ cấp đơn đã CONFIRMED; không ghi lại nếu đã PAYMENT_FAILED
+            // Đơn đã xác nhận thì không hạ xuống thất bại; đã thất bại rồi thì thôi
             if (!"CONFIRMED".equals(currentStatus) && !"PAYMENT_FAILED".equals(currentStatus)) {
                 dao.updateOrderPayment(orderId, "PAYMENT_FAILED", "FAILED");
             }

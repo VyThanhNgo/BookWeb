@@ -1,17 +1,12 @@
 package config;
 
-/**
- * Cấu hình gửi email xác nhận đơn hàng.
- *
- * Hướng dẫn bật tính năng:
- *  1. Đặt ENABLED = true.
- *  2. Với Gmail: bật 2FA cho tài khoản, tạo "App Password" (16 ký tự) tại
- *     https://myaccount.google.com/apppasswords và điền vào PASSWORD bên dưới
- *     (KHÔNG dùng mật khẩu đăng nhập thường).
- *  3. Điền USERNAME / FROM_EMAIL = địa chỉ Gmail của shop.
- *
- * Khi ENABLED = false, toàn bộ chức năng gửi mail là no-op (không ảnh hưởng đặt hàng).
- */
+// Cấu hình gửi email xác nhận đơn hàng.
+// Cách bật:
+//  1. Đặt ENABLED = true.
+//  2. Với Gmail: bật xác minh 2 bước rồi tạo "App Password" (16 ký tự) tại
+//     https://myaccount.google.com/apppasswords và điền vào PASSWORD (không dùng mật khẩu thường).
+//  3. Điền USERNAME / FROM_EMAIL = Gmail của shop.
+// Khi ENABLED = false thì không gửi email, app vẫn chạy bình thường.
 public class MailConfig {
 
     public static final boolean ENABLED = false;

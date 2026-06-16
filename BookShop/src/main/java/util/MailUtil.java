@@ -14,10 +14,9 @@ import javax.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Gửi email xác nhận đơn hàng (HTML). Gửi nền (thread riêng) để không chặn response,
- * và nuốt mọi lỗi để không làm hỏng luồng đặt hàng. No-op khi MailConfig.ENABLED = false.
- */
+// Gửi email xác nhận đơn hàng (dạng HTML).
+// Chạy ở thread riêng để không làm chậm trang, và bỏ qua lỗi để không ảnh hưởng việc đặt hàng.
+// Khi MailConfig.ENABLED = false thì không gửi gì.
 public class MailUtil {
 
     public static void sendOrderConfirmationAsync(final Order order, final List<OrderItem> items) {

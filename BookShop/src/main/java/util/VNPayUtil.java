@@ -22,10 +22,8 @@ public class VNPayUtil {
         return sb.toString();
     }
 
-    /**
-     * Xây dựng URL thanh toán VNPay từ map tham số.
-     * Sắp xếp alphabetically, ký HMAC-SHA512, trả về full URL.
-     */
+    // Tạo URL thanh toán VNPay từ danh sách tham số:
+    // sắp xếp theo tên, ký bằng HMAC-SHA512 rồi trả về URL đầy đủ.
     public static String buildPaymentUrl(Map<String, String> params) throws Exception {
         List<String> fieldNames = new ArrayList<>(params.keySet());
         Collections.sort(fieldNames);
@@ -54,9 +52,7 @@ public class VNPayUtil {
                 + "&vnp_SecureHashType=HmacSHA512";
     }
 
-    /**
-     * Xác minh chữ ký từ request trả về của VNPay.
-     */
+    // Kiểm tra chữ ký trong dữ liệu VNPay trả về
     public static boolean verifyReturn(HttpServletRequest request) throws Exception {
         String receivedHash = request.getParameter("vnp_SecureHash");
         if (receivedHash == null || receivedHash.isEmpty()) return false;

@@ -47,15 +47,14 @@ public class OrderServlet extends HttpServlet {
         return items;
     }
 
-    // Tập bookId người dùng đã chọn để thanh toán (lưu trong session từ trang giỏ hàng)
+    // Lấy danh sách id sách người dùng đã chọn để thanh toán (lưu trong session)
     @SuppressWarnings("unchecked")
     private java.util.Set<Integer> getSelectedIds(HttpSession session) {
         Object o = session.getAttribute("checkoutSelectedIds");
         return (o instanceof java.util.Set) ? (java.util.Set<Integer>) o : null;
     }
 
-    // Danh sách sản phẩm sẽ thanh toán = giỏ hàng đã lọc theo lựa chọn.
-    // Nếu không có lựa chọn (hoặc lọc ra rỗng) → dùng toàn bộ giỏ (tương thích cũ).
+    // Lọc giỏ hàng lấy ra các sách đã được chọn; nếu không chọn gì thì lấy cả giỏ
     private List<CartItem> getCheckoutItems(Cart cart, java.util.Set<Integer> selected) {
         List<CartItem> all = new ArrayList<>(cart.getItems());
         if (selected == null || selected.isEmpty()) return all;
@@ -85,7 +84,7 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Lựa chọn sản phẩm để thanh toán (từ trang giỏ hàng) → lưu vào session
+        // Lưu danh sách sách được chọn (gửi từ trang giỏ) vào session
         String selParam = request.getParameter("selectedIds");
         if (selParam != null) {
             java.util.Set<Integer> sel = new java.util.HashSet<>();
@@ -115,7 +114,7 @@ public class OrderServlet extends HttpServlet {
         double shippingFee = 0;
         double discount = 0;
 
-        // Mã giảm giá áp từ trang giỏ hàng (nếu có) → áp sẵn vào trang thanh toán
+        // Nếu có mã giảm giá gửi từ trang giỏ thì áp sẵn vào trang thanh toán
         String couponCode = request.getParameter("coupon");
         if (couponCode != null && !couponCode.trim().isEmpty()) {
             CouponDAO couponDAO = new CouponDAO();
@@ -152,13 +151,13 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Chỉ thanh toán những sản phẩm đã được chọn ở trang giỏ hàng
+        // Chỉ lấy những sách đã được chọn ở trang giỏ để thanh toán
         List<CartItem> items = getCheckoutItems(cart, getSelectedIds(session));
         double itemsSubtotal = sumItems(items);
 
         String paymentMethodEarly = request.getParameter("paymentMethod");
 
-        // ZaloPay chưa được tích hợp — chặn sớm trước khi tạo đơn
+        // ZaloPay chưa làm nên chặn lại, không cho đặt
         if ("ZALOPAY".equals(paymentMethodEarly)) {
             double subtotalE = itemsSubtotal;
             request.setAttribute("pageTitle", "Thanh toán");
@@ -172,7 +171,7 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Bank Transfer — yêu cầu xác nhận đã chuyển khoản
+        // Chuyển khoản: bắt buộc khách xác nhận đã chuyển trước khi đặt
         if ("BANK_TRANSFER".equals(paymentMethodEarly)) {
             String bankConfirmed = request.getParameter("bankConfirmed");
             if (!"1".equals(bankConfirmed)) {
@@ -213,7 +212,7 @@ public class OrderServlet extends HttpServlet {
             Coupon coupon = couponDAO.findByCode(couponCode.trim());
             discount = couponDAO.computeDiscount(coupon, subtotalForCoupon);
         }
-        // Làm tròn về số nguyên VND để tránh số tiền lẻ (gây lệch amount khi đối soát VNPay/MoMo)
+        // Làm tròn tiền giảm về số nguyên cho khỏi bị lẻ
         discount = Math.round(discount);
 
         String validationError = null;
@@ -286,16 +285,15 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Chỉ tính lượt coupon ngay với phương thức nhận hàng/chuyển khoản (đơn đã chốt).
-        // Với VNPAY/MOMO, lượt coupon được tính khi thanh toán thành công (trong updateOrderPayment),
-        // tránh trừ oan lượt khi khách bỏ ngang hoặc thanh toán thất bại.
+        // COD/chuyển khoản thì tính lượt mã giảm giá ngay;
+        // VNPay/MoMo để tính khi thanh toán thành công (tránh trừ oan khi khách bỏ ngang)
         if (!isBlank(couponCode) && discount > 0
                 && ("COD".equals(paymentMethod) || "BANK_TRANSFER".equals(paymentMethod))) {
             new CouponDAO().incrementUsed(couponCode.trim());
         }
 
         List<OrderItem> placedItems = mapOrderItems(items);
-        // Chỉ xóa khỏi giỏ những sản phẩm đã đặt (giữ lại các sản phẩm không được chọn)
+        // Chỉ xoá khỏi giỏ những sách vừa đặt, giữ lại sách chưa chọn
         CartDAO cartDAO = new CartDAO();
         for (CartItem it : items) {
             cart.removeItem(it.getBookId());
@@ -316,10 +314,10 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // COD / BANK_TRANSFER — đơn đã chốt → gửi email xác nhận (nền, no-op nếu chưa cấu hình SMTP)
+        // COD/chuyển khoản: gửi email xác nhận đơn (nếu chưa cấu hình email thì tự bỏ qua)
         util.MailUtil.sendOrderConfirmationAsync(order, placedItems);
 
-        // COD / BANK_TRANSFER — hiển thị trang thành công ngay
+        // COD/chuyển khoản: hiện trang đặt hàng thành công luôn
         request.setAttribute("pageTitle", "Đặt hàng thành công");
         request.setAttribute("placedOrder", order);
         request.setAttribute("placedOrderItems", placedItems);
@@ -334,7 +332,7 @@ public class OrderServlet extends HttpServlet {
         return value == null || value.trim().isEmpty();
     }
 
-    /* THÊM HÀM NÀY */
+    // Đổi chuỗi thành số thực, nếu lỗi thì trả về 0
     private double parseDoubleOrZero(String value) {
         try {
             return Double.parseDouble(value);

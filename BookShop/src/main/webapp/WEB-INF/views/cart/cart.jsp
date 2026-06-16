@@ -596,7 +596,7 @@
                     recalcCartUI();
                     saveQtyToServer(bookId, value - 1);
                 } else {
-                    // Giảm từ 1 → hỏi xác nhận xóa thay vì để số lượng 0
+                    // Đang ở số 1 thì hỏi xác nhận xoá thay vì để số lượng về 0
                     if (confirm('Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?')) removeItem(bookId);
                 }
             });
@@ -618,7 +618,7 @@
             });
         });
 
-        // Chọn từng sản phẩm / chọn tất cả để thanh toán (re-validate mã giảm giá theo SP chọn)
+        // Chọn từng sản phẩm hoặc chọn tất cả; tính lại mã giảm giá theo sản phẩm đang chọn
         document.querySelectorAll('.row-select').forEach(function (cb) {
             cb.addEventListener('change', revalidate);
         });
