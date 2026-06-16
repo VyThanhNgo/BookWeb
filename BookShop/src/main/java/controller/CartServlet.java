@@ -126,6 +126,39 @@ public class CartServlet extends HttpServlet {
                 return;
             }
 
+            else if ("buy".equals(action)) {
+                // Mua ngay: thêm sách vào giỏ (có kiểm tồn kho) rồi sang thẳng trang thanh toán
+                int bookId   = Integer.parseInt(request.getParameter("id"));
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
+                if (quantity <= 0) quantity = 1;
+
+                BookDAO dao = new BookDAO();
+                Book book = dao.getBookById(bookId);
+
+                // Hết hàng hoặc không tồn tại thì quay lại trang sách
+                if (book == null || book.getStock() <= 0) {
+                    response.sendRedirect(ctx + "/books");
+                    return;
+                }
+                if (quantity > book.getStock()) quantity = book.getStock();
+
+                cart.addItem(new CartItem(book.getId(), book.getTitle(),
+                        book.getPrice(), quantity, book.getImage()));
+
+                // Nếu đã đăng nhập thì lưu vào giỏ trong DB
+                if (user != null) {
+                    int newQty = 0;
+                    for (CartItem ci : cart.getItems()) {
+                        if (ci.getBookId() == book.getId()) { newQty = ci.getQuantity(); break; }
+                    }
+                    cartDAO.syncItem(user.getId(), bookId, newQty);
+                }
+
+                // Sang trang thanh toán, chỉ chọn đúng cuốn vừa bấm Mua ngay
+                response.sendRedirect(ctx + "/order?selectedIds=" + bookId);
+                return;
+            }
+
             else if ("syncOne".equals(action)) {
                 int bookId   = Integer.parseInt(request.getParameter("bookId"));
                 int quantity = Integer.parseInt(request.getParameter("quantity"));
