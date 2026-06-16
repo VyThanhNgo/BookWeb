@@ -586,6 +586,26 @@
             }, 400);
         }
 
+        // Lưu NGAY toàn bộ số lượng đang hiển thị lên server (dùng trước khi sang thanh toán
+        // để không bị mất thay đổi do bấm quá nhanh khi lệnh lưu 400ms chưa kịp chạy)
+        function flushQuantities() {
+            for (var k in qtyTimers) clearTimeout(qtyTimers[k]); // huỷ các lần lưu đang chờ
+            var body = new URLSearchParams();
+            body.append('action', 'update');
+            document.querySelectorAll('.cart-row').forEach(function (row) {
+                var bookId = row.getAttribute('data-book-id');
+                var qtyInput = row.querySelector('input[type="text"]');
+                if (qtyInput) body.append('quantity_' + bookId, qtyInput.value);
+            });
+            return fetch(ctx + '/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                           'X-Requested-With': 'XMLHttpRequest' },
+                body: body.toString(),
+                redirect: 'manual'
+            });
+        }
+
         document.querySelectorAll('.qty-btn.minus').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var input = document.getElementById(this.getAttribute('data-target'));
@@ -668,7 +688,11 @@
                 }
                 var url = ctx + '/order?selectedIds=' + encodeURIComponent(ids.join(','));
                 if (appliedCoupon && appliedDiscount > 0) url += '&coupon=' + encodeURIComponent(appliedCoupon);
-                window.location.href = url;
+                // Lưu số lượng mới nhất lên server XONG rồi mới sang trang thanh toán
+                this.classList.add('disabled');
+                flushQuantities()
+                    .then(function () { window.location.href = url; })
+                    .catch(function () { window.location.href = url; }); // vẫn đi tiếp nếu lỗi
             });
         }
 
