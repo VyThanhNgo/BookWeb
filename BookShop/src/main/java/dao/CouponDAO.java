@@ -127,10 +127,8 @@ public class CouponDAO {
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    /**
-     * Tăng lượt dùng coupon một cách atomic: chỉ tăng khi chưa chạm usage_limit.
-     * Trả về true nếu tăng thành công (còn lượt), false nếu đã hết lượt / lỗi.
-     */
+    // Tăng số lần đã dùng của mã, chỉ tăng khi mã vẫn còn lượt
+    // Trả về true nếu tăng được, false nếu hết lượt hoặc lỗi
     public boolean incrementUsed(String code) {
         String sql = "UPDATE coupons SET used_count = used_count + 1 " +
                      "WHERE code = ? AND (usage_limit IS NULL OR used_count < usage_limit)";
@@ -144,7 +142,7 @@ public class CouponDAO {
         }
     }
 
-    /** Hoàn lại 1 lượt dùng coupon (khi huỷ đơn đã tính coupon). Không cho âm. */
+    // Trả lại 1 lượt dùng mã (khi huỷ đơn), không cho xuống dưới 0
     public void decrementUsed(String code) {
         if (code == null || code.trim().isEmpty()) return;
         String sql = "UPDATE coupons SET used_count = used_count - 1 WHERE code = ? AND used_count > 0";

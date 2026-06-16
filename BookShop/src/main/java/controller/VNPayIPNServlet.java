@@ -10,10 +10,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/**
- * VNPay gọi IPN (webhook) từ server của họ đến URL này để xác nhận thanh toán.
- * Hoạt động trên môi trường có IP public; localhost cần dùng ngrok hoặc tương đương để test.
- */
+// VNPay gọi tới đây (server gọi server) để báo kết quả thanh toán.
+// Cần IP public; nếu chạy localhost thì dùng ngrok để test.
 @WebServlet("/vnpay/ipn")
 public class VNPayIPNServlet extends HttpServlet {
 
@@ -23,7 +21,7 @@ public class VNPayIPNServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        // vnp_TxnRef có thể là "ORD-XXXX" hoặc "ORD-XXXX_timestamp" (thanh toán lại)
+        // Mã giao dịch có thể kèm timestamp khi thanh toán lại, cắt lấy phần mã đơn
         String txnRef       = request.getParameter("vnp_TxnRef");
         String orderCode    = (txnRef != null && txnRef.contains("_"))
                 ? txnRef.substring(0, txnRef.lastIndexOf("_"))
@@ -46,14 +44,14 @@ public class VNPayIPNServlet extends HttpServlet {
                 return;
             }
 
-            // Kiểm tra số tiền khớp — tính giống VNPayPaymentServlet: ((long)total) * 100
+            // Kiểm tra số tiền VNPay báo có khớp với tổng tiền đơn không
             long expectedAmount = (long) order.getTotalAmount() * 100;
             if (!String.valueOf(expectedAmount).equals(amount)) {
                 out.print("{\"RspCode\":\"04\",\"Message\":\"Invalid Amount\"}");
                 return;
             }
 
-            // Tránh cập nhật lại nếu đã xử lý xong
+            // Nếu đơn đã xử lý xong rồi thì không làm lại
             if ("CONFIRMED".equals(order.getStatus()) || "PAYMENT_FAILED".equals(order.getStatus())) {
                 out.print("{\"RspCode\":\"02\",\"Message\":\"Order already updated\"}");
                 return;

@@ -170,7 +170,7 @@ public class OrderDAO {
         return o;
     }
 
-    // ── Helper nội bộ: ghi log thay đổi trạng thái (dùng chung connection đang mở) ──
+    // Ghi lại 1 dòng lịch sử đổi trạng thái vào bảng order_status_logs
     private void insertStatusLog(Connection conn, int orderId,
                                  String oldStatus, String newStatus, String changedBy) throws Exception {
         PreparedStatement ps = conn.prepareStatement(
@@ -183,7 +183,7 @@ public class OrderDAO {
         ps.close();
     }
 
-    // ── Helper: xác định cột timestamp ứng với status ──
+    // Tuỳ trạng thái mà trả về câu lệnh cập nhật cột thời gian tương ứng
     private String timestampClause(String status) {
         switch (status) {
             case "CONFIRMED":  return ", confirmed_at = NOW()";
@@ -259,7 +259,7 @@ public class OrderDAO {
         return list;
     }
 
-    /** Cập nhật trạng thái đơn, đồng thời ghi timestamp tracking và audit log. */
+    // Đổi trạng thái đơn, lưu mốc thời gian và ghi lịch sử
     public boolean updateOrderStatus(int orderId, String status, String changedBy) {
         Connection conn = null;
         try {
@@ -295,15 +295,13 @@ public class OrderDAO {
         }
     }
 
-    /** Overload giữ backward-compat với các caller không truyền changedBy. */
+    // Gọi khi không cần biết ai đổi (mặc định là "system")
     public boolean updateOrderStatus(int orderId, String status) {
         return updateOrderStatus(orderId, status, "system");
     }
 
-    /**
-     * Huỷ đơn hàng: hoàn tồn kho + set CANCELLED + ghi audit log.
-     * Không cho phép huỷ đơn đã COMPLETED hoặc đã CANCELLED.
-     */
+    // Huỷ đơn: cộng trả lại tồn kho, đổi trạng thái sang CANCELLED và ghi lịch sử
+    // Không cho huỷ đơn đã hoàn thành hoặc đã huỷ
     public boolean cancelOrder(int orderId, String changedBy) {
         Connection conn = null;
         try {
@@ -340,7 +338,7 @@ public class OrderDAO {
             detailPs.close();
             stockPs.close();
 
-            // Cập nhật status + timestamp
+            // Đổi trạng thái sang CANCELLED và lưu thời gian huỷ
             PreparedStatement updatePs = conn.prepareStatement(
                 "UPDATE orders SET status = 'CANCELLED', cancelled_at = NOW() WHERE order_id = ?");
             updatePs.setInt(1, orderId);
@@ -350,9 +348,8 @@ public class OrderDAO {
             insertStatusLog(conn, orderId, currentStatus, "CANCELLED", changedBy);
             conn.commit();
 
-            // Hoàn lượt coupon nếu coupon đã thực sự được tính cho đơn này:
-            //  - COD / BANK_TRANSFER: tính ngay khi tạo đơn
-            //  - VNPAY / MOMO: chỉ tính khi đã thanh toán thành công (CONFIRMED/SHIPPING)
+            // Nếu đơn này đã tính mã giảm giá thì trả lại 1 lượt khi huỷ
+            // (COD/chuyển khoản tính ngay khi đặt; VNPay/MoMo tính khi thanh toán xong)
             if (couponCode != null && !couponCode.trim().isEmpty()) {
                 boolean couponCounted = "COD".equals(method) || "BANK_TRANSFER".equals(method)
                         || "CONFIRMED".equals(currentStatus) || "SHIPPING".equals(currentStatus);
@@ -368,13 +365,13 @@ public class OrderDAO {
         }
     }
 
-    /** Overload backward-compat. */
+    // Gọi khi không cần biết ai huỷ
     public boolean cancelOrder(int orderId) {
         return cancelOrder(orderId, "system");
     }
 
     public double getTotalRevenue() {
-        // Doanh thu chỉ tính đơn hợp lệ đã/đang được xử lý — loại đơn chưa thanh toán & thất bại
+        // Cộng tổng tiền các đơn, bỏ qua đơn chưa thanh toán, thất bại và đã huỷ
         String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders " +
                      "WHERE status NOT IN ('PENDING', 'PAYMENT_FAILED', 'CANCELLED')";
         try (Connection conn = DBConnection.getConnection();
@@ -445,17 +442,15 @@ public class OrderDAO {
         return null;
     }
 
-    /**
-     * Cập nhật trạng thái đơn hàng và ghi nhận thanh toán vào bảng payments.
-     * Dùng sau khi nhận kết quả từ cổng thanh toán (VNPay / MoMo).
-     */
+    // Cập nhật trạng thái đơn và lưu thông tin thanh toán vào bảng payments
+    // Dùng sau khi nhận kết quả trả về từ VNPay/MoMo
     public boolean updateOrderPayment(String orderCode, String orderStatus, String paymentStatus) {
         Connection conn = null;
         try {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Lấy orderId + oldStatus + coupon để ghi log và xử lý lượt coupon
+            // Lấy id đơn, trạng thái cũ và mã giảm giá của đơn
             PreparedStatement getPs = conn.prepareStatement(
                 "SELECT order_id, status, coupon_code FROM orders WHERE order_code = ?");
             getPs.setString(1, orderCode);
@@ -481,7 +476,7 @@ public class OrderDAO {
                 "INSERT INTO payments (order_id, method, status, paid_at) " +
                 "SELECT order_id, payment_method, ?, ? FROM orders WHERE order_code = ?");
             ps2.setString(1, paymentStatus);
-            // Cột paid_at là NOT NULL → luôn ghi thời điểm xử lý (kể cả khi FAILED)
+            // Cột paid_at không cho để trống nên luôn lưu thời gian hiện tại
             ps2.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
             ps2.setString(3, orderCode);
             ps2.executeUpdate();
@@ -493,8 +488,7 @@ public class OrderDAO {
 
             conn.commit();
 
-            // Thanh toán online thành công lần đầu (oldStatus chưa CONFIRMED) → mới tính lượt coupon.
-            // Tránh tính trùng khi Return + IPN cùng chạy hoặc khi thanh toán lại.
+            // Chỉ tính 1 lượt mã giảm giá khi thanh toán thành công lần đầu (tránh tính trùng)
             if ("SUCCESS".equals(paymentStatus)
                     && !"CONFIRMED".equals(oldStatus)
                     && couponCode != null && !couponCode.trim().isEmpty()) {
@@ -510,7 +504,7 @@ public class OrderDAO {
         }
     }
 
-    /** Lấy toàn bộ lịch sử thay đổi trạng thái của một đơn hàng. */
+    // Lấy lịch sử đổi trạng thái của một đơn hàng
     public List<OrderStatusLog> getStatusLogs(int orderId) {
         List<OrderStatusLog> logs = new ArrayList<>();
         String sql = "SELECT * FROM order_status_logs WHERE order_id = ? ORDER BY changed_at ASC";
@@ -534,10 +528,8 @@ public class OrderDAO {
         return logs;
     }
 
-    /**
-     * Lấy danh sách sách trong đơn COMPLETED (trong vòng 30 ngày) mà user chưa review.
-     * Gom theo từng đơn hàng, mỗi đơn chứa list sách chưa review.
-     */
+    // Lấy các sách trong đơn đã hoàn thành (trong 30 ngày) mà người dùng chưa đánh giá
+    // Gom theo từng đơn hàng
     public List<Map<String, Object>> getUnreviewedBooks(int userId) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT o.order_id, o.order_code, o.created_at AS order_date, "
@@ -585,9 +577,7 @@ public class OrderDAO {
         return list;
     }
 
-    /**
-     * Lấy danh sách sách user đã review (kèm ảnh review).
-     */
+    // Lấy các sách mà người dùng đã đánh giá (kèm ảnh đánh giá)
     public List<Map<String, Object>> getReviewedBooks(int userId) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT r.review_id, r.rating, r.comment, r.created_at, "
@@ -624,7 +614,7 @@ public class OrderDAO {
         return list;
     }
 
-    /** Lấy danh sách URL ảnh đính kèm của một review. */
+    // Lấy danh sách đường dẫn ảnh của một đánh giá
     private List<String> getReviewImages(Connection conn, int reviewId) {
         List<String> imgs = new ArrayList<>();
         String sql = "SELECT image_url FROM review_images WHERE review_id = ?";

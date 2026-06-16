@@ -37,11 +37,10 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Cart cart = getOrCreateCart(session);
 
-        // doGet chỉ hiển thị giỏ hàng. Các hành động thay đổi trạng thái
-        // (remove/clear) đã chuyển sang doPost để tránh thay đổi dữ liệu qua GET.
+        // doGet chỉ để hiển thị giỏ hàng; thao tác xoá/xoá hết đã chuyển sang doPost
         BookDAO dao = new BookDAO();
 
-        // Tồn kho hiện tại của từng sách trong giỏ (để hiển thị trạng thái + giới hạn số lượng)
+        // Lấy tồn kho từng sách trong giỏ để hiển thị trạng thái và giới hạn số lượng
         java.util.Map<Integer, Integer> stockMap = new java.util.HashMap<>();
         for (CartItem item : cart.getItems()) {
             Book book = dao.getBookById(item.getBookId());
@@ -93,7 +92,7 @@ public class CartServlet extends HttpServlet {
                     cart.addItem(new CartItem(book.getId(), book.getTitle(),
                             book.getPrice(), quantity, book.getImage()));
 
-                    // Sync item mới vào DB nếu đã đăng nhập
+                    // Nếu đã đăng nhập thì lưu sách mới vào giỏ trong DB
                     if (user != null) {
                         int newQty = 0;
                         for (CartItem ci : cart.getItems()) {
@@ -157,7 +156,7 @@ public class CartServlet extends HttpServlet {
                         } catch (NumberFormatException ignored) {}
                     }
                 }
-                // Sync toàn bộ trạng thái giỏ sau khi update (bao gồm cả item bị remove qty=0)
+                // Lưu lại cả giỏ sau khi cập nhật (kể cả sách bị bỏ khi số lượng = 0)
                 if (user != null) cartDAO.saveFullCart(user.getId(), cart.getItems());
                 response.sendRedirect(ctx + "/cart");
                 return;

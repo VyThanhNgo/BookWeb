@@ -22,16 +22,8 @@ public class MomoUtil {
         return sb.toString();
     }
 
-    /**
-     * Gọi MoMo API tạo link thanh toán.
-     * Trả về payUrl nếu thành công, null nếu thất bại.
-     */
-    /**
-     * Tạo URL thanh toán MoMo.
-     *
-     * @param returnUrl URL trình duyệt redirect về sau thanh toán (tính động từ request)
-     * @param ipnUrl    URL server-to-server callback của MoMo
-     */
+    // Gọi MoMo API tạo link thanh toán, trả về payUrl nếu thành công, null nếu lỗi.
+    // returnUrl: nơi trình duyệt quay về sau khi thanh toán; ipnUrl: nơi MoMo gọi server báo kết quả.
     public static String createPaymentUrl(String orderCode, long amount, String orderInfo,
                                           String returnUrl, String ipnUrl) throws Exception {
         String requestId = orderCode + "_" + System.currentTimeMillis();
@@ -68,10 +60,8 @@ public class MomoUtil {
         return extractJsonString(responseBody, "payUrl");
     }
 
-    /**
-     * Xác minh chữ ký từ MoMo redirect về / IPN.
-     * Nếu không có signature param (môi trường test không gửi sig), trả true để dev dễ test.
-     */
+    // Kiểm tra chữ ký từ MoMo (lúc redirect về hoặc IPN).
+    // Nếu môi trường test không gửi chữ ký thì trả true cho dễ chạy thử.
     public static boolean verifyReturn(HttpServletRequest request) throws Exception {
         String receivedSig = request.getParameter("signature");
         if (receivedSig == null || receivedSig.isEmpty()) {
@@ -140,7 +130,7 @@ public class MomoUtil {
         }
     }
 
-    /** Trích xuất giá trị string từ JSON đơn giản (không cần Gson). */
+    // Lấy giá trị chuỗi từ JSON đơn giản (không dùng thư viện Gson)
     private static String extractJsonString(String json, String key) {
         if (json == null) return null;
         String search = "\"" + key + "\":\"";

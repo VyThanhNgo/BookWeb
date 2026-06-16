@@ -4,14 +4,14 @@
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
 <style>
-/* ── Tabs điều hướng ── */
+/* Tabs điều hướng */
 .review-tabs { display:flex; border-bottom:2px solid #eee; margin-bottom:30px; background:#fff; padding:0 10px; border-radius:8px 8px 0 0; }
 .tab-item { padding:15px 20px; font-weight:500; cursor:pointer; color:#666; border-bottom:3px solid transparent; transition:all .3s; }
 .tab-item.active { color:#e9a44a; border-bottom-color:#e9a44a; font-weight:700; }
 .tab-content { display:none; }
 .tab-content.active { display:block; }
 
-/* ── Card sách chưa đánh giá ── */
+/* Card sách chưa đánh giá */
 .unreviewed-card { display:flex; background:#fff; border:1px solid #eee; border-radius:8px; padding:16px; margin-bottom:16px; box-shadow:0 2px 4px rgba(0,0,0,.02); align-items:center; justify-content:space-between; }
 .unreviewed-left { display:flex; align-items:center; gap:20px; }
 .unreviewed-img { width:80px; height:115px; object-fit:cover; border-radius:4px; border:1px solid #ddd; flex-shrink:0; }
@@ -20,7 +20,7 @@
 .btn-primary-custom { background-color:#1e3a5f; color:#fff; border:none; padding:10px 20px; font-size:14px; font-weight:500; border-radius:4px; cursor:pointer; transition:all .2s; white-space:nowrap; }
 .btn-primary-custom:hover { background-color:#11253f; }
 
-/* ── Danh sách đã đánh giá ── */
+/* Danh sách đã đánh giá */
 .comment-list { padding:0; list-style:none; background:#fff; border-radius:8px; border:1px solid #eee; }
 .comment-list li { padding:24px; border-bottom:1px solid #eee; }
 .comment-list li:last-child { border-bottom:none; }
@@ -38,7 +38,7 @@
 .reviewed-product-footer img { width:40px; height:55px; object-fit:cover; border-radius:3px; border:1px solid #ddd; }
 .reviewed-product-footer span { font-size:13.5px; font-weight:500; color:#555; }
 
-/* ── Modal review ── */
+/* Modal đánh giá */
 .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:9999; visibility:hidden; opacity:0; transition:all .3s ease; }
 .modal-overlay.open { visibility:visible; opacity:1; }
 .modal-box { background:#fff; width:100%; max-width:600px; border-radius:8px; box-shadow:0 5px 20px rgba(0,0,0,.15); overflow:hidden; animation:slideDown .3s ease; }
@@ -52,7 +52,7 @@
 .mb-3 { margin-bottom:16px; }
 .mt-2 { margin-top:12px; }
 
-/* ── Toast ── */
+/* Toast */
 .toast-noti { position:fixed; top:24px; right:24px; z-index:99999; background:#1e3a5f; color:#fff; padding:14px 22px; border-radius:8px; font-size:15px; font-weight:500; box-shadow:0 4px 16px rgba(0,0,0,.18); display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(-16px); transition:opacity .3s, transform .3s; pointer-events:none; }
 .toast-noti.show { opacity:1; transform:translateY(0); }
 .toast-noti.success { border-left:4px solid #22c55e; }
